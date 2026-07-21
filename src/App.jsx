@@ -7,6 +7,7 @@ import VerseMemoryView from './components/VerseMemoryView';
 import CommentaryModal from './components/CommentaryModal';
 import OnboardingModal from './components/OnboardingModal';
 import DeveloperDebugModal, { debugLogger } from './components/DeveloperDebugModal';
+import NotificationPermissionModal from './components/NotificationPermissionModal';
 
 import { BIBLE_PLAN as initialPlanData } from './data/biblePlanData';
 import { INITIAL_MEMORY_VERSES as initialMemoryVerses } from './data/initialMemoryVerses';
@@ -205,6 +206,40 @@ export default function App() {
       document.documentElement.classList.remove('light');
     }
   }, [theme]);
+
+  // Notification Permission State & Weekly Reminder Loop
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notificationPermissionType, setNotificationPermissionType] = useState('default');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Notification) {
+      const permission = window.Notification.permission;
+      const lastPromptTime = localStorage.getItem('lastNotificationPromptTime');
+      const now = Date.now();
+      const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+      // Case 1: First time launch (permission is default)
+      if (permission === 'default') {
+        if (!lastPromptTime || (now - Number(lastPromptTime) > oneWeek)) {
+          setNotificationPermissionType('default');
+          const timer = setTimeout(() => {
+            setShowNotificationModal(true);
+          }, 4000);
+          return () => clearTimeout(timer);
+        }
+      }
+      // Case 2: System notifications are disabled in settings
+      else if (permission === 'denied') {
+        if (!lastPromptTime || (now - Number(lastPromptTime) > oneWeek)) {
+          setNotificationPermissionType('denied');
+          const timer = setTimeout(() => {
+            setShowNotificationModal(true);
+          }, 5000);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, []);
 
   // Per-Passage Scroll Position Persistence for ESV Reader
   const [readerScrollMap, setReaderScrollMap] = useState({});
@@ -655,6 +690,13 @@ export default function App() {
       <DeveloperDebugModal
         isOpen={showDebugModal}
         onClose={() => setShowDebugModal(false)}
+      />
+
+      {/* Custom Notification Permission Guidance Modal */}
+      <NotificationPermissionModal
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+        permissionType={notificationPermissionType}
       />
     </div>
   );
