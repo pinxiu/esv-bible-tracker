@@ -46,11 +46,13 @@ export default function Header({
   }, []);
 
   const [appVersion, setAppVersion] = useState('1.0.0');
+  const [isReadOnlyVolume, setIsReadOnlyVolume] = useState(false);
 
   useEffect(() => {
     if (window.electronAPI?.getAppInfo) {
       window.electronAPI.getAppInfo().then(info => {
         if (info && info.version) setAppVersion(info.version);
+        if (info && info.isReadOnlyVolume) setIsReadOnlyVolume(true);
       }).catch(() => {});
     }
   }, []);
@@ -138,6 +140,16 @@ export default function Header({
 
   const handleVersionClick = (e) => {
     e.preventDefault();
+    if (isReadOnlyVolume) {
+      setUpdateState({
+        status: 'error',
+        error: 'Cannot update while running on a read-only volume. Please move the application to your Applications folder and try again.'
+      });
+      if (window.debugLogger) {
+        window.debugLogger.addLog('error', 'Auto-updater blocked: App is running on a read-only volume (translocated or DMG).');
+      }
+      return;
+    }
     if (updateState.status === 'available') {
       handleStartDownload();
     } else if (updateState.status === 'downloaded') {

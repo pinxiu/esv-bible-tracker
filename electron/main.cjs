@@ -68,8 +68,8 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    // Auto check for updates on startup in packaged mode
-    if (app.isPackaged) {
+    // Auto check for updates on startup in packaged mode (if not on read-only volume)
+    if (app.isPackaged && !checkReadOnlyVolume()) {
       setTimeout(() => {
         autoUpdater.checkForUpdates().catch(err => {
           console.warn('Auto updater startup check error:', err);
@@ -99,6 +99,27 @@ app.on('window-all-closed', () => {
   }
 });
 
+const fs = require('fs');
+
+function checkReadOnlyVolume() {
+  const appPath = app.getAppPath();
+  // 1. Check common path indicators on macOS translocations
+  if (process.platform === 'darwin') {
+    if (appPath.includes('/var/folders/') || appPath.startsWith('/Volumes/')) {
+      return true;
+    }
+  }
+  // 2. Perform write test inside Resources folder
+  try {
+    const testFile = path.join(process.resourcesPath, '.write-test-lock');
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+    return false;
+  } catch (e) {
+    return true;
+  }
+}
+
 // IPC Handler for Native macOS Notifications
 ipcMain.handle('send-notification', (event, { title, body }) => {
   if (Notification.isSupported()) {
@@ -123,7 +144,8 @@ ipcMain.handle('get-app-info', () => {
   return {
     version: app.getVersion(),
     name: app.getName(),
-    platform: process.platform
+    platform: process.platform,
+    isReadOnlyVolume: checkReadOnlyVolume()
   };
 });
 
@@ -131,6 +153,10 @@ ipcMain.handle('get-app-info', () => {
 ipcMain.handle('check-for-updates', () => {
   if (!app.isPackaged) {
     return { success: false, reason: 'Auto-updates are only available in production packaged builds.' };
+  }
+  if (checkReadOnlyVolume()) {
+    sendUpdateMessage('error', { error: 'Cannot update while running on a read-only volume. Please move the application to your Applications folder and try again.' });
+    return { success: false, reason: 'Read-only volume' };
   }
   try {
     autoUpdater.checkForUpdates();
@@ -141,6 +167,10 @@ ipcMain.handle('check-for-updates', () => {
 });
 
 ipcMain.handle('start-download-update', () => {
+  if (checkReadOnlyVolume()) {
+    sendUpdateMessage('error', { error: 'Cannot update while running on a read-only volume. Please move the application to your Applications folder and try again.' });
+    return { success: false, reason: 'Read-only volume' };
+  }
   try {
     autoUpdater.downloadUpdate();
     return { success: true };
@@ -150,5 +180,8 @@ ipcMain.handle('start-download-update', () => {
 });
 
 ipcMain.handle('quit-and-install', () => {
+  if (checkReadOnlyVolume()) {
+    return;
+  }
   autoUpdater.quitAndInstall();
 });
