@@ -121,7 +121,7 @@ export default function Header({
   return (
     <header className="h-16 titlebar-drag border-b border-slate-800/80 glass-panel px-6 flex items-center justify-between select-none z-20 w-full cursor-grab active:cursor-grabbing">
       {/* Title & App Brand (Draggable space with inset traffic lights) */}
-      <div className="flex items-center space-x-3 titlebar-drag">
+      <div className="flex items-center space-x-3 pl-16 titlebar-drag">
         <div className="flex items-center space-x-2 titlebar-no-drag cursor-pointer" onClick={() => setActiveTab('plan')}>
           <img src={logoIcon} alt="ESV Bible Tracker" className="w-8 h-8 rounded-xl shadow-md object-cover border border-amber-500/30 shrink-0" />
           <div>
@@ -146,7 +146,7 @@ export default function Header({
           { id: 'plan', label: 'Plan' },
           { id: 'reader', label: 'Reader' },
           { id: 'saved', label: 'Treasury' },
-          { id: 'memory', label: 'Memorization' }
+          { id: 'memory', label: 'Memory' }
         ].map(tab => (
           <button
             key={tab.id}
