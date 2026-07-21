@@ -323,6 +323,20 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
                   >
                     ✨ Welcome Greeting
                   </button>
+
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('lastNotificationPromptTime');
+                      localStorage.removeItem('blockNotificationPrompt');
+                      if (window.debugLogger) {
+                        window.debugLogger.addLog('system', 'Reset notification prompt states & block bypass configurations.');
+                      }
+                      alert('Notification prompt settings have been reset! Relaunch the app to trigger it.');
+                    }}
+                    className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-amber-400 border border-slate-850 hover:border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left col-span-2 flex items-center justify-center space-x-1.5"
+                  >
+                    <span>🔄 Reset Notification Prompts (For Testing)</span>
+                  </button>
                 </div>
               </div>
 

@@ -215,8 +215,17 @@ export default function App() {
     if (typeof window !== 'undefined' && window.Notification) {
       const permission = window.Notification.permission;
       const lastPromptTime = localStorage.getItem('lastNotificationPromptTime');
+      const blockPrompt = localStorage.getItem('blockNotificationPrompt') === 'true';
       const now = Date.now();
       const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+      if (window.debugLogger) {
+        window.debugLogger.addLog('info', `Notification permission check: current="${permission}", blockPrompt=${blockPrompt}, lastPromptTime=${lastPromptTime}`);
+      }
+
+      if (blockPrompt) {
+        return;
+      }
 
       // Case 1: First time launch (permission is default)
       if (permission === 'default') {
@@ -224,7 +233,10 @@ export default function App() {
           setNotificationPermissionType('default');
           const timer = setTimeout(() => {
             setShowNotificationModal(true);
-          }, 4000);
+            if (window.debugLogger) {
+              window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (default).');
+            }
+          }, 3000);
           return () => clearTimeout(timer);
         }
       }
@@ -234,7 +246,10 @@ export default function App() {
           setNotificationPermissionType('denied');
           const timer = setTimeout(() => {
             setShowNotificationModal(true);
-          }, 5000);
+            if (window.debugLogger) {
+              window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (denied).');
+            }
+          }, 4000);
           return () => clearTimeout(timer);
         }
       }
