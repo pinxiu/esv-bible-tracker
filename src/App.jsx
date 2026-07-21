@@ -224,29 +224,38 @@ export default function App() {
       const isConfigured = localStorage.getItem('esv_notifications_enabled') !== null;
       const lastPromptTime = localStorage.getItem('lastNotificationPromptTime');
       const blockPrompt = localStorage.getItem('blockNotificationPrompt') === 'true';
+      const nextPromptTime = localStorage.getItem('nextNotificationPromptTime');
       const now = Date.now();
-      const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
       if (window.debugLogger) {
-        window.debugLogger.addLog('info', `Notification permission check: isConfigured=${isConfigured}, blockPrompt=${blockPrompt}, lastPromptTime=${lastPromptTime}`);
+        window.debugLogger.addLog('info', `Notification permission check: isConfigured=${isConfigured}, blockPrompt=${blockPrompt}, lastPromptTime=${lastPromptTime}, nextPromptTime=${nextPromptTime}`);
       }
 
-      // If user blocked prompts, has configured setting, or was already prompted once, never prompt again!
-      if (blockPrompt || isConfigured || lastPromptTime) {
+      if (blockPrompt || isConfigured) {
         return;
       }
 
-      // Prompt user on first launch
-      setNotificationPermissionType('default');
-      const timer = setTimeout(() => {
-        setShowNotificationModal(true);
-        if (window.debugLogger) {
-          window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (first launch invitation).');
-        }
-      }, 3000);
-      return () => clearTimeout(timer);
+      let shouldPrompt = false;
+      if (!lastPromptTime) {
+        // Absolute first launch
+        shouldPrompt = true;
+      } else if (nextPromptTime && now >= Number(nextPromptTime)) {
+        // Postponed duration expired!
+        shouldPrompt = true;
+      }
+
+      if (shouldPrompt) {
+        setNotificationPermissionType('default');
+        const timer = setTimeout(() => {
+          setShowNotificationModal(true);
+          if (window.debugLogger) {
+            window.debugLogger.addLog('info', 'Dispatched custom notification permission modal.');
+          }
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
     }
-  }, []);
+  }, [showNotificationModal]);
 
   // Per-Passage Scroll Position Persistence for ESV Reader
   const [readerScrollMap, setReaderScrollMap] = useState({});
@@ -753,13 +762,13 @@ export default function App() {
       <DeveloperDebugModal
         isOpen={showDebugModal}
         onClose={() => setShowDebugModal(false)}
+        onForceShowPermissionModal={() => setShowNotificationModal(true)}
       />
 
       {/* Custom Notification Permission Guidance Modal */}
       <NotificationPermissionModal
         isOpen={showNotificationModal}
         onClose={() => setShowNotificationModal(false)}
-        permissionType={notificationPermissionType}
       />
     </div>
   );

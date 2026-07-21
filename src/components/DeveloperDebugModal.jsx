@@ -58,7 +58,7 @@ if (typeof window !== 'undefined') {
 
 import { getUserTimezone } from '../utils/dateUtils';
 
-export default function DeveloperDebugModal({ isOpen, onClose }) {
+export default function DeveloperDebugModal({ isOpen, onClose, onForceShowPermissionModal }) {
   const [logs, setLogs] = useState(debugLogger.logs);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('logs'); // 'logs' | 'env' | 'storage'
@@ -324,19 +324,70 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
                     ✨ Welcome Greeting
                   </button>
 
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('lastNotificationPromptTime');
-                      localStorage.removeItem('blockNotificationPrompt');
-                      if (window.debugLogger) {
-                        window.debugLogger.addLog('system', 'Reset notification prompt states & block bypass configurations.');
-                      }
-                      alert('Notification prompt settings have been reset! Relaunch the app to trigger it.');
-                    }}
-                    className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-amber-400 border border-slate-850 hover:border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left col-span-2 flex items-center justify-center space-x-1.5"
-                  >
-                    <span>🔄 Reset Notification Prompts (For Testing)</span>
-                  </button>
+                  <div className="col-span-2 pt-2 border-t border-slate-800/85 space-y-2">
+                    <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">
+                      Prompt Timing & Modal Tests
+                    </span>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem('lastNotificationPromptTime');
+                          localStorage.removeItem('blockNotificationPrompt');
+                          localStorage.removeItem('esv_notifications_enabled');
+                          localStorage.removeItem('nextNotificationPromptTime');
+                          if (window.debugLogger) {
+                            window.debugLogger.addLog('system', 'Wiped all notification config and prompt history keys.');
+                          }
+                          alert('Wiped all notifications keys! Relaunch now acts as absolute first launch.');
+                        }}
+                        className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-rose-400 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-center"
+                      >
+                        🔄 Full Reset (First Launch)
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          onForceShowPermissionModal();
+                          onClose();
+                        }}
+                        className="py-1.5 px-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-bold transition-all cursor-pointer text-center"
+                      >
+                        ⚡ Force Open Modal Now
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('lastNotificationPromptTime', '12345');
+                          localStorage.setItem('nextNotificationPromptTime', '0');
+                          localStorage.removeItem('blockNotificationPrompt');
+                          localStorage.removeItem('esv_notifications_enabled');
+                          if (window.debugLogger) {
+                            window.debugLogger.addLog('system', 'Set nextPromptTime to 0 (Trigger Immediately).');
+                          }
+                          alert('Set nextPromptTime to 0! Relaunch will trigger the modal immediately.');
+                        }}
+                        className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-center"
+                      >
+                        ⏱️ Postpone: Trigger Now
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('lastNotificationPromptTime', '12345');
+                          localStorage.setItem('nextNotificationPromptTime', String(Date.now() + 5000));
+                          localStorage.removeItem('blockNotificationPrompt');
+                          localStorage.removeItem('esv_notifications_enabled');
+                          if (window.debugLogger) {
+                            window.debugLogger.addLog('system', 'Set nextPromptTime to +5 seconds.');
+                          }
+                          alert('Set nextPromptTime to +5s! Close this debug console and wait 5 seconds.');
+                        }}
+                        className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-center"
+                      >
+                        ⏱️ Postpone: +5 Seconds
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
