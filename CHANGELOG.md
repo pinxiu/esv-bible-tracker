@@ -5,6 +5,12 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.14] - 2026-07-21
+
+### 🚀 Release Summary
+- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+
+
 ## [1.0.13] - 2026-07-21
 
 ### 🚀 Release Summary
