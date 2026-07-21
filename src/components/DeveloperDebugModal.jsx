@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal, Copy, Check, Trash2, Bug, ShieldAlert, Download, RefreshCw, X, Database, Cpu, HardDrive } from 'lucide-react';
+import { Terminal, Copy, Check, Trash2, Bug, ShieldAlert, Download, RefreshCw, X, Database, Cpu, HardDrive, Bell } from 'lucide-react';
 import { esvDb } from '../services/esvDatabase';
 
 /**
@@ -265,6 +265,81 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
                 <span className="text-slate-400 text-[11px]">User Agent</span>
                 <div className="font-mono text-[10px] text-slate-300 break-all">{navigator.userAgent}</div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span className="text-slate-400 text-[11px] font-semibold flex items-center space-x-1.5">
+                  <Bell className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Test Notifications & Reminders</span>
+                </span>
+                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                  Trigger native desktop notifications for different system reminder channels to verify system permissions and appearance.
+                </p>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      if (window.electronAPI?.sendNotification) {
+                        window.electronAPI.sendNotification({
+                          title: '📖 Daily Reading Reminder',
+                          body: "Don't forget to read today's passages (Genesis 1-2)!"
+                        });
+                      } else {
+                        alert('Daily Reading notification triggered!');
+                      }
+                    }}
+                    className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
+                  >
+                    📖 Daily Reading
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (window.electronAPI?.sendNotification) {
+                        window.electronAPI.sendNotification({
+                          title: '💡 Memory Review Reminder',
+                          body: 'Time to practice your Treasury verses! You have 3 verses waiting for review.'
+                        });
+                      } else {
+                        alert('Memory Review notification triggered!');
+                      }
+                    }}
+                    className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
+                  >
+                    💡 Memory Review
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (window.electronAPI?.sendNotification) {
+                        window.electronAPI.sendNotification({
+                          title: '🔥 Reading Streak Milestone!',
+                          body: "Fantastic! You've achieved a 7-day reading streak. Keep up the momentum!"
+                        });
+                      } else {
+                        alert('Streak Milestone notification triggered!');
+                      }
+                    }}
+                    className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
+                  >
+                    🔥 Streak Milestone
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (window.electronAPI?.sendNotification) {
+                        window.electronAPI.sendNotification({
+                          title: '✨ Welcome to ESV Bible Tracker!',
+                          body: 'Ready to start your 52-week plan? Open the app to begin.'
+                        });
+                      } else {
+                        alert('Welcome Greeting notification triggered!');
+                      }
+                    }}
+                    className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
+                  >
+                    ✨ Welcome Greeting
+                  </button>
+                </div>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
