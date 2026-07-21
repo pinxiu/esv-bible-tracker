@@ -19,6 +19,10 @@ export default function App() {
   // Active Navigation Tab: 'plan' | 'reader' | 'saved' | 'memory'
   const [activeTab, setActiveTab] = useState('plan');
 
+  useEffect(() => {
+    debugLogger.addLog('info', `Switched active view tab to: "${activeTab}"`);
+  }, [activeTab]);
+
   // Reading Plan State with safe parsing & per-passage completed tracking
   const [planData, setPlanData] = useState(() => {
     try {
@@ -232,6 +236,7 @@ export default function App() {
 
   // Per-Passage Toggle Handler
   const handleTogglePassage = (dayId, passageRef) => {
+    debugLogger.addLog('info', `Toggling passage: ${passageRef} (Day ID: ${dayId})`);
     setPlanData(prev => prev.map(item => {
       if (item.day === dayId || item.id === dayId) {
         const passagesList = item.passages && item.passages.length > 0
@@ -256,6 +261,7 @@ export default function App() {
 
   // Whole Day Toggle Handler
   const handleToggleDay = (dayId) => {
+    debugLogger.addLog('info', `Toggling completion for whole day: ${dayId}`);
     setPlanData(prev => prev.map(item => {
       if (item.day === dayId || item.id === dayId) {
         const newCompleted = !item.completed;
@@ -280,12 +286,14 @@ export default function App() {
 
   // Open Passage in ESV Reader
   const handleOpenPassage = (passageRef) => {
+    debugLogger.addLog('info', `Opening passage in Reader: ${passageRef}`);
     setCurrentPassage(passageRef);
     setActiveTab('reader');
   };
 
   // Save Verse / Highlight
   const handleSaveVerse = (newVerse) => {
+    debugLogger.addLog('info', `Saving verse to Treasury: ${newVerse.reference}`);
     setSavedVerses(prev => {
       const exists = prev.some(v => v.reference === newVerse.reference && v.text === newVerse.text);
       if (exists) return prev;
@@ -299,16 +307,20 @@ export default function App() {
 
   // Delete Saved Verse
   const handleDeleteVerse = (id) => {
+    const targetVerse = savedVerses.find(v => v.id === id);
+    debugLogger.addLog('info', `Deleting verse from Treasury: ${targetVerse ? targetVerse.reference : id}`);
     setSavedVerses(prev => prev.filter(v => v.id !== id));
   };
 
   // Update Existing Saved Verse in Treasury
   const handleUpdateVerse = (updatedVerse) => {
+    debugLogger.addLog('info', `Updating Treasury verse: ${updatedVerse.reference}`);
     setSavedVerses(prev => prev.map(v => v.id === updatedVerse.id ? { ...v, ...updatedVerse } : v));
   };
 
   // Switch to Memory View with specific verse
   const handlePracticeVerse = (verse) => {
+    debugLogger.addLog('info', `Initiating memory practice: ${verse.reference}`);
     setSelectedMemoryVerse(verse);
     setActiveTab('memory');
   };
@@ -333,6 +345,7 @@ export default function App() {
         }
 
         const newReviewCount = (v.reviewCount || 0) + (isFullStage ? 1 : 0);
+        debugLogger.addLog('info', `Updating memory progress for ${v.reference}: Stage ${stageCompleted}, Mastery ${newLevel}%, Review count ${newReviewCount}`);
         return {
           ...v,
           masteryLevel: newLevel,

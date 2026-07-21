@@ -2,6 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
+import { debugLogger } from './components/DeveloperDebugModal.jsx';
+
+window.debugLogger = debugLogger;
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

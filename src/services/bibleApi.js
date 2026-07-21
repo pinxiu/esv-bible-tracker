@@ -225,13 +225,22 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
   const cacheKey = `${cleanRef}_${forceUseEmbedded ? 'embedded' : 'gateway'}`;
 
   if (passageCache.has(cacheKey)) {
+    if (window.debugLogger) {
+      window.debugLogger.addLog('info', `Cache hit for passage: ${cleanRef} [${forceUseEmbedded ? 'embedded' : 'gateway'}]`);
+    }
     return passageCache.get(cacheKey);
   }
 
   // 1. If user explicitly toggled to use embedded bank, lookup local database first
   if (forceUseEmbedded) {
+    if (window.debugLogger) {
+      window.debugLogger.addLog('info', `Querying offline ESV database: ${cleanRef}`);
+    }
     const localData = esvDb.lookupPassage(cleanRef);
     if (localData) {
+      if (window.debugLogger) {
+        window.debugLogger.addLog('info', `Successfully loaded offline ESV data for ${cleanRef}`);
+      }
       passageCache.set(cacheKey, localData);
       return localData;
     }
@@ -240,6 +249,9 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
   // 2. Official ESV API (if user entered custom token in Settings)
   if (esvApiKey && esvApiKey.length > 5) {
     try {
+      if (window.debugLogger) {
+        window.debugLogger.addLog('info', `Sending network request to Official ESV API: ${cleanRef}`);
+      }
       const response = await fetch(
         `https://api.esv.org/v3/passage/html/?q=${encodeURIComponent(cleanRef)}&include-footnotes=true&include-headings=true`,
         { headers: { Authorization: `Token ${esvApiKey}` } }
@@ -252,11 +264,17 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
             html: data.passages.join(''),
             source: 'Official ESV API'
           };
+          if (window.debugLogger) {
+            window.debugLogger.addLog('info', `Received official ESV API response for ${cleanRef} (source: ${result.source})`);
+          }
           passageCache.set(cacheKey, result);
           return result;
         }
       }
     } catch (e) {
+      if (window.debugLogger) {
+        window.debugLogger.addLog('warn', `ESV API fetch failed, trying Bible Gateway fallback`, e.message);
+      }
       console.warn('ESV API fetch failed, trying Bible Gateway fallback', e);
     }
   }
@@ -264,6 +282,9 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
   // 3. DEFAULT: Fetch from Bible Gateway for complete HTML (with subtitles, paragraphs, footnotes [a], [b], etc.)
   try {
     const bgUrl = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(cleanRef)}&version=ESV`;
+    if (window.debugLogger) {
+      window.debugLogger.addLog('info', `Sending network request to Bible Gateway: ${cleanRef} (URL: ${bgUrl})`);
+    }
     const response = await fetch(bgUrl);
     if (response.ok) {
       const htmlText = await response.text();
@@ -287,16 +308,25 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
             verses: parsedVerses,
             source: 'Bible Gateway (ESV)'
           };
+          if (window.debugLogger) {
+            window.debugLogger.addLog('info', `Loaded passage from Bible Gateway: ${cleanRef} (Length: ${formattedHtml.length} chars)`);
+          }
           passageCache.set(cacheKey, result);
           return result;
         }
       }
     }
   } catch (e) {
+    if (window.debugLogger) {
+      window.debugLogger.addLog('warn', `Bible Gateway fetch failed, using embedded DB fallback`, e.message);
+    }
     console.warn('Bible Gateway fetch failed, using embedded DB fallback', e);
   }
 
   // 4. Fallback to embedded ESV Bank if Bible Gateway is offline
+  if (window.debugLogger) {
+    window.debugLogger.addLog('info', `Using embedded offline ESV Bank fallback for ${cleanRef}`);
+  }
   const fallbackLocalData = esvDb.lookupPassage(cleanRef);
   if (fallbackLocalData) {
     passageCache.set(cacheKey, fallbackLocalData);
