@@ -659,7 +659,7 @@ export default function App() {
                         window.electronAPI.openSystemNotifications();
                       }
                     }}
-                    className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold underline cursor-pointer"
+                    className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"
                   >
                     ⚙️ Open Mac Settings
                   </button>
