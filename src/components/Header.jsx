@@ -77,15 +77,18 @@ export default function Header({
     }
   }, []);
 
-  // Auto-reset update status to idle after 3 seconds for transient states (error, not-available)
+  // Auto-reset update status to idle after 3 seconds (or 8 seconds for read-only volume errors)
   useEffect(() => {
     if (updateState.status === 'error' || updateState.status === 'not-available') {
+      const errStr = updateState.error || '';
+      const isReadOnlyErr = errStr.includes("read-only") || errStr.includes("Downloads");
+      const delay = isReadOnlyErr ? 8000 : 3000;
       const timer = setTimeout(() => {
         setUpdateState({ status: 'idle' });
-      }, 3000);
+      }, delay);
       return () => clearTimeout(timer);
     }
-  }, [updateState.status]);
+  }, [updateState.status, updateState.error]);
 
   const handleCheckUpdates = () => {
     if (window.electronAPI?.checkForUpdates) {
@@ -121,6 +124,10 @@ export default function Header({
       case 'downloaded':
         return `v${appVersion} (click to restart & install)`;
       case 'error':
+        const errStr = updateState.error || '';
+        if (errStr.includes("read-only volume") || errStr.includes("Downloads")) {
+          return `v${appVersion} (run from /Applications to update)`;
+        }
         return `v${appVersion} (error)`;
       case 'not-available':
         return `v${appVersion} (latest)`;

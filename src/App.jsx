@@ -147,6 +147,19 @@ export default function App() {
     }
   });
 
+  const [updatePrompt, setUpdatePrompt] = useState({ show: false, version: '' });
+
+  useEffect(() => {
+    if (window.electronAPI?.onUpdateMessage) {
+      const cleanup = window.electronAPI.onUpdateMessage((data) => {
+        if (data.status === 'downloaded') {
+          setUpdatePrompt({ show: true, version: data.info?.version || '' });
+        }
+      });
+      return cleanup;
+    }
+  }, []);
+
   useEffect(() => {
     if (window.electronAPI?.getAppInfo) {
       window.electronAPI.getAppInfo().then(info => {
@@ -598,6 +611,41 @@ export default function App() {
                   Save Settings
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Ready Restart Prompt Modal */}
+      {updatePrompt.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-sm glass-panel p-6 rounded-2xl border border-emerald-500/30 space-y-4 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+              <CheckCircle2 className="w-6 h-6 animate-bounce" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-serif font-bold text-slate-100">Update Ready!</h3>
+              <p className="text-xs text-slate-400 font-sans leading-relaxed">
+                Version {updatePrompt.version ? `v${updatePrompt.version}` : ''} has been successfully downloaded. Restart the app now to complete the update?
+              </p>
+            </div>
+            <div className="flex flex-col space-y-2 pt-2">
+              <button
+                onClick={() => {
+                  if (window.electronAPI?.quitAndInstall) {
+                    window.electronAPI.quitAndInstall();
+                  }
+                }}
+                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/25 transition-all"
+              >
+                Restart & Update Now
+              </button>
+              <button
+                onClick={() => setUpdatePrompt({ show: false, version: '' })}
+                className="w-full py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all border border-slate-800/80 hover:border-slate-700"
+              >
+                Later
+              </button>
             </div>
           </div>
         </div>
