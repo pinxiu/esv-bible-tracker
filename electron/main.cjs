@@ -84,6 +84,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  app.setAppUserModelId('com.bibleplan.esvtracker');
   createWindow();
 
   app.on('activate', () => {
@@ -120,24 +121,44 @@ function checkReadOnlyVolume() {
   }
 }
 
+const activeNotifications = new Set();
+
 // IPC Handler for Native macOS Notifications
 ipcMain.handle('send-notification', (event, { title, body }) => {
   if (Notification.isSupported()) {
-    const notification = new Notification({
-      title: title || 'ESV Bible Reading Reminder',
-      body: body || 'You have uncompleted Bible readings for today!',
-      silent: false
-    });
-    notification.show();
-    notification.on('click', () => {
-      if (mainWindow) {
-        if (mainWindow.isMinimized()) mainWindow.restore();
-        mainWindow.focus();
-      }
-    });
-    return { success: true };
+    try {
+      const notification = new Notification({
+        title: title || 'ESV Bible Reading Reminder',
+        body: body || 'You have uncompleted Bible readings for today!',
+        silent: false
+      });
+      
+      activeNotifications.add(notification);
+      notification.show();
+
+      notification.on('click', () => {
+        if (mainWindow) {
+          if (mainWindow.isMinimized()) mainWindow.restore();
+          mainWindow.focus();
+        }
+        activeNotifications.delete(notification);
+      });
+
+      notification.on('close', () => {
+        activeNotifications.delete(notification);
+      });
+
+      // Safeguard: auto delete reference after 15 seconds to prevent memory leak
+      setTimeout(() => {
+        activeNotifications.delete(notification);
+      }, 15000);
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, reason: err.message };
+    }
   }
-  return { success: false, reason: 'Notifications not supported' };
+  return { success: false, reason: 'Notifications not supported on this platform/configuration.' };
 });
 
 ipcMain.handle('get-app-info', () => {

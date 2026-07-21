@@ -97,6 +97,26 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
 
   const stats = storageStats();
 
+  const triggerNotification = async (title, body) => {
+    if (window.electronAPI?.sendNotification) {
+      try {
+        debugLogger.addLog('info', `Invoking send-notification IPC: "${title}"`);
+        const result = await window.electronAPI.sendNotification({ title, body });
+        if (result && result.success) {
+          debugLogger.addLog('info', `Successfully dispatched notification: "${title}"`);
+        } else {
+          debugLogger.addLog('error', `Notification dispatch rejected: ${result ? result.reason : 'Unknown reason'}`);
+          alert(`Notification rejected by OS: ${result ? result.reason : 'Unknown reason'}`);
+        }
+      } catch (err) {
+        debugLogger.addLog('error', `Notification dispatch threw error`, err.message);
+        alert(`Notification error: ${err.message}`);
+      }
+    } else {
+      alert('Native notifications trigger sent! (Running in web or desktop mode)');
+    }
+  };
+
   const generateMarkdownReport = () => {
     const report = [
       `# ESV Bible Tracker - Developer Diagnostic Report`,
@@ -277,64 +297,28 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
                 </p>
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
-                    onClick={() => {
-                      if (window.electronAPI?.sendNotification) {
-                        window.electronAPI.sendNotification({
-                          title: '📖 Daily Reading Reminder',
-                          body: "Don't forget to read today's passages (Genesis 1-2)!"
-                        });
-                      } else {
-                        alert('Daily Reading notification triggered!');
-                      }
-                    }}
+                    onClick={() => triggerNotification('📖 Daily Reading Reminder', "Don't forget to read today's passages (Genesis 1-2)!")}
                     className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
                   >
                     📖 Daily Reading
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (window.electronAPI?.sendNotification) {
-                        window.electronAPI.sendNotification({
-                          title: '💡 Memory Review Reminder',
-                          body: 'Time to practice your Treasury verses! You have 3 verses waiting for review.'
-                        });
-                      } else {
-                        alert('Memory Review notification triggered!');
-                      }
-                    }}
+                    onClick={() => triggerNotification('💡 Memory Review Reminder', 'Time to practice your Treasury verses! You have 3 verses waiting for review.')}
                     className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
                   >
                     💡 Memory Review
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (window.electronAPI?.sendNotification) {
-                        window.electronAPI.sendNotification({
-                          title: '🔥 Reading Streak Milestone!',
-                          body: "Fantastic! You've achieved a 7-day reading streak. Keep up the momentum!"
-                        });
-                      } else {
-                        alert('Streak Milestone notification triggered!');
-                      }
-                    }}
+                    onClick={() => triggerNotification('🔥 Reading Streak Milestone!', "Fantastic! You've achieved a 7-day reading streak. Keep up the momentum!")}
                     className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
                   >
                     🔥 Streak Milestone
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (window.electronAPI?.sendNotification) {
-                        window.electronAPI.sendNotification({
-                          title: '✨ Welcome to ESV Bible Tracker!',
-                          body: 'Ready to start your 52-week plan? Open the app to begin.'
-                        });
-                      } else {
-                        alert('Welcome Greeting notification triggered!');
-                      }
-                    }}
+                    onClick={() => triggerNotification('✨ Welcome to ESV Bible Tracker!', 'Ready to start your 52-week plan? Open the app to begin.')}
                     className="py-1.5 px-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 text-[10px] font-semibold transition-all cursor-pointer text-left"
                   >
                     ✨ Welcome Greeting
