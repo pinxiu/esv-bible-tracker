@@ -231,22 +231,20 @@ export default function App() {
         window.debugLogger.addLog('info', `Notification permission check: isConfigured=${isConfigured}, blockPrompt=${blockPrompt}, lastPromptTime=${lastPromptTime}`);
       }
 
-      // If user permanently blocked prompts OR has already configured setting, never prompt!
-      if (blockPrompt || isConfigured) {
+      // If user blocked prompts, has configured setting, or was already prompted once, never prompt again!
+      if (blockPrompt || isConfigured || lastPromptTime) {
         return;
       }
 
-      // Prompt user once a week to configure notifications
-      if (!lastPromptTime || (now - Number(lastPromptTime) > oneWeek)) {
-        setNotificationPermissionType('default');
-        const timer = setTimeout(() => {
-          setShowNotificationModal(true);
-          if (window.debugLogger) {
-            window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (default configuration required).');
-          }
-        }, 3000);
-        return () => clearTimeout(timer);
-      }
+      // Prompt user on first launch
+      setNotificationPermissionType('default');
+      const timer = setTimeout(() => {
+        setShowNotificationModal(true);
+        if (window.debugLogger) {
+          window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (first launch invitation).');
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
