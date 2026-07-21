@@ -1,7 +1,7 @@
 {
   "name": "esv-bible-tracker",
   "productName": "ESV Bible Tracker",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "macOS ESV Bible Reading Plan & Memory Verses Application",
   "main": "electron/main.js",
   "type": "module",
@@ -63,6 +63,11 @@
     "files": [
       "dist/**/*",
       "electron/**/*"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/electron-updater/**/*",
+      "**/node_modules/builder-util-runtime/**/*"
     ]
   }
 }
