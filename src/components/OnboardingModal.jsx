@@ -22,7 +22,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
             <div className="font-semibold text-amber-300">✨ Key App Features:</div>
             <div>• <strong>52-Week Reading Plan:</strong> Chronological reading with Catch-Up Assistant</div>
             <div>• <strong>Typewriter Memorization:</strong> 4 stages, reference typing & real-time stats</div>
-            <div>• <strong>Scripture Treasury:</strong> Edit, tag, auto-fetch & organize memory verses</div>
+            <div>• <strong>Treasury:</strong> Edit, tag, auto-fetch & organize memory verses</div>
             <div>• <strong>Developer Debug Console:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-mono text-[10px]">Ctrl+Shift+D</kbd> for live logs & diagnostic tools</div>
           </div>
         </div>
@@ -37,7 +37,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
       content: (
         <div className="space-y-3 text-slate-300 text-sm leading-relaxed font-sans">
           <p>
-            The ESV Reader automatically defaults to your <strong>next unread passage</strong> in the reading plan if no passage is loaded. If you fall behind:
+            The Reader automatically defaults to your <strong>next unread passage</strong> in the reading plan if no passage is loaded. If you fall behind:
           </p>
           <div className="space-y-2 text-xs">
             <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-200 rounded-lg">
@@ -55,7 +55,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
     },
     {
       id: 3,
-      title: "ESV Reader, Multi-Chapter Ranges & Instant Tooltips",
+      title: "Reader, Multi-Chapter Ranges & Instant Tooltips",
       subtitle: "Read passage ranges, view footnotes & instant online/offline bank tooltips.",
       icon: BookOpen,
       color: "text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
@@ -75,7 +75,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
     },
     {
       id: 4,
-      title: "Scripture Treasury & Real-Time Verse Editing",
+      title: "Treasury & Real-Time Verse Editing",
       subtitle: "Save, edit, auto-fetch & track real-time mastery & review counts.",
       icon: Bookmark,
       color: "text-rose-400 bg-rose-500/20 border-rose-500/30",
