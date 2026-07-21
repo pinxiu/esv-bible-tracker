@@ -5,6 +5,18 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.7] - 2026-07-22
+
+### 🚀 Release Summary
+- **Clean Build Directory**: Configured the build runner to clear the `dist/` directory before packaging, preventing 7-Zip lock errors (`System ERROR: E_FAIL`).
+
+
+## [1.0.6] - 2026-07-22
+
+### 🚀 Release Summary
+- **Fix ASAR Load Exception**: Bypassed Node's ESM package reader bug inside ASAR archives by using `createRequire` to import `electron-updater`, fixing app launch crashes on Apple Silicon Macs.
+
+
 ## [1.0.5] - 2026-07-22
 
 ### 🚀 Release Summary
