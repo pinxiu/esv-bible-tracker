@@ -69,6 +69,59 @@ function checkGitHubRepo(token, owner, repo) {
   });
 }
 
+// Convert GitHub Draft release to Published release
+function publishDraftRelease(token, owner, repo, version) {
+  return new Promise((resolve) => {
+    const getOptions = {
+      hostname: 'api.github.com',
+      path: `/repos/${owner}/${repo}/releases`,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'ESV-Bible-Tracker-Release-Tool',
+        'Authorization': `token ${token}`
+      }
+    };
+
+    const getReq = https.request(getOptions, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const releases = JSON.parse(body || '[]');
+          const targetTag = `v${version}`;
+          const draftRelease = releases.find(r => r.tag_name === targetTag && r.draft);
+
+          if (draftRelease) {
+            const patchData = JSON.stringify({ draft: false });
+            const patchOptions = {
+              hostname: 'api.github.com',
+              path: `/repos/${owner}/${repo}/releases/${draftRelease.id}`,
+              method: 'PATCH',
+              headers: {
+                'User-Agent': 'ESV-Bible-Tracker-Release-Tool',
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json',
+                'Content-Length': patchData.length
+              }
+            };
+            const patchReq = https.request(patchOptions, (patchRes) => {
+              resolve(patchRes.statusCode === 200);
+            });
+            patchReq.write(patchData);
+            patchReq.end();
+          } else {
+            resolve(false);
+          }
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    });
+    getReq.on('error', () => resolve(false));
+    getReq.end();
+  });
+}
+
 // Auto-detect SemVer bump type and auto-generate release description
 function autoGenerateReleaseDetails(currentVersion) {
   let bumpType = 'patch';
@@ -155,7 +208,17 @@ async function runRelease() {
   }
   console.log(`✅ Updated CHANGELOG.md`);
 
-  // 6. Vite Production Build
+  // 6. Clean and Build
+  console.log('\n🧹 Cleaning previous build assets...');
+  try {
+    const distPath = path.join(rootDir, 'dist');
+    if (fs.existsSync(distPath)) {
+      fs.rmSync(distPath, { recursive: true, force: true });
+    }
+  } catch (e) {
+    console.warn('Could not fully clean dist directory:', e.message);
+  }
+
   console.log('\n🔨 Building web application bundle...');
   execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });
 
@@ -164,7 +227,11 @@ async function runRelease() {
     console.log('\n📦 Packaging & Publishing macOS releases (arm64 & x64) to GitHub Releases...');
     execSync('npx electron-builder --mac --arm64 --x64 --publish always', { cwd: rootDir, stdio: 'inherit', env: { ...process.env, GH_TOKEN: token, GITHUB_TOKEN: token } });
     
-    console.log(`\n🎉 SUCCESS! Release v${nextVersion} published to GitHub Releases.`);
+    // Automatically convert draft release to published release via GitHub API
+    console.log(`\n📢 Publishing GitHub Draft Release v${nextVersion}...`);
+    await publishDraftRelease(token, repoOwner, repoName, nextVersion);
+
+    console.log(`\n🎉 SUCCESS! Release v${nextVersion} fully published to GitHub Releases.`);
     console.log('📡 All active users opening the app will automatically receive this OTA update!');
   } else {
     console.log('\n📦 Building local macOS app directory...');
