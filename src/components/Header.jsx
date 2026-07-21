@@ -85,24 +85,57 @@ export default function Header({
     }
   };
 
+  const getVersionText = () => {
+    switch (updateState.status) {
+      case 'checking':
+        return `v${appVersion} (checking...)`;
+      case 'available':
+        return `v${appVersion} (update ready - click to download)`;
+      case 'downloading':
+        const pct = Math.round(updateState.progress?.percent || 0);
+        return `v${appVersion} (downloading: ${pct}%)`;
+      case 'downloaded':
+        return `v${appVersion} (click to restart & install)`;
+      case 'error':
+        return `v${appVersion} (error)`;
+      case 'not-available':
+        return `v${appVersion} (latest)`;
+      default:
+        return `v${appVersion}`;
+    }
+  };
+
+  const handleVersionClick = (e) => {
+    e.preventDefault();
+    if (updateState.status === 'available') {
+      handleStartDownload();
+    } else if (updateState.status === 'downloaded') {
+      handleQuitAndInstall();
+    } else if (updateState.status === 'downloading') {
+      // do nothing
+    } else {
+      handleCheckUpdates();
+    }
+  };
+
   return (
     <header className="h-16 titlebar-drag border-b border-slate-800/80 glass-panel px-6 flex items-center justify-between select-none z-20 w-full cursor-grab active:cursor-grabbing">
       {/* Title & App Brand (Draggable space with inset traffic lights) */}
-      <div className="flex items-center space-x-3 pl-16 titlebar-drag">
+      <div className="flex items-center space-x-3 titlebar-drag">
         <div className="flex items-center space-x-2 titlebar-no-drag cursor-pointer" onClick={() => setActiveTab('plan')}>
           <img src={logoIcon} alt="ESV Bible Tracker" className="w-8 h-8 rounded-xl shadow-md object-cover border border-amber-500/30 shrink-0" />
           <div>
-            <h1 className="font-serif font-bold text-sm text-slate-100 flex items-center space-x-1.5">
+            <h1 className="font-serif font-bold text-sm text-slate-100 flex items-center select-none">
               <span>ESV Bible Tracker</span>
               <button
-                onClick={handleCheckUpdates}
-                className="text-[9px] uppercase font-mono tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-all cursor-pointer"
-                title="Click to check for OTA updates"
+                onClick={handleVersionClick}
+                className="align-super text-[9px] font-sans font-semibold text-amber-400 hover:text-amber-300 transition-all hover:underline cursor-pointer ml-1 select-none whitespace-nowrap shrink-0"
+                title="Click to check or manage updates"
               >
-                v{appVersion}
+                <sup>{getVersionText()}</sup>
               </button>
             </h1>
-            <p className="text-[10px] text-slate-400 font-sans">52-Week Reading & Memory</p>
+            <p className="text-[9px] text-slate-400 font-sans">Reading & Memory Plan</p>
           </div>
         </div>
       </div>
@@ -110,10 +143,10 @@ export default function Header({
       {/* Center Navigation Tabs (Non-draggable interactive buttons) */}
       <div className="flex items-center space-x-1 p-1 rounded-xl bg-slate-900/90 border border-slate-800 titlebar-no-drag">
         {[
-          { id: 'plan', label: '52-Week Plan' },
-          { id: 'reader', label: 'ESV Reader' },
-          { id: 'saved', label: 'Scripture Treasury' },
-          { id: 'memory', label: 'Verse Memorization' }
+          { id: 'plan', label: 'Plan' },
+          { id: 'reader', label: 'Reader' },
+          { id: 'saved', label: 'Treasury' },
+          { id: 'memory', label: 'Memorization' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -129,52 +162,8 @@ export default function Header({
         ))}
       </div>
 
-      {/* Right: Beijing Time Clock, OTA Update Indicator & Settings */}
+      {/* Right: Active Timezone Clock & Settings */}
       <div className="flex items-center space-x-3 titlebar-no-drag">
-        {/* OTA Update Status Button / Badge */}
-        {updateState.status === 'checking' && (
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-amber-300 font-semibold animate-pulse">
-            <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
-            <span>Checking for updates...</span>
-          </div>
-        )}
-
-        {updateState.status === 'not-available' && (
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 font-semibold">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>App Up to Date (v{appVersion})</span>
-          </div>
-        )}
-
-        {updateState.status === 'available' && (
-          <button
-            onClick={handleStartDownload}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all animate-pulse"
-            title="Click to download OTA update"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Update {updateState.info?.version || ''} Ready — Download</span>
-          </button>
-        )}
-
-        {updateState.status === 'downloading' && (
-          <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-sky-500/20 border border-sky-500/40 text-xs text-sky-300 font-semibold">
-            <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-400" />
-            <span>Downloading... {Math.round(updateState.progress?.percent || 0)}%</span>
-          </div>
-        )}
-
-        {updateState.status === 'downloaded' && (
-          <button
-            onClick={handleQuitAndInstall}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-md shadow-emerald-500/20 transition-all"
-            title="Click to restart and complete update"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Restart to Update</span>
-          </button>
-        )}
-
         {/* Active Timezone Clock */}
         <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
           <Clock className="w-3.5 h-3.5 text-amber-400" />
