@@ -211,3 +211,15 @@ ipcMain.handle('simulate-restart-update', () => {
   app.relaunch();
   app.exit(0);
 });
+
+const { shell } = require('electron');
+
+ipcMain.handle('open-system-notifications', () => {
+  if (process.platform === 'darwin') {
+    shell.openExternal('x-apple.systempreferences:com.apple.Notifications-Settings.extension').catch(() => {
+      shell.openExternal('x-apple.systempreferences:com.apple.preference.notifications');
+    });
+    return { success: true };
+  }
+  return { success: false, reason: 'Unsupported platform' };
+});

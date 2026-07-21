@@ -647,6 +647,24 @@ export default function App() {
                   />
                 </button>
               </div>
+              {notificationsEnabled && (
+                <div className="flex items-center justify-between px-1.5 pt-0.5">
+                  <span className="text-[10px] text-slate-500 font-sans">
+                    Notifications disabled in Mac System Settings?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.electronAPI?.openSystemNotifications) {
+                        window.electronAPI.openSystemNotifications();
+                      }
+                    }}
+                    className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold underline cursor-pointer"
+                  >
+                    ⚙️ Open Mac Settings
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="pt-2 border-t border-slate-800 space-y-3">

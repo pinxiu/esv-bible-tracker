@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startDownloadUpdate: () => ipcRenderer.invoke('start-download-update'),
   quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
   simulateRestartUpdate: () => ipcRenderer.invoke('simulate-restart-update'),
+  openSystemNotifications: () => ipcRenderer.invoke('open-system-notifications'),
   onUpdateMessage: (callback) => {
     const handler = (event, data) => callback(data);
     ipcRenderer.on('update-message', handler);
