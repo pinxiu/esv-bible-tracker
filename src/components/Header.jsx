@@ -63,6 +63,16 @@ export default function Header({
     }
   }, []);
 
+  // Auto-reset update status to idle after 3 seconds for transient states (error, not-available)
+  useEffect(() => {
+    if (updateState.status === 'error' || updateState.status === 'not-available') {
+      const timer = setTimeout(() => {
+        setUpdateState({ status: 'idle' });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [updateState.status]);
+
   const handleCheckUpdates = () => {
     if (window.electronAPI?.checkForUpdates) {
       setUpdateState({ status: 'checking' });

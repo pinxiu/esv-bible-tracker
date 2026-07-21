@@ -226,7 +226,7 @@ export default function SavedVersesView({ savedVerses = [], onAddVerse, onUpdate
         <div>
           <div className="flex items-center space-x-2 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1">
             <Bookmark className="w-4 h-4" />
-            <span>Treasury ({savedVerses.length} Saved Items)</span>
+            <span>Scripture Treasury ({savedVerses.length} Saved Items)</span>
           </div>
           <h2 className="text-2xl font-serif font-bold text-slate-100">Saved Verses & Embedded ESV Bank</h2>
           <p className="text-sm text-slate-400 font-sans mt-1">
