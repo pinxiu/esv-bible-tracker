@@ -5,28 +5,40 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.5] - 2026-07-22
+
+### 🚀 Release Summary
+- **Automatic Release Publishing**: Integrated GitHub API handlers to automatically convert Draft Releases to public Published Releases once assets finish uploading.
+- **Unified Multi-Architecture Build**: Optimized `electron-builder` configuration to package both Apple Silicon (`arm64`) and Intel (`x64`) DMGs in a single unified invocation to avoid socket upload timeouts.
+
+
 ## [1.0.4] - 2026-07-21
 
 ### 🚀 Release Summary
-- Typewriter Scripture Memorization: Double short dash (--) conversion & surrounding space removal. ESV Reader: Proportional font size scaling (S/M/L/XL) across passage reference titles, section subtitles, and body text. Verse Memory Workspace: Solid 100% opaque Type-to-Jump autocomplete dropdown floating above all typewriter cards. Beijing Timezone (UTC+8): Dynamic date synchronization for 52-Week Reading Plan filters and Catch-Up Assistant. Over-The-Air (OTA): Intelligent auto-release automation with in-app header update status.
+- **GitHub Target Switch**: Switched release target and publish config to owner `pinxiu` (`pinxiu/esv-bible-tracker`).
+- **Initial Codebase Push**: Populated the online repository with full source code, assets, configuration, and dependencies.
 
 
 ## [1.0.3] - 2026-07-21
 
 ### 🚀 Release Summary
-- Typewriter Scripture Memorization: Double short dash (--) conversion & surrounding space removal. ESV Reader: Proportional font size scaling (S/M/L/XL) across passage reference titles, section subtitles, and body text. Verse Memory Workspace: Solid 100% opaque Type-to-Jump autocomplete dropdown floating above all typewriter cards. Beijing Timezone (UTC+8): Dynamic date synchronization for 52-Week Reading Plan filters and Catch-Up Assistant. Over-The-Air (OTA): Intelligent auto-release automation with in-app header update status.
+- **Manual Update Check Trigger**: Added interactive version button (`v1.0.3`) in Header to manually trigger check for updates.
+- **In-App Toast Alerts**: Shows real-time feedback toast alerts (`Checking for updates...`, `App Up to Date`).
+- **Startup Auto-Update Check**: Triggers an automatic OTA check 3 seconds after the application launches.
 
 
 ## [1.0.2] - 2026-07-21
 
 ### 🚀 Release Summary
-- Typewriter Scripture Memorization: Double short dash (--) conversion & surrounding space removal. ESV Reader: Proportional font size scaling (S/M/L/XL) across passage reference titles, section subtitles, and body text. Verse Memory Workspace: Solid 100% opaque Type-to-Jump autocomplete dropdown floating above all typewriter cards. Beijing Timezone (UTC+8): Dynamic date synchronization for 52-Week Reading Plan filters and Catch-Up Assistant. Over-The-Air (OTA): Intelligent auto-release automation with in-app header update status.
+- **Typewriter Dash Normalization**: Standardized keyboard inputs to map em-dashes (`—`) to double short dashes (`--`).
+- **Space Stripping**: Automatically removes spaces around em-dashes and double-dashes (`person—though` ➔ `person--though` and `die — but` ➔ `die--but`) for fluid typing.
 
 
 ## [1.0.1] - 2026-07-21
 
 ### 🚀 Release Summary
-- Typewriter Scripture Memorization: Double short dash (--) conversion & surrounding space removal. ESV Reader: Proportional font size scaling (S/M/L/XL) across passage reference titles, section subtitles, and body text. Verse Memory Workspace: Solid 100% opaque Type-to-Jump autocomplete dropdown floating above all typewriter cards. Beijing Timezone (UTC+8): Dynamic date synchronization for 52-Week Reading Plan filters and Catch-Up Assistant. Over-The-Air (OTA): Built-in automatic updates via GitHub Releases with in-app header progress indicator.
+- **Clean Single Passage Title**: Removed duplicate title text in ESV Reader so it only renders one title (e.g. `2 Timothy 2 (ESV)`).
+- **Proportional Font Size Scaling**: Passage title (`1.65em`), section subtitles (`1.25em`), and body text (`1em`) now scale proportionally when changing font sizes (**S**, **M**, **L**, **XL**).
 
 
 ## [1.0.0] - 2026-07-21 (Official Release)
