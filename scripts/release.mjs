@@ -127,11 +127,10 @@ function autoGenerateReleaseDetails(currentVersion) {
   let bumpType = 'patch';
   const notes = [];
 
-  notes.push('Typewriter Scripture Memorization: Double short dash (--) conversion & surrounding space removal.');
-  notes.push('ESV Reader: Proportional font size scaling (S/M/L/XL) across passage reference titles, section subtitles, and body text.');
-  notes.push('Verse Memory Workspace: Solid 100% opaque Type-to-Jump autocomplete dropdown floating above all typewriter cards.');
-  notes.push('Beijing Timezone (UTC+8): Dynamic date synchronization for 52-Week Reading Plan filters and Catch-Up Assistant.');
-  notes.push('Over-The-Air (OTA): Intelligent auto-release automation with in-app header update status.');
+  notes.push('Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives.');
+  notes.push('Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed.');
+  notes.push('Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations.');
+  notes.push('Bumped settings modal version footer to dynamically match the latest app version.');
 
   const nextVersion = bumpVersion(currentVersion, bumpType);
   return { bumpType, nextVersion, releaseNotes: notes.join(' ') };

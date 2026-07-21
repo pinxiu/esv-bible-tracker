@@ -4,7 +4,6 @@
   "version": "1.0.9",
   "description": "macOS ESV Bible Reading Plan & Memory Verses Application",
   "main": "electron/main.cjs",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +13,7 @@
     "electron:build": "vite build && electron-builder --mac",
     "package": "npm run build && electron-builder --mac dir",
     "dist": "npm run build && electron-builder --mac",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -64,10 +63,6 @@
       "dist/**/*",
       "electron/**/*"
     ],
-    "asar": true,
-    "asarUnpack": [
-      "**/node_modules/electron-updater/**/*",
-      "**/node_modules/builder-util-runtime/**/*"
-    ]
+    "asar": true
   }
 }
