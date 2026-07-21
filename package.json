@@ -1,0 +1,68 @@
+{
+  "name": "esv-bible-tracker",
+  "productName": "ESV Bible Tracker",
+  "version": "1.0.3",
+  "description": "macOS ESV Bible Reading Plan & Memory Verses Application",
+  "main": "electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:local": "npm run build && electron-builder --mac dir && ./install.sh",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder --mac",
+    "package": "npm run build && electron-builder --mac dir",
+    "dist": "npm run build && electron-builder --mac",
+    "release": "node scripts/release.js"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.1.3",
+    "electron-updater": "^6.8.9",
+    "lucide-react": "^0.395.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "concurrently": "^8.2.2",
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.3.1",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.bibleplan.esvtracker",
+    "productName": "ESV Bible Tracker",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "pinxiu",
+        "repo": "esv-bible-tracker"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.lifestyle",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.icns",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ]
+  }
+}

@@ -1,0 +1,269 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #060911;
+    color: #f1f5f9;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* Enable Text Selection in Bible Reader & Text Input Areas */
+.esv-passage-content,
+.esv-biblegateway-passage,
+.esv-passage-content *,
+.esv-biblegateway-passage *,
+textarea,
+input,
+[contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Custom Glassmorphism Classes */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Light Mode High-Contrast Overrides */
+body.light,
+html.light {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.light .glass-panel {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light .glass-card {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.light .glass-button {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.light .glass-button:hover {
+  background: #f1f5f9 !important;
+  border-color: #d97706 !important;
+}
+
+/* Force dark, high-contrast text on all slate classes in Light Mode */
+.light .text-slate-100,
+.light .text-slate-200,
+.light .text-slate-300 {
+  color: #0f172a !important; /* Deep dark slate */
+}
+
+.light .text-slate-400,
+.light .text-slate-500 {
+  color: #334155 !important; /* Medium dark slate for labels/subtitles */
+}
+
+.light .text-slate-600,
+.light .text-slate-700 {
+  color: #475569 !important;
+}
+
+/* High-contrast amber, emerald, sky, purple, rose accents in Light Mode */
+.light .text-amber-200,
+.light .text-amber-300,
+.light .text-amber-400 {
+  color: #b45309 !important; /* Dark warm amber */
+}
+
+.light .text-emerald-300,
+.light .text-emerald-400 {
+  color: #047857 !important; /* Dark emerald */
+}
+
+.light .text-sky-300,
+.light .text-sky-400 {
+  color: #0369a1 !important; /* Dark sky blue */
+}
+
+.light .text-purple-300,
+.light .text-purple-400 {
+  color: #6b21a8 !important; /* Deep purple */
+}
+
+.light .text-rose-300,
+.light .text-rose-400 {
+  color: #be123c !important; /* Deep rose */
+}
+
+/* Background panel & container overrides in Light Mode */
+.light .bg-slate-950,
+.light .bg-slate-900,
+.light .bg-slate-900\/80,
+.light .bg-slate-900\/90,
+.light .bg-slate-950\/60,
+.light .bg-slate-950\/80 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.light .bg-slate-800,
+.light .bg-slate-800\/80,
+.light .bg-slate-800\/90 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Inputs, textareas, selects in Light Mode */
+.light input,
+.light textarea,
+.light select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.5);
+}
+
+.light ::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+}
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* Electron macOS Drag Region */
+.titlebar-drag {
+  -webkit-app-region: drag;
+}
+.titlebar-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* ESV Reader Proportional Font Scaling (Titles, Subtitles, Headings & Text) */
+.esv-passage-content p,
+.esv-passage-content span,
+.esv-passage-content div,
+.esv-biblegateway-passage p,
+.esv-biblegateway-passage span,
+.esv-biblegateway-passage div {
+  font-size: 1em !important;
+}
+
+.esv-passage-content h1,
+.esv-passage-content h2,
+.esv-passage-content .passage-display,
+.esv-passage-content .bwb-passage-title,
+.esv-biblegateway-passage h1,
+.esv-biblegateway-passage h2,
+.esv-biblegateway-passage .passage-display {
+  font-size: 1.65em !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.75rem !important;
+  line-height: 1.3 !important;
+  color: #f59e0b !important; /* Warm amber title */
+}
+
+.esv-passage-content h3,
+.esv-passage-content h4,
+.esv-passage-content h5,
+.esv-passage-content .section-heading,
+.esv-passage-content .heading,
+.esv-biblegateway-passage h3,
+.esv-biblegateway-passage h4,
+.esv-biblegateway-passage h5,
+.esv-biblegateway-passage .section-heading,
+.esv-biblegateway-passage .heading {
+  font-size: 1.25em !important;
+  font-weight: 600 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+  line-height: 1.4 !important;
+  color: #e2e8f0 !important;
+}
+
+.esv-passage-content p {
+  line-height: 1.8;
+  margin-bottom: 0.75rem;
+}
+
+.esv-biblegateway-passage p {
+  margin-bottom: 0.75rem;
+  line-height: 1.8;
+}
+
+.esv-biblegateway-passage .line {
+  display: block !important;
+  margin-top: 0.15rem;
+  margin-bottom: 0.15rem;
+  line-height: 1.8;
+}
+
+.esv-biblegateway-passage .indent-1 {
+  display: block !important;
+  padding-left: 1.75rem !important;
+  margin-top: 0.15rem;
+  margin-bottom: 0.15rem;
+}
+
+.esv-biblegateway-passage .indent-2 {
+  display: block !important;
+  padding-left: 3.5rem !important;
+  margin-top: 0.15rem;
+  margin-bottom: 0.15rem;
+}
+
+.esv-biblegateway-passage br {
+  display: block !important;
+  content: "";
+  margin-top: 0.25rem;
+}
