@@ -5,6 +5,12 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.4] - 2026-07-21
+
+### 🚀 Release Summary
+- Typewriter Scripture Memorization: Double short dash (--) conversion & surrounding space removal. ESV Reader: Proportional font size scaling (S/M/L/XL) across passage reference titles, section subtitles, and body text. Verse Memory Workspace: Solid 100% opaque Type-to-Jump autocomplete dropdown floating above all typewriter cards. Beijing Timezone (UTC+8): Dynamic date synchronization for 52-Week Reading Plan filters and Catch-Up Assistant. Over-The-Air (OTA): Intelligent auto-release automation with in-app header update status.
+
+
 ## [1.0.3] - 2026-07-21
 
 ### 🚀 Release Summary

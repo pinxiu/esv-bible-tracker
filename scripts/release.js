@@ -161,11 +161,8 @@ async function runRelease() {
 
   // 7. Publish to GitHub Releases if token present & repo exists online
   if (token && isRepoOnline) {
-    console.log('\n📦 Packaging & Publishing Apple Silicon (arm64) release to GitHub...');
-    execSync('npx electron-builder --mac --arm64 --publish always', { cwd: rootDir, stdio: 'inherit', env: { ...process.env, GH_TOKEN: token, GITHUB_TOKEN: token } });
-
-    console.log('\n📦 Packaging & Publishing Intel (x64) release to GitHub...');
-    execSync('npx electron-builder --mac --x64 --publish always', { cwd: rootDir, stdio: 'inherit', env: { ...process.env, GH_TOKEN: token, GITHUB_TOKEN: token } });
+    console.log('\n📦 Packaging & Publishing macOS releases (arm64 & x64) to GitHub Releases...');
+    execSync('npx electron-builder --mac --arm64 --x64 --publish always', { cwd: rootDir, stdio: 'inherit', env: { ...process.env, GH_TOKEN: token, GITHUB_TOKEN: token } });
     
     console.log(`\n🎉 SUCCESS! Release v${nextVersion} published to GitHub Releases.`);
     console.log('📡 All active users opening the app will automatically receive this OTA update!');
