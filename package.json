@@ -60,8 +60,10 @@
       "gatekeeperAssess": false
     },
     "files": [
-      "dist/**/*",
-      "electron/**/*"
+      "dist/index.html",
+      "dist/assets/**/*",
+      "electron/**/*",
+      "package.json"
     ],
     "asar": true
   }
