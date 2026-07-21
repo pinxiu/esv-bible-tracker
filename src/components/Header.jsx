@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Settings, Sun, Moon, Download, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react';
 import logoIcon from '../assets/icon.png';
 import { getUserTimezone } from '../utils/dateUtils';
+import { debugLogger } from './DeveloperDebugModal';
 
 export default function Header({
   activeTab,
@@ -58,6 +59,19 @@ export default function Header({
     if (window.electronAPI?.onUpdateMessage) {
       const cleanup = window.electronAPI.onUpdateMessage((data) => {
         setUpdateState(data);
+        if (data.status === 'error') {
+          debugLogger.addLog('error', 'Auto-updater reported check error', data.error);
+        } else if (data.status === 'checking') {
+          debugLogger.addLog('info', 'Checking for OTA updates...');
+        } else if (data.status === 'available') {
+          debugLogger.addLog('info', 'New update version found!', data.info);
+        } else if (data.status === 'not-available') {
+          debugLogger.addLog('info', 'App is up to date.');
+        } else if (data.status === 'downloading') {
+          debugLogger.addLog('info', `Downloading update: ${Math.round(data.progress?.percent || 0)}%`);
+        } else if (data.status === 'downloaded') {
+          debugLogger.addLog('info', 'Update downloaded and ready to install.');
+        }
       });
       return cleanup;
     }
@@ -145,7 +159,7 @@ export default function Header({
                 <sup>{getVersionText()}</sup>
               </button>
             </h1>
-            <p className="text-[9px] text-slate-400 font-sans">Reading & Memory Plan</p>
+            <p className="text-[9px] text-slate-400 font-sans">52-Week Reading & Memory Plan</p>
           </div>
         </div>
       </div>
