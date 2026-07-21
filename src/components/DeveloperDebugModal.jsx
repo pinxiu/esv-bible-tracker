@@ -266,6 +266,28 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
                 <span className="text-slate-400 text-[11px]">User Agent</span>
                 <div className="font-mono text-[10px] text-slate-300 break-all">{navigator.userAgent}</div>
               </div>
+
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span className="text-slate-400 text-[11px] font-semibold flex items-center space-x-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Updater & Relaunch Simulation</span>
+                </span>
+                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                  Tests the Electron application quit, reload, and relaunch cycle immediately. This verifies system execution permissions and that the relaunch handler fires correctly.
+                </p>
+                <button
+                  onClick={() => {
+                    if (window.electronAPI && window.electronAPI.simulateRestartUpdate) {
+                      window.electronAPI.simulateRestartUpdate();
+                    } else {
+                      alert('Simulation requires a native running Electron framework instance.');
+                    }
+                  }}
+                  className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+                >
+                  🚀 Test Application Relaunch Cycle
+                </button>
+              </div>
             </div>
           )}
 

@@ -185,3 +185,8 @@ ipcMain.handle('quit-and-install', () => {
   }
   autoUpdater.quitAndInstall();
 });
+
+ipcMain.handle('simulate-restart-update', () => {
+  app.relaunch();
+  app.exit(0);
+});
