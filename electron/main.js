@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, Notification } from 'electron';
-import pkg from 'electron-updater';
-const { autoUpdater } = pkg;
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { autoUpdater } = require('electron-updater');
 import path from 'path';
 import { fileURLToPath } from 'url';
 
