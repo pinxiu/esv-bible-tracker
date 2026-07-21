@@ -5,6 +5,12 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.8] - 2026-07-22
+
+### 🚀 Release Summary
+- **ASAR Unpack Configuration**: Re-enabled ASAR packaging and added `asarUnpack` rules for `electron-updater` and `builder-util-runtime`. By keeping these packages on the real filesystem (outside the ASAR archive), we fully bypass Node's internal ESM C++ package-reader bug, successfully launching the native M4 arm64 application.
+
+
 ## [1.0.7] - 2026-07-22
 
 ### 🚀 Release Summary
