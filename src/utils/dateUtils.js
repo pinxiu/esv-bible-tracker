@@ -1,34 +1,49 @@
 /**
- * Beijing Timezone (UTC+8) Date Utilities
+ * Beijing / User-Configured Timezone Date Utilities
  */
-export const BEIJING_TZ = 'Asia/Shanghai';
+
+export function getUserTimezone() {
+  // Check localStorage if running in browser context
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const stored = window.localStorage.getItem('esv_tracker_timezone');
+    if (stored && stored !== 'local') return stored;
+  }
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
+  } catch (e) {
+    return 'Asia/Shanghai';
+  }
+}
 
 /**
- * Returns YYYY-MM-DD in Asia/Shanghai (Beijing) timezone
+ * Returns YYYY-MM-DD in the active timezone
  * e.g. "2026-07-21"
  */
 export function getTodayBeijingDate() {
-  const options = { timeZone: BEIJING_TZ, year: 'numeric', month: '2-digit', day: '2-digit' };
+  const tz = getUserTimezone();
+  const options = { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' };
   const formatter = new Intl.DateTimeFormat('en-CA', options); // en-CA gives YYYY-MM-DD
   return formatter.format(new Date());
 }
 
 /**
- * Returns M/D in Asia/Shanghai (Beijing) timezone
+ * Returns M/D in the active timezone
  * e.g. "7/21"
  */
 export function getTodayBeijingMD() {
-  const options = { timeZone: BEIJING_TZ, month: 'numeric', day: 'numeric' };
+  const tz = getUserTimezone();
+  const options = { timeZone: tz, month: 'numeric', day: 'numeric' };
   const formatter = new Intl.DateTimeFormat('en-US', options);
   return formatter.format(new Date());
 }
 
 /**
- * Returns Month Day formatted in Beijing Timezone
+ * Returns Month Day formatted in the active timezone
  * e.g. "July 21"
  */
 export function getTodayBeijingMonthDay() {
-  const options = { timeZone: BEIJING_TZ, month: 'long', day: 'numeric' };
+  const tz = getUserTimezone();
+  const options = { timeZone: tz, month: 'long', day: 'numeric' };
   const formatter = new Intl.DateTimeFormat('en-US', options);
   return formatter.format(new Date());
 }

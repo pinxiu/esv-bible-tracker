@@ -134,6 +134,23 @@ export default function App() {
   // Developer Debug Backdoor Console State
   const [showDebugModal, setShowDebugModal] = useState(false);
 
+  const [appVersion, setAppVersion] = useState('1.0.8');
+  const [timezone, setTimezone] = useState(() => {
+    try {
+      return localStorage.getItem('esv_tracker_timezone') || 'local';
+    } catch (e) {
+      return 'local';
+    }
+  });
+
+  useEffect(() => {
+    if (window.electronAPI?.getAppInfo) {
+      window.electronAPI.getAppInfo().then(info => {
+        if (info && info.version) setAppVersion(info.version);
+      }).catch(() => {});
+    }
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
@@ -494,7 +511,7 @@ export default function App() {
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-serif font-bold text-slate-100">Settings & Configuration</h3>
               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                v0.0.0
+                v{appVersion}
               </span>
             </div>
             <p className="text-xs text-slate-400 font-sans">
@@ -512,6 +529,29 @@ export default function App() {
                 onChange={(e) => setEsvApiKey(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-amber-400 font-mono"
               />
+            </div>
+
+            {/* Configurable Unified Timezone Dropdown */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-300">
+                Active Timezone Reference
+              </label>
+              <select
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-amber-300 font-semibold focus:outline-none focus:border-amber-400 cursor-pointer"
+              >
+                <option value="local">
+                  Local Time ({Intl.DateTimeFormat().resolvedOptions().timeZone || 'Detected'})
+                </option>
+                <option value="Asia/Shanghai">Beijing Time (Asia/Shanghai)</option>
+                <option value="UTC">UTC (Universal Coordinated Time)</option>
+                <option value="America/New_York">Eastern Time (America/New_York)</option>
+                <option value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</option>
+                <option value="Europe/London">London Time (Europe/London)</option>
+                <option value="Asia/Tokyo">Tokyo Time (Asia/Tokyo)</option>
+                <option value="Asia/Singapore">Singapore Time (Asia/Singapore)</option>
+              </select>
             </div>
 
             <div className="pt-2 border-t border-slate-800 space-y-3">
@@ -561,8 +601,11 @@ export default function App() {
                     onClick={() => {
                       try {
                         localStorage.setItem('esv_api_key', esvApiKey);
+                        localStorage.setItem('esv_tracker_timezone', timezone);
                       } catch (e) {}
                       setShowApiKeyModal(false);
+                      // Force reload to apply timezone modifications dynamically everywhere
+                      window.location.reload();
                     }}
                     className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
                   >

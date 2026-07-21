@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Bell, Key, Globe, RotateCcw, Check, Sparkles } from 'lucide-react';
 
 export default function SettingsView({ settings, onSaveSettings, onResetProgress }) {
@@ -6,17 +6,35 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
   const [notifyUnread, setNotifyUnread] = useState(settings.notifyUnread ?? true);
   const [notificationTime, setNotificationTime] = useState(settings.notificationTime || '08:00');
   const [savedStatus, setSavedStatus] = useState(false);
+  const [appVersion, setAppVersion] = useState('1.0.8');
+  const [timezone, setTimezone] = useState(() => {
+    return localStorage.getItem('esv_tracker_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
+  });
+
+  useEffect(() => {
+    if (window.electronAPI?.getAppInfo) {
+      window.electronAPI.getAppInfo().then(info => {
+        if (info && info.version) setAppVersion(info.version);
+      }).catch(() => {});
+    }
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    localStorage.setItem('esv_tracker_timezone', timezone);
     onSaveSettings({
       ...settings,
       esvApiKey,
       notifyUnread,
-      notificationTime
+      notificationTime,
+      timezone
     });
     setSavedStatus(true);
-    setTimeout(() => setSavedStatus(false), 2000);
+    setTimeout(() => {
+      setSavedStatus(false);
+      // Reload page to apply timezone shift across components seamlessly
+      window.location.reload();
+    }, 1000);
   };
 
   const handleTestNotification = async () => {
@@ -86,12 +104,25 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
 
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
             <div>
-              <div className="text-xs font-semibold text-slate-200">Beijing Timezone</div>
-              <div className="text-[11px] text-slate-400">Asia/Shanghai (UTC+8) fixed reference</div>
+              <div className="text-xs font-semibold text-slate-200">Active Timezone</div>
+              <div className="text-[11px] text-slate-400">Used for plan headers and Catch-Up calculations</div>
             </div>
-            <span className="text-xs font-bold text-amber-300 px-2.5 py-1 rounded bg-amber-500/20 border border-amber-500/30">
-              Asia/Shanghai
-            </span>
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-amber-300 font-semibold focus:outline-none focus:border-amber-400 cursor-pointer"
+            >
+              <option value={Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai'}>
+                Local Time ({Intl.DateTimeFormat().resolvedOptions().timeZone || 'Detected'})
+              </option>
+              <option value="Asia/Shanghai">Beijing Time (Asia/Shanghai)</option>
+              <option value="UTC">UTC (Universal Coordinated Time)</option>
+              <option value="America/New_York">Eastern Time (America/New_York)</option>
+              <option value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</option>
+              <option value="Europe/London">London Time (Europe/London)</option>
+              <option value="Asia/Tokyo">Tokyo Time (Asia/Tokyo)</option>
+              <option value="Asia/Singapore">Singapore Time (Asia/Singapore)</option>
+            </select>
           </div>
 
           <button
@@ -123,6 +154,11 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
           </button>
         </div>
       </form>
+
+      {/* Settings Modal Version Footer */}
+      <div className="text-center pt-8 border-t border-slate-900 text-slate-500 text-xs font-mono">
+        ESV Bible Tracker v{appVersion} • Under Active Timezone: {timezone}
+      </div>
     </div>
   );
 }

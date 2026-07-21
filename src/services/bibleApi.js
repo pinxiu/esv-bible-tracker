@@ -159,7 +159,7 @@ function cleanBibleGatewayHtml(htmlContent, passageRef) {
       const refMatch = body.match(/<a[^>]*>([\s\S]*?)<\/a>/i);
       if (refMatch) refText = refMatch[1].replace(/<[^>]+>/g, '').trim();
       const textOnly = body.replace(/<a[^>]*>[\s\S]*?<\/a>/gi, '').replace(/<[^>]+>/g, '').trim();
-      const letterMatch = fnId.match(/([a-z0-9]+)$/i);
+      const letterMatch = fnId.match(/([a-z]+)$/i);
       const letter = letterMatch ? letterMatch[1] : 'note';
 
       footnotesMap[fnId] = {
@@ -171,17 +171,21 @@ function cleanBibleGatewayHtml(htmlContent, passageRef) {
     }
   }
 
-  // Replace footnote markers in text with interactive popover badges
-  cleaned = cleaned.replace(/<sup[^>]*data-fn=["']#?([^"']+)["'][^>]*>\[<a[^>]*>([a-z0-9]+)<\/a>\]<\/sup>/gi, (match, fnId, letter) => {
-    const fnObj = footnotesMap[fnId] || { letter, text: "Translation note", ref: passageRef };
+  // Replace footnote markers in text with interactive popover badges (superscript style, no background)
+  cleaned = cleaned.replace(/<sup[^>]*data-fn=["']#?([^"']+)["'][^>]*>\[\s*<a[^>]*>\s*([a-z0-9]+)\s*<\/a>\s*\]<\/sup>/gi, (match, fnId, letter) => {
+    const cleanLetter = letter.trim();
+    const fnObj = footnotesMap[fnId] || { letter: cleanLetter, text: "Translation note", ref: passageRef };
+    const cleanFnLetter = (fnObj.letter || cleanLetter).trim();
     const escapedText = encodeURIComponent(fnObj.text);
-    return `<span class="esv-fn-badge font-sans text-xs font-bold text-amber-400 hover:text-amber-200 cursor-pointer ml-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/30 transition-all select-none border border-amber-500/20" data-fn-letter="${letter}" data-fn-text="${escapedText}" data-fn-ref="${fnObj.ref}">[${letter}]</span>`;
+    return `<span class="esv-fn-badge align-super text-[0.7em] font-sans font-bold text-amber-400 hover:text-amber-300 cursor-pointer select-none mx-0.5 px-0.5" data-fn-letter="${cleanFnLetter}" data-fn-text="${escapedText}" data-fn-ref="${fnObj.ref}">[${cleanFnLetter}]</span>`;
   });
 
-  cleaned = cleaned.replace(/<a href=["']#?([^"']+)["'] title=["']See footnote ([a-z0-9]+)["']>([a-z0-9]+)<\/a>/gi, (match, fnId, letter) => {
-    const fnObj = footnotesMap[fnId] || { letter, text: "Translation note", ref: passageRef };
+  cleaned = cleaned.replace(/<a href=["']#?([^"']+)["'] title=["']See footnote ([a-z0-9]+)["']>\s*([a-z0-9]+)\s*<\/a>/gi, (match, fnId, letter, innerLetter) => {
+    const cleanLetter = (innerLetter || letter).trim();
+    const fnObj = footnotesMap[fnId] || { letter: cleanLetter, text: "Translation note", ref: passageRef };
+    const cleanFnLetter = (fnObj.letter || cleanLetter).trim();
     const escapedText = encodeURIComponent(fnObj.text);
-    return `<span class="esv-fn-badge font-sans text-xs font-bold text-amber-400 hover:text-amber-200 cursor-pointer ml-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/30 transition-all select-none border border-amber-500/20" data-fn-letter="${letter}" data-fn-text="${escapedText}" data-fn-ref="${fnObj.ref}">[${letter}]</span>`;
+    return `<span class="esv-fn-badge align-super text-[0.7em] font-sans font-bold text-amber-400 hover:text-amber-300 cursor-pointer select-none mx-0.5 px-0.5" data-fn-letter="${cleanFnLetter}" data-fn-text="${escapedText}" data-fn-ref="${fnObj.ref}">[${cleanFnLetter}]</span>`;
   });
 
   // Remove bottom <div class="footnotes"> section completely (no bottom footer!)

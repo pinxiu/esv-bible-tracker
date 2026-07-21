@@ -40,11 +40,14 @@ export default function OnboardingModal({ isOpen, onClose }) {
             The ESV Reader automatically defaults to your <strong>next unread passage</strong> in the reading plan if no passage is loaded. If you fall behind:
           </p>
           <div className="space-y-2 text-xs">
-            <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-200">
+            <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-200 rounded-lg">
               <strong>1. Sequential Catch-Up:</strong> Instantly jumps to your oldest uncompleted reading date.
             </div>
-            <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+            <div className="p-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-lg">
               <strong>2. Start from Today:</strong> Jumps straight to today's reading while preserving past progress.
+            </div>
+            <div className="p-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-lg">
+              <strong>3. Configurable Timezones:</strong> Clocks and daily reading schedules dynamically follow your <strong>Local Time</strong> or static timezones selected in Settings.
             </div>
           </div>
         </div>
