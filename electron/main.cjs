@@ -1,12 +1,6 @@
-import { app, BrowserWindow, ipcMain, Notification } from 'electron';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+const { app, BrowserWindow, ipcMain, Notification } = require('electron');
 const { autoUpdater } = require('electron-updater');
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const path = require('path');
 
 let mainWindow = null;
 

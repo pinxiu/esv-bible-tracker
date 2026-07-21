@@ -56,10 +56,21 @@ if (typeof window !== 'undefined') {
   });
 }
 
+import { getUserTimezone } from '../utils/dateUtils';
+
 export default function DeveloperDebugModal({ isOpen, onClose }) {
   const [logs, setLogs] = useState(debugLogger.logs);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('logs'); // 'logs' | 'env' | 'storage'
+  const [appVersion, setAppVersion] = useState('1.0.8');
+
+  useEffect(() => {
+    if (window.electronAPI?.getAppInfo) {
+      window.electronAPI.getAppInfo().then(info => {
+        if (info && info.version) setAppVersion(info.version);
+      }).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = debugLogger.subscribe(setLogs);
@@ -90,7 +101,7 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
     const report = [
       `# ESV Bible Tracker - Developer Diagnostic Report`,
       `Generated At: ${new Date().toISOString()}`,
-      `App Version: v0.0.0`,
+      `App Version: v${appVersion}`,
       `User Agent: ${navigator.userAgent}`,
       `Screen Resolution: ${window.innerWidth}x${window.innerHeight}`,
       `Offline ESV Bank Verses: ${esvDb.getVerseCount()}`,
@@ -230,9 +241,9 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
           {activeTab === 'env' && (
             <div className="space-y-3 font-sans text-xs">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                 <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
                   <span className="text-slate-400 text-[11px]">Application Version</span>
-                  <div className="font-mono font-bold text-amber-400 text-sm">v0.0.0</div>
+                  <div className="font-mono font-bold text-amber-400 text-sm">v{appVersion}</div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
@@ -247,7 +258,7 @@ export default function DeveloperDebugModal({ isOpen, onClose }) {
 
                 <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
                   <span className="text-slate-400 text-[11px]">Timezone</span>
-                  <div className="font-mono font-semibold text-amber-300">Asia/Shanghai (UTC+8)</div>
+                  <div className="font-mono font-semibold text-amber-300">{getUserTimezone()}</div>
                 </div>
               </div>
 

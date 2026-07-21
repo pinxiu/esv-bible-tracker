@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Settings, Sun, Moon, Download, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react';
 import logoIcon from '../assets/icon.png';
+import { getUserTimezone } from '../utils/dateUtils';
 
 export default function Header({
   activeTab,
@@ -12,20 +13,30 @@ export default function Header({
   theme = 'dark',
   onToggleTheme
 }) {
-  const [beijingTimeStr, setBeijingTimeStr] = useState('');
+  const [activeTimeStr, setActiveTimeStr] = useState('');
+  const [tzLabel, setTzLabel] = useState('Time');
   const [updateState, setUpdateState] = useState({ status: 'idle' });
 
   useEffect(() => {
     const updateTime = () => {
+      const tz = getUserTimezone();
       const options = {
-        timeZone: 'Asia/Shanghai',
+        timeZone: tz,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
         hour12: true
       };
       const timeFormatter = new Intl.DateTimeFormat('en-US', options);
-      setBeijingTimeStr(timeFormatter.format(new Date()));
+      setActiveTimeStr(timeFormatter.format(new Date()));
+
+      try {
+        const parts = tz.split('/');
+        const label = parts[parts.length - 1].replace(/_/g, ' ');
+        setTzLabel(label);
+      } catch (e) {
+        setTzLabel('Time');
+      }
     };
 
     updateTime();
@@ -101,7 +112,7 @@ export default function Header({
         {[
           { id: 'plan', label: '52-Week Plan' },
           { id: 'reader', label: 'ESV Reader' },
-          { id: 'saved', label: 'Saved & Treasury' },
+          { id: 'saved', label: 'Scripture Treasury' },
           { id: 'memory', label: 'Verse Memorization' }
         ].map(tab => (
           <button
@@ -164,12 +175,12 @@ export default function Header({
           </button>
         )}
 
-        {/* Beijing Clock */}
+        {/* Active Timezone Clock */}
         <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
           <Clock className="w-3.5 h-3.5 text-amber-400" />
-          <span className="font-mono text-amber-200 font-semibold">{beijingTimeStr || 'Beijing Time'}</span>
-          <span className="text-[9px] text-amber-400/90 bg-amber-400/10 px-1.5 py-0.5 rounded font-sans">
-            UTC+8
+          <span className="font-mono text-amber-200 font-semibold">{activeTimeStr || 'Time'}</span>
+          <span className="text-[9px] text-amber-400/90 bg-amber-400/10 px-1.5 py-0.5 rounded font-sans max-w-[80px] truncate" title={tzLabel}>
+            {tzLabel}
           </span>
         </div>
 

@@ -441,7 +441,7 @@ export default function PassageViewer({
 
             <div className="flex items-center space-x-2">
               <span className="text-xs font-bold font-serif text-amber-300 bg-amber-500/20 px-2.5 py-1 rounded-lg border border-amber-500/30">
-                Footnote [{activeFootnote.letter}]
+                Footnote [{activeFootnote.letter ? activeFootnote.letter.trim() : ''}]
               </span>
               <span className="text-xs text-slate-400 font-sans font-semibold">
                 {activeFootnote.ref}
