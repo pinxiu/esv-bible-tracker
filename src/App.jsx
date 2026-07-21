@@ -527,22 +527,9 @@ export default function App() {
                 v{appVersion}
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-sans">
+             <p className="text-xs text-slate-400 font-sans">
               Passages default to <strong>Bible Gateway ESV</strong>. Updates preserve 100% of your saved reading progress & memory data.
             </p>
-
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
-                Official ESV API Key (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="Paste Token (or leave blank for Bible Gateway)"
-                value={esvApiKey}
-                onChange={(e) => setEsvApiKey(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-amber-400 font-mono"
-              />
-            </div>
 
             {/* Configurable Unified Timezone Dropdown */}
             <div className="space-y-2">
@@ -590,41 +577,26 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-end pt-1 space-x-2">
                 <button
-                  type="button"
-                  onClick={() => {
-                    setShowApiKeyModal(false);
-                    setShowDebugModal(true);
-                  }}
-                  className="text-[10px] text-slate-500 hover:text-rose-400 font-mono transition-all flex items-center space-x-1"
+                  onClick={() => setShowApiKeyModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200"
                 >
-                  <Bug className="w-3 h-3 text-rose-400" />
-                  <span>Developer Debug Console (Ctrl+Shift+D)</span>
+                  Cancel
                 </button>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setShowApiKeyModal(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      try {
-                        localStorage.setItem('esv_api_key', esvApiKey);
-                        localStorage.setItem('esv_tracker_timezone', timezone);
-                      } catch (e) {}
-                      setShowApiKeyModal(false);
-                      // Force reload to apply timezone modifications dynamically everywhere
-                      window.location.reload();
-                    }}
-                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
-                  >
-                    Save Settings
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    try {
+                      localStorage.setItem('esv_tracker_timezone', timezone);
+                    } catch (e) {}
+                    setShowApiKeyModal(false);
+                    // Force reload to apply timezone modifications dynamically everywhere
+                    window.location.reload();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
+                >
+                  Save Settings
+                </button>
               </div>
             </div>
           </div>
