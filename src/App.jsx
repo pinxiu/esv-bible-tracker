@@ -208,50 +208,44 @@ export default function App() {
   }, [theme]);
 
   // Notification Permission State & Weekly Reminder Loop
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
+    try {
+      return localStorage.getItem('esv_notifications_enabled') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [notificationPermissionType, setNotificationPermissionType] = useState('default');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Notification) {
-      const permission = window.Notification.permission;
+    if (typeof window !== 'undefined') {
+      const isConfigured = localStorage.getItem('esv_notifications_enabled') !== null;
       const lastPromptTime = localStorage.getItem('lastNotificationPromptTime');
       const blockPrompt = localStorage.getItem('blockNotificationPrompt') === 'true';
       const now = Date.now();
       const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
       if (window.debugLogger) {
-        window.debugLogger.addLog('info', `Notification permission check: current="${permission}", blockPrompt=${blockPrompt}, lastPromptTime=${lastPromptTime}`);
+        window.debugLogger.addLog('info', `Notification permission check: isConfigured=${isConfigured}, blockPrompt=${blockPrompt}, lastPromptTime=${lastPromptTime}`);
       }
 
-      if (blockPrompt) {
+      // If user permanently blocked prompts OR has already configured setting, never prompt!
+      if (blockPrompt || isConfigured) {
         return;
       }
 
-      // Case 1: First time launch (permission is default)
-      if (permission === 'default') {
-        if (!lastPromptTime || (now - Number(lastPromptTime) > oneWeek)) {
-          setNotificationPermissionType('default');
-          const timer = setTimeout(() => {
-            setShowNotificationModal(true);
-            if (window.debugLogger) {
-              window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (default).');
-            }
-          }, 3000);
-          return () => clearTimeout(timer);
-        }
-      }
-      // Case 2: System notifications are disabled in settings
-      else if (permission === 'denied') {
-        if (!lastPromptTime || (now - Number(lastPromptTime) > oneWeek)) {
-          setNotificationPermissionType('denied');
-          const timer = setTimeout(() => {
-            setShowNotificationModal(true);
-            if (window.debugLogger) {
-              window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (denied).');
-            }
-          }, 4000);
-          return () => clearTimeout(timer);
-        }
+      // Prompt user once a week to configure notifications
+      if (!lastPromptTime || (now - Number(lastPromptTime) > oneWeek)) {
+        setNotificationPermissionType('default');
+        const timer = setTimeout(() => {
+          setShowNotificationModal(true);
+          if (window.debugLogger) {
+            window.debugLogger.addLog('info', 'Dispatched custom notification permission modal (default configuration required).');
+          }
+        }, 3000);
+        return () => clearTimeout(timer);
       }
     }
   }, []);
@@ -477,6 +471,9 @@ export default function App() {
         localStorage.removeItem('esv_saved_verses');
         localStorage.removeItem('esv_reader_scroll_map');
         localStorage.removeItem('esv_onboarding_dismissed');
+        localStorage.removeItem('esv_notifications_enabled');
+        localStorage.removeItem('lastNotificationPromptTime');
+        localStorage.removeItem('blockNotificationPrompt');
       } catch (e) {
         console.warn('Failed to clear local storage:', e);
       }
@@ -615,6 +612,41 @@ export default function App() {
                 <option value="Asia/Tokyo">Tokyo Time (Asia/Tokyo)</option>
                 <option value="Asia/Singapore">Singapore Time (Asia/Singapore)</option>
               </select>
+            </div>
+
+            {/* Daily Reading Notifications Toggle */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-300">
+                Daily Reading Notifications
+              </label>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-xs text-slate-400 font-sans">
+                  Send reminder alerts when you have uncompleted readings.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !notificationsEnabled;
+                    setNotificationsEnabled(next);
+                    localStorage.setItem('esv_notifications_enabled', String(next));
+                    if (next) {
+                      if (typeof window !== 'undefined' && window.Notification) {
+                        window.Notification.requestPermission();
+                      }
+                      localStorage.removeItem('blockNotificationPrompt');
+                    }
+                  }}
+                  className={`w-10 h-6 flex items-center rounded-full p-1 cursor-pointer transition-all duration-200 ${
+                    notificationsEnabled ? 'bg-amber-500' : 'bg-slate-850 border border-slate-800'
+                  }`}
+                >
+                  <div
+                    className={`bg-slate-100 w-4 h-4 rounded-full shadow-md transform transition-all duration-200 ${
+                      notificationsEnabled ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             <div className="pt-2 border-t border-slate-800 space-y-3">
