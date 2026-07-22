@@ -69,6 +69,25 @@ function checkGitHubRepo(token, owner, repo) {
   });
 }
 
+// Extract release notes from CHANGELOG.md for a given version
+function getReleaseNotesFromChangelog(version) {
+  try {
+    const changelogPath = path.join(rootDir, 'CHANGELOG.md');
+    if (!fs.existsSync(changelogPath)) return '';
+    const content = fs.readFileSync(changelogPath, 'utf8');
+    const versionRegex = new RegExp(`##\\s*\\[${version.replace(/\./g, '\\.')}\\][\\s\\S]*?(?=##\\s*\\[|\\s*$)`);
+    const match = content.match(versionRegex);
+    if (!match) return '';
+    const block = match[0];
+    const summaryIndex = block.indexOf('### 🚀 Release Summary');
+    if (summaryIndex === -1) return '';
+    return block.slice(summaryIndex + '### 🚀 Release Summary'.length).trim();
+  } catch (e) {
+    console.error('Error reading changelog notes:', e.message);
+    return '';
+  }
+}
+
 // Convert GitHub Draft release to Published release
 function publishDraftRelease(token, owner, repo, version) {
   return new Promise((resolve) => {
@@ -92,7 +111,12 @@ function publishDraftRelease(token, owner, repo, version) {
           const draftRelease = releases.find(r => r.tag_name === targetTag && r.draft);
 
           if (draftRelease) {
-            const patchData = JSON.stringify({ draft: false });
+            const releaseNotes = getReleaseNotesFromChangelog(version);
+            const patchData = JSON.stringify({
+              draft: false,
+              name: version,
+              body: releaseNotes || `Release v${version}`
+            });
             const patchOptions = {
               hostname: 'api.github.com',
               path: `/repos/${owner}/${repo}/releases/${draftRelease.id}`,
@@ -101,7 +125,7 @@ function publishDraftRelease(token, owner, repo, version) {
                 'User-Agent': 'ESV-Bible-Tracker-Release-Tool',
                 'Authorization': `token ${token}`,
                 'Content-Type': 'application/json',
-                'Content-Length': patchData.length
+                'Content-Length': Buffer.byteLength(patchData)
               }
             };
             const patchReq = https.request(patchOptions, (patchRes) => {
