@@ -57,13 +57,15 @@ jobs:
           exit 1
 
       - name: Send Failure Email Notification
-        if: failure() && secrets.SMTP_PASSWORD != ''
+        if: failure() && env.SMTP_PASSWORD != ''
+        env:
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
           server_port: ${{ secrets.SMTP_PORT || 465 }}
           username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
+          password: ${{ env.SMTP_PASSWORD }}
           subject: "⚠️ Release Blocked: Daily E2E Test Failure (v${{ env.VERSION }})"
           to: pinxiu.gong@gmail.com
           from: "ESV Bible Tracker CI <ci@bibleplan.com>"
