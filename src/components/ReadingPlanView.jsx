@@ -146,7 +146,12 @@ export default function ReadingPlanView({
           ].map(btn => (
             <button
               key={btn.id}
-              onClick={() => setFilter(btn.id)}
+              onClick={() => {
+                setFilter(btn.id);
+                if (btn.id !== 'all') {
+                  setSearchQuery('');
+                }
+              }}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 filter === btn.id
                   ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
