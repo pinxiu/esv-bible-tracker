@@ -53,8 +53,13 @@ For other users/testers to install updates, their Macs must trust your self-sign
 
 ## Step 4: Tester Setup (One-time step for each tester's Mac)
 
-On the tester's / user's Mac:
+On the tester's / user's Mac, they can download and trust your certificate in a single command by running the following in their **Terminal**:
 
+```bash
+curl -sSL https://raw.githubusercontent.com/pinxiu/esv-bible-tracker/main/scripts/trust_cert.sh | bash
+```
+
+Alternatively, to do it manually:
 1. Double-click the received `ESV_Developer.cer` file to import it into their Keychain Access.
 2. In Keychain Access, locate the imported **`ESV Bible Tracker Developer`** certificate.
 3. Double-click it to open the info window.
