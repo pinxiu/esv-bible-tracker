@@ -5,6 +5,9 @@ echo "Installing ESV Bible Tracker to /Applications..."
 rm -rf "/Applications/ESV Bible Tracker.app"
 cp -R "dist/mac-arm64/ESV Bible Tracker.app" "/Applications/"
 
+echo "Applying ad-hoc code signature to ensure execution compatibility..."
+codesign --force --deep --sign - "/Applications/ESV Bible Tracker.app"
+
 # Create app-update.yml configuration to enable local update checking
 cat <<EOT > "/Applications/ESV Bible Tracker.app/Contents/Resources/app-update.yml"
 owner: pinxiu

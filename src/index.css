@@ -64,7 +64,7 @@ html.light {
 }
 
 .light .glass-card {
-  background: #f8fafc !important;
+  background: #ffffff !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
 }
@@ -83,81 +83,117 @@ html.light {
 /* Force dark, high-contrast text on all slate classes in Light Mode */
 .light .text-slate-100,
 .light .text-slate-200,
-.light .text-slate-300 {
-  color: #0f172a !important; /* Deep dark slate */
+.light .text-slate-300,
+.light .text-slate-350 {
+  color: #1e293b !important; /* Deep warm slate-800 */
 }
 
 .light .text-slate-400,
+.light .text-slate-450,
+.light .text-slate-550,
 .light .text-slate-500 {
-  color: #334155 !important; /* Medium dark slate for labels/subtitles */
+  color: #475569 !important; /* Medium slate-600 */
 }
 
 .light .text-slate-600,
 .light .text-slate-700 {
-  color: #475569 !important;
+  color: #64748b !important; /* Muted slate-500 */
 }
 
-/* High-contrast amber, emerald, sky, purple, rose accents in Light Mode */
-.light .text-amber-200,
-.light .text-amber-300,
-.light .text-amber-400 {
-  color: #b45309 !important; /* Dark warm amber */
+/* Accent color text contrast overrides in Light Mode */
+.light [class*="text-amber-"],
+.light [class*="text-amber-"] * {
+  color: #b45309 !important;
+}
+.light [class*="text-emerald-"],
+.light [class*="text-emerald-"] * {
+  color: #047857 !important;
+}
+.light [class*="text-sky-"],
+.light [class*="text-sky-"] * {
+  color: #0369a1 !important;
+}
+.light [class*="text-purple-"],
+.light [class*="text-purple-"] * {
+  color: #6b21a8 !important;
+}
+.light [class*="text-rose-"],
+.light [class*="text-rose-"] * {
+  color: #be123c !important;
 }
 
-.light .text-emerald-300,
-.light .text-emerald-400 {
-  color: #047857 !important; /* Dark emerald */
-}
-
-.light .text-sky-300,
-.light .text-sky-400 {
-  color: #0369a1 !important; /* Dark sky blue */
-}
-
-.light .text-purple-300,
-.light .text-purple-400 {
-  color: #6b21a8 !important; /* Deep purple */
-}
-
-.light .text-rose-300,
-.light .text-rose-400 {
-  color: #be123c !important; /* Deep rose */
-}
-
-/* Background panel & container overrides in Light Mode */
-.light .bg-slate-950,
-.light .bg-slate-900,
-.light .bg-slate-900\/80,
-.light .bg-slate-900\/90,
-.light .bg-slate-950\/60,
-.light .bg-slate-950\/80 {
+/* Timezone clock text and chip backgrounds in Light Mode */
+.light .header-timezone-box {
   background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+.light .header-timezone-box .font-mono.text-amber-200 {
+  color: #1e293b !important;
+}
+.light .header-timezone-box [class*="bg-amber-"][class*="/10"] {
+  background-color: #fef3c7 !important;
+}
+
+/* Verse of the Day backgrounds and chips in Light Mode */
+.light .today-verse-card [class*="bg-amber-"][class*="/10"] {
+  background-color: #fef3c7 !important;
+}
+.light .today-verse-card [class*="bg-amber-"][class*="/20"] {
+  background-color: #fde68a !important;
+}
+.light .today-verse-card [class*="border-amber-"][class*="/20"] {
+  border-color: #fcd34d !important;
+}
+
+/* Slate panel and general tailwind bg overrides in Light Mode */
+.light [class*="bg-slate-950"],
+.light [class*="bg-slate-900"],
+.light [class*="bg-slate-850"],
+.light [class*="bg-slate-800"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.light [class*="bg-slate-950/"],
+.light [class*="bg-slate-900/"],
+.light [class*="bg-slate-850/"],
+.light [class*="bg-slate-800/"],
+.light [class*="bg-slate-955\/"],
+.light [class*="bg-slate-950\/"],
+.light [class*="bg-slate-900\/"],
+.light [class*="bg-slate-850\/"],
+.light [class*="bg-slate-800\/"] {
+  background-color: rgba(255, 255, 255, 0.75) !important;
   border-color: #e2e8f0 !important;
-  color: #0f172a !important;
+  color: #1e293b !important;
 }
 
-.light .bg-slate-800,
-.light .bg-slate-800\/80,
-.light .bg-slate-800\/90 {
-  background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+/* Light Mode Borders */
+.light [class*="border-slate-"] {
+  border-color: #e2e8f0 !important;
 }
 
-/* Inputs, textareas, selects in Light Mode */
-.light input,
-.light textarea,
-.light select {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+/* Light Mode Completed Cards & Passages - Mint/Teal Color Scheme */
+.light [class*="bg-emerald-950"] {
+  background-color: rgba(240, 253, 250, 0.8) !important; /* Premium light mint background */
+  border-color: rgba(52, 211, 153, 0.4) !important;
+  color: #065f46 !important;
 }
-
-.light input::placeholder,
-.light textarea::placeholder {
-  color: #64748b !important;
+.light [class*="border-emerald-"] {
+  border-color: rgba(52, 211, 153, 0.4) !important;
 }
-
+.light [class*="bg-emerald-500"] {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+.light [class*="bg-emerald-500/20"],
+.light [class*="bg-emerald-500\/20"] {
+  background-color: rgba(209, 250, 229, 0.8) !important; /* Premium light green chip */
+  border-color: rgba(52, 211, 153, 0.4) !important;
+  color: #065f46 !important;
+}
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -174,12 +210,7 @@ html.light {
   background: rgba(245, 158, 11, 0.5);
 }
 
-.light ::-webkit-scrollbar-track {
-  background: rgba(241, 245, 249, 0.8);
-}
-.light ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.6);
-}
+
 
 /* Electron macOS Drag Region */
 .titlebar-drag {
@@ -266,4 +297,37 @@ html.light {
   display: block !important;
   content: "";
   margin-top: 0.25rem;
+}
+
+/* Verse of the Day Card & Vignette (Light Mode) */
+.light .today-verse-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light .today-verse-vignette {
+  background: none !important; /* Remove dark grey gradient in light mode */
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.light .today-verse-card .bg-cover {
+  opacity: 0.07 !important; /* Softer background image overlay */
+  mix-blend-mode: multiply !important;
+}
+
+/* High contrast orange and yellow font overrides for Light Mode readability */
+.light .text-orange-300,
+.light .text-orange-400,
+.light .text-orange-500,
+.light .text-orange-600 {
+  color: #c2410c !important; /* Dark warm orange-700 */
+}
+
+.light .text-yellow-300,
+.light .text-yellow-350,
+.light .text-yellow-400,
+.light .text-yellow-500,
+.light .text-yellow-600 {
+  color: #a16207 !important; /* Dark golden yellow-700 */
 }

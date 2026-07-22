@@ -162,9 +162,9 @@ export default function Header({
   };
 
   return (
-    <header className="h-16 titlebar-drag border-b border-slate-800/80 glass-panel px-6 flex items-center justify-between select-none z-20 w-full cursor-grab active:cursor-grabbing">
+    <header className="relative h-16 titlebar-drag border-b border-slate-800/80 glass-panel px-6 flex items-center justify-between select-none z-20 w-full cursor-grab active:cursor-grabbing">
       {/* Title & App Brand (Draggable space with inset traffic lights) */}
-      <div className="flex items-center space-x-3 pl-16 titlebar-drag">
+      <div className="flex items-center space-x-3 pl-16 titlebar-drag font-sans">
         <div className="flex items-center space-x-2 titlebar-no-drag cursor-pointer" onClick={() => setActiveTab('plan')}>
           <img src={logoIcon} alt="ESV Bible Tracker" className="w-8 h-8 rounded-xl shadow-md object-cover border border-amber-500/30 shrink-0" />
           <div>
@@ -183,8 +183,8 @@ export default function Header({
         </div>
       </div>
 
-      {/* Center Navigation Tabs (Non-draggable interactive buttons) */}
-      <div className="flex items-center space-x-1 p-1 rounded-xl bg-slate-900/90 border border-slate-800 titlebar-no-drag">
+      {/* Center Navigation Tabs (Anchored absolutely to parent center to eliminate left brand title text length shifts) */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center space-x-1 p-1 rounded-xl bg-slate-900/90 border border-slate-800 titlebar-no-drag">
         {[
           { id: 'plan', label: 'Plan' },
           { id: 'reader', label: 'Reader' },
@@ -208,7 +208,7 @@ export default function Header({
       {/* Right: Active Timezone Clock & Settings */}
       <div className="flex items-center space-x-3 titlebar-no-drag">
         {/* Active Timezone Clock */}
-        <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
+        <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 header-timezone-box">
           <Clock className="w-3.5 h-3.5 text-amber-400" />
           <span className="font-mono text-amber-200 font-semibold">{activeTimeStr || 'Time'}</span>
           <span className="text-[9px] text-amber-400/90 bg-amber-400/10 px-1.5 py-0.5 rounded font-sans max-w-[80px] truncate" title={tzLabel}>

@@ -5,64 +5,98 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.21] - 2026-07-22
+
+### 🚀 Release Summary
+- **Symmetrical Progress Card Padding**: Removed the inner grouping wrapper inside the Progress Card, allowing elements to distribute evenly via flexbox. The bottom margin now mathematically matches the top padding perfectly.
+- **Enlarged Stats Value Fonts**: Increased stats value text sizes to `text-xl` and increased vertical padding to fill the container layout cleanly without vertical gaps.
+- **Unified Trophy Case Text Link**: Removed the trailing right-arrow `→` from the Trophy Case link, rendering it as a clean inline text link.
+
+
+## [1.0.20] - 2026-07-22
+
+### 🚀 Release Summary
+- **Clean Light Mode CSS**: Refactored panel backgrounds using wildcards (`.light [class*="bg-slate-"]`) to map all semi-transparent slate containers to clean translucent white backdrops (`rgba(255, 255, 255, 0.75)` or `#ffffff`), eliminating all muddy dark-grey elements in light mode.
+- **Mint & Teal Completed Theme**: Introduced a fresh high-contrast mint/teal completion color scheme (`rgba(240, 253, 250, 0.8)` background with a crisp emerald border) for completed plan cards and checkmarked passages in light mode.
+- **4-Column Stats Grid with Separate Streaks**: Upgraded the Progress Dashboard to feature a 4-column active stats grid, introducing a separate **Verse Review Streak** (`Mem Streak`) calculated from review logs alongside the Reading Streak (`Read Streak`).
+- **Actual-Read Date Completion Tracking**: Added `completionDate` tracking to calculate reading streaks strictly based on the days completed, preventing retroactive streak padding when catching up on missed readings.
+- **Dynamic Treasury Verse Cap**: Dynamically resolved all memory count milestones, unlocked checks, and the ultimate `Scripture Master` trophy checks to query the actual length of your saved Treasury (`savedVersesCount`) instead of a hardcoded 195 cap.
+
+
+## [1.0.19] - 2026-07-22
+
+### 🚀 Release Summary
+- **Redesigned Today Dashboard Layout**: Re-architected the Today view layout into a beautiful side-by-side dashboard featuring your reading schedule and streaks/actions, with a full-width Verse of the Day section below.
+- **Premium Backdrops for Verse of the Day**: Added empty state cards with custom premium backdrop images for the Verse of the Day in Today view.
+- **Search Tab Auto-Switching**: Typing in the plan search input automatically directs you to the 52-Week list tab, and clearing search returns you to your previous tab.
+
+
 ## [1.0.18] - 2026-07-22
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Today-First Default Order**: Set the Today view as the default landing view.
+- **Aligned Today Card Sizing**: Aligned the Today schedule card styling to look identical to the regular cards in other plan tabs.
 
 
 ## [1.0.17] - 2026-07-22
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Gatekeeper Quarantine Automation**: Added Gatekeeper quarantine clearance command automation (`xattr -d com.apple.quarantine`) to `trust_cert.sh` to make macOS app verification seamless for testers.
 
 
 ## [1.0.16] - 2026-07-22
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **App Code Signing Suite**: Created automated CLI certificate generator script (`create_dev_cert.sh`) and documented developer guides in `DEVELOPER_SIGNING.md`.
+- **Ad-hoc Signing Support**: Configured self-signed certificate signature identity support for local app signing.
 
 
 ## [1.0.15] - 2026-07-21
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Notification Prompt Optimization**: Resolved notification permission loops by prompting strictly once on first launch and providing manual settings overrides.
+- **Notification Settings Deep Links**: Implemented prompt timing configuration for notifications, deep links to open macOS System Settings, and an extensive backdoor test suite.
 
 
 ## [1.0.14] - 2026-07-21
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Native Notification Testing**: Added native notification testing controls in the developer debug console to trigger 4 different reminder styles manually.
+- **Notification Lifecycle Fixes**: Fixed notification garbage collection issues and bound `appUserModelId` correctly in the main process.
 
 
 ## [1.0.13] - 2026-07-21
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Translocated Volume Detection**: Added proactive translocated read-only volume detection, warning users attempting to run auto-updates directly from a read-only DMG volume.
+- **Update Relaunch Prompt**: Implemented interactive update-ready restart modal.
 
 
 ## [1.0.12] - 2026-07-21
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Read-Only Volume Fixes**: Handled read-only volume launch errors and optimized asset bundles.
 
 
 ## [1.0.11] - 2026-07-21
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Onboarding Alignment**: Aligned onboarding tour terminology with renamed tabs, cleaned up the settings modal, and removed manual ESV API Key fields to simplify configuration.
 
 
 ## [1.0.10] - 2026-07-21
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **Global Logging Suite**: Integrated global comprehensive action logging into developer debug console.
+- **Local Update Server Support**: Configured app-update.yml configuration in the installer to allow update checks against local build endpoints.
 
 
 ## [1.0.9] - 2026-07-21
 
 ### 🚀 Release Summary
-- Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives. Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed. Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations. Bumped settings modal version footer to dynamically match the latest app version.
+- **CommonJS Migration**: Re-architected Electron main process to CommonJS (`main.cjs`) to resolve JSON parser crashes inside ASAR archives on launch.
+- **Clean Footnotes Rendering**: Formatted footnotes to clean clickable superscript list items (`[a]`, `[b]`), with trailing ID numbers and whitespace trimmed.
+- **Dynamic Timezone Selection**: Added timezone reference selection in settings.
 
 
 ## [1.0.8] - 2026-07-22

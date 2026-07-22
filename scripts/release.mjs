@@ -127,10 +127,11 @@ function autoGenerateReleaseDetails(currentVersion) {
   let bumpType = 'patch';
   const notes = [];
 
-  notes.push('Electron main process rewritten as CommonJS (main.cjs) to permanently resolve Node ESM resolver package.json parser crashes inside ASAR archives.');
-  notes.push('Footnotes updated to clean clickable superscripts [a], [b], with trailing ID numbers and whitespaces trimmed.');
-  notes.push('Unified Timezone reference dropdown added to the settings modal, allowing users to toggle between dynamic Local Time and static locations.');
-  notes.push('Bumped settings modal version footer to dynamically match the latest app version.');
+  notes.push('Upgraded Progress Dashboard with a 4-column active stats layout displaying separate Reading Streak (Read Streak) and Verse practice streak (Mem Streak).');
+  notes.push('Implemented actual-read date completion tracking (completionDate) to calculate reading streaks strictly based on the days completed, preventing retroactive streak padding when catching up on missed readings.');
+  notes.push('Dynamically matched milestones, unlocked checks, and ultimate trophies to the actual length of the user treasury (savedVersesCount) instead of a hardcoded 195 cap.');
+  notes.push('Simplified Trophy Case launcher inside the Progress Dashboard into a single, space-saving clickable text link.');
+  notes.push('Overhauled light mode color styles to replace all muddy dark-grey boxes with clean translucent white backgrounds, and introduced a fresh, high-contrast completed card mint/teal theme.');
 
   const nextVersion = bumpVersion(currentVersion, bumpType);
   return { bumpType, nextVersion, releaseNotes: notes.join(' ') };

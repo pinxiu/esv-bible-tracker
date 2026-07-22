@@ -87,7 +87,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
   // Typing options (Default: ignoreSpaces=true, ignoreCaps=false, ignorePunctuation=false, includeReference=true, autoCompleteAtEnd=false)
   const [ignoreCaps, setIgnoreCaps] = useState(false);
   const [ignorePunctuation, setIgnorePunctuation] = useState(false);
-  const [ignoreSpaces, setIgnoreSpaces] = useState(true);
+  const ignoreSpaces = true; // Always ignore extra spaces under the hood
   const [includeReference, setIncludeReference] = useState(true);
   const [autoCompleteAtEnd, setAutoCompleteAtEnd] = useState(false);
 
@@ -116,6 +116,39 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Global keydown autofocus to typewriter input
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      const activeEl = document.activeElement;
+      const isInput = activeEl && (
+        (activeEl.tagName === 'INPUT' && activeEl.type !== 'checkbox') || 
+        activeEl.tagName === 'TEXTAREA' || 
+        activeEl.isContentEditable
+      );
+      if (isInput && activeEl !== inputRef.current) {
+        return;
+      }
+
+      // 2. Ignore modifier key combinations (Ctrl, Cmd, Alt)
+      if (e.metaKey || e.ctrlKey || e.altKey) {
+        return;
+      }
+
+      // 3. Ignore non-printable keys
+      if (e.key.length > 1 && e.key !== 'Backspace' && e.key !== 'Enter' && e.key !== 'Spacebar' && e.key !== ' ') {
+        return;
+      }
+
+      // 4. Focus the typewriter textarea
+      if (inputRef.current && activeEl !== inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
   useEffect(() => {
@@ -843,9 +876,14 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
               </h4>
 
               <div className="space-y-3">
-                <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                {/* Include Verse Reference */}
+                <label className={`flex items-center justify-between cursor-pointer p-2.5 rounded-xl border transition-all ${
+                  includeReference 
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                    : 'bg-slate-900/60 border-slate-800 text-slate-350 hover:border-slate-700'
+                }`}>
                   <div className="flex flex-col pr-2">
-                    <span className="text-xs text-amber-300 font-bold">Include Verse Reference</span>
+                    <span className={`text-xs ${includeReference ? 'font-bold text-amber-300' : 'font-semibold text-slate-200'}`}>Include Verse Reference</span>
                     <span className="text-[10px] text-slate-400 font-sans">Type ref before & after passage</span>
                   </div>
                   <input
@@ -855,49 +893,55 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
                       setIncludeReference(e.target.checked);
                       resetPracticeState();
                     }}
-                    className="w-4 h-4 accent-amber-500 rounded shrink-0"
+                    className="w-4 h-4 accent-amber-500 rounded shrink-0 cursor-pointer"
                   />
                 </label>
-                <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+
+                {/* Auto-Complete at End */}
+                <label className={`flex items-center justify-between cursor-pointer p-2.5 rounded-xl border transition-all ${
+                  autoCompleteAtEnd 
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                    : 'bg-slate-900/60 border-slate-800 text-slate-350 hover:border-slate-700'
+                }`}>
                   <div className="flex flex-col pr-2">
-                    <span className="text-xs text-slate-300 font-semibold">Auto-Complete at End</span>
+                    <span className={`text-xs ${autoCompleteAtEnd ? 'font-bold text-amber-300' : 'font-semibold text-slate-200'}`}>Auto-Complete at End</span>
                     <span className="text-[10px] text-slate-400 font-sans">If off, requires 100% strict match</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={autoCompleteAtEnd}
                     onChange={(e) => setAutoCompleteAtEnd(e.target.checked)}
-                    className="w-4 h-4 accent-amber-500 rounded shrink-0"
+                    className="w-4 h-4 accent-amber-500 rounded shrink-0 cursor-pointer"
                   />
                 </label>
 
-                <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-xs text-slate-300">Ignore Capitalization</span>
+                {/* Ignore Capitalization */}
+                <label className={`flex items-center justify-between cursor-pointer p-2.5 rounded-xl border transition-all ${
+                  ignoreCaps 
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                    : 'bg-slate-900/60 border-slate-800 text-slate-350 hover:border-slate-700'
+                }`}>
+                  <span className={`text-xs ${ignoreCaps ? 'font-bold text-amber-300' : 'font-semibold text-slate-200'}`}>Ignore Capitalization</span>
                   <input
                     type="checkbox"
                     checked={ignoreCaps}
                     onChange={(e) => setIgnoreCaps(e.target.checked)}
-                    className="w-4 h-4 accent-amber-500 rounded"
+                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                   />
                 </label>
 
-                <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-xs text-slate-300">Ignore Punctuation (. , ! ?)</span>
+                {/* Ignore Punctuation */}
+                <label className={`flex items-center justify-between cursor-pointer p-2.5 rounded-xl border transition-all ${
+                  ignorePunctuation 
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                    : 'bg-slate-900/60 border-slate-800 text-slate-355 hover:border-slate-700'
+                }`}>
+                  <span className={`text-xs ${ignorePunctuation ? 'font-bold text-amber-300' : 'font-semibold text-slate-200'}`}>Ignore Punctuation (. , ! ?)</span>
                   <input
                     type="checkbox"
                     checked={ignorePunctuation}
                     onChange={(e) => setIgnorePunctuation(e.target.checked)}
-                    className="w-4 h-4 accent-amber-500 rounded"
-                  />
-                </label>
-
-                <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-xs text-slate-300">Ignore Extra Spaces</span>
-                  <input
-                    type="checkbox"
-                    checked={ignoreSpaces}
-                    onChange={(e) => setIgnoreSpaces(e.target.checked)}
-                    className="w-4 h-4 accent-amber-500 rounded"
+                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                   />
                 </label>
               </div>

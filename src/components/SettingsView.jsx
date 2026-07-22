@@ -5,6 +5,7 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
   const [esvApiKey, setEsvApiKey] = useState(settings.esvApiKey || '');
   const [notifyUnread, setNotifyUnread] = useState(settings.notifyUnread ?? true);
   const [notificationTime, setNotificationTime] = useState(settings.notificationTime || '08:00');
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(settings.autoUpdateEnabled ?? true);
   const [savedStatus, setSavedStatus] = useState(false);
   const [appVersion, setAppVersion] = useState('1.0.8');
   const [timezone, setTimezone] = useState(() => {
@@ -27,7 +28,8 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
       esvApiKey,
       notifyUnread,
       notificationTime,
-      timezone
+      timezone,
+      autoUpdateEnabled
     });
     setSavedStatus(true);
     setTimeout(() => {
@@ -124,6 +126,19 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
               <option value="Asia/Singapore">Singapore Time (Asia/Singapore)</option>
             </select>
           </div>
+
+          <label className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 cursor-pointer">
+            <div>
+              <div className="text-xs font-semibold text-slate-200">Auto-Download & Install Updates</div>
+              <div className="text-[11px] text-slate-400">Automatically check, download, and stage updates in background</div>
+            </div>
+            <input
+              type="checkbox"
+              checked={autoUpdateEnabled}
+              onChange={(e) => setAutoUpdateEnabled(e.target.checked)}
+              className="w-4 h-4 accent-amber-500 rounded"
+            />
+          </label>
 
           <button
             type="button"

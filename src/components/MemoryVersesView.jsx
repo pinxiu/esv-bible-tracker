@@ -35,7 +35,7 @@ export default function MemoryVersesView({
     const res = validateVerseInput(val, verse.text, {
       ignoreCaps: settings.ignoreCaps,
       ignorePunctuation: settings.ignorePunctuation,
-      ignoreSpaces: settings.ignoreSpaces
+      ignoreSpaces: true
     });
 
     setValidation(res);
@@ -117,37 +117,37 @@ export default function MemoryVersesView({
         </div>
 
         {/* Tolerances & Toggles */}
-        <div className="flex items-center space-x-3 text-xs bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-800">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 mr-1" />
+        <div className="flex items-center space-x-2 text-xs bg-slate-900/80 px-2 py-1.5 rounded-xl border border-slate-800">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-450 mr-2 ml-1" />
 
-          <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+          {/* Ignore Capitalization */}
+          <label className={`cursor-pointer transition-all ${
+            settings.ignoreCaps 
+              ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold px-2 py-1 rounded-lg flex items-center space-x-1.5' 
+              : 'text-slate-400 hover:text-slate-200 border border-transparent px-2 py-1 rounded-lg flex items-center space-x-1.5'
+          }`}>
             <input
               type="checkbox"
               checked={settings.ignoreCaps}
               onChange={(e) => onUpdateSettings({ ...settings, ignoreCaps: e.target.checked })}
-              className="accent-amber-500 rounded"
+              className="accent-amber-500 rounded cursor-pointer"
             />
             <span>Ignore Caps</span>
           </label>
 
-          <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+          {/* Ignore Punctuation */}
+          <label className={`cursor-pointer transition-all ${
+            settings.ignorePunctuation 
+              ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold px-2 py-1 rounded-lg flex items-center space-x-1.5' 
+              : 'text-slate-400 hover:text-slate-200 border border-transparent px-2 py-1 rounded-lg flex items-center space-x-1.5'
+          }`}>
             <input
               type="checkbox"
               checked={settings.ignorePunctuation}
               onChange={(e) => onUpdateSettings({ ...settings, ignorePunctuation: e.target.checked })}
-              className="accent-amber-500 rounded"
+              className="accent-amber-500 rounded cursor-pointer"
             />
             <span>Ignore Punctuation</span>
-          </label>
-
-          <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
-            <input
-              type="checkbox"
-              checked={settings.ignoreSpaces}
-              onChange={(e) => onUpdateSettings({ ...settings, ignoreSpaces: e.target.checked })}
-              className="accent-amber-500 rounded"
-            />
-            <span>Ignore Spaces</span>
           </label>
         </div>
       </div>

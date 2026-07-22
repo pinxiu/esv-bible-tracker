@@ -188,7 +188,7 @@ export default function PassageViewer({
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="e.g. Gen 1:1-3, Ps 1..."
+              placeholder="e.g. Gn 1:1-3, Ps 1..."
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-amber-300 font-semibold focus:outline-none focus:border-amber-400 placeholder-slate-500 font-sans shadow-inner"

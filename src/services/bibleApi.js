@@ -9,53 +9,7 @@ const passageCache = new Map();
  */
 export function normalizePassageRef(ref) {
   if (!ref) return "";
-  let clean = ref.trim();
-  
-  const replacements = [
-    [/^Gen\b/i, "Genesis"],
-    [/^Ex\b/i, "Exodus"],
-    [/^Lev\b/i, "Leviticus"],
-    [/^Num\b/i, "Numbers"],
-    [/^Deut\b/i, "Deuteronomy"],
-    [/^Josh\b/i, "Joshua"],
-    [/^1\s*Sam\b/i, "1 Samuel"],
-    [/^1\s*Sa\b/i, "1 Samuel"],
-    [/^2\s*Sam\b/i, "2 Samuel"],
-    [/^1\s*Kin\b/i, "1 Kings"],
-    [/^2\s*Kin\b/i, "2 Kings"],
-    [/^1\s*Chr\b/i, "1 Chronicles"],
-    [/^1\s*Chron\b/i, "1 Chronicles"],
-    [/^2\s*Chr\b/i, "2 Chronicles"],
-    [/^Neh\b/i, "Nehemiah"],
-    [/^Ps\b/i, "Psalm"],
-    [/^Prov\b/i, "Proverbs"],
-    [/^Eccl\b/i, "Ecclesiastes"],
-    [/^Song of Sol\b/i, "Song of Solomon"],
-    [/^Isa\b/i, "Isaiah"],
-    [/^Jer\b/i, "Jeremiah"],
-    [/^Matt\b/i, "Matthew"],
-    [/^Rom\b/i, "Romans"],
-    [/^1\s*Cor\b/i, "1 Corinthians"],
-    [/^2\s*Cor\b/i, "2 Corinthians"],
-    [/^Gal\b/i, "Galatians"],
-    [/^Eph\b/i, "Ephesians"],
-    [/^Phil\b/i, "Philippians"],
-    [/^Col\b/i, "Colossians"],
-    [/^1\s*Thess\b/i, "1 Thessalonians"],
-    [/^2\s*Thess\b/i, "2 Thessalonians"],
-    [/^1\s*Tim\b/i, "1 Timothy"],
-    [/^2\s*Tim\b/i, "2 Timothy"],
-    [/^1\s*Pet\b/i, "1 Peter"],
-    [/^2\s*Pet\b/i, "2 Peter"]
-  ];
-
-  for (const [regex, replacement] of replacements) {
-    if (regex.test(clean)) {
-      clean = clean.replace(regex, replacement);
-      break;
-    }
-  }
-  return clean;
+  return canonicalizeReference(ref);
 }
 
 /**

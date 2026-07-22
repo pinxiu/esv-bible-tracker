@@ -8,6 +8,7 @@ import CommentaryModal from './components/CommentaryModal';
 import OnboardingModal from './components/OnboardingModal';
 import DeveloperDebugModal, { debugLogger } from './components/DeveloperDebugModal';
 import NotificationPermissionModal from './components/NotificationPermissionModal';
+import SettingsView from './components/SettingsView';
 
 import { BIBLE_PLAN as initialPlanData } from './data/biblePlanData';
 import { INITIAL_MEMORY_VERSES as initialMemoryVerses } from './data/initialMemoryVerses';
@@ -60,7 +61,7 @@ export default function App() {
             return {
               ...v,
               reference: cleanRef,
-              text: cleanText
+              text: cleanText ? cleanText.replace(/\s+/g, ' ').trim() : ''
             };
           });
         }
@@ -70,7 +71,8 @@ export default function App() {
     }
     return initialMemoryVerses.map(v => ({
       ...v,
-      reference: canonicalizeReference(v.reference)
+      reference: canonicalizeReference(v.reference),
+      text: v.text ? v.text.replace(/\s+/g, ' ').trim() : ''
     }));
   });
 
@@ -125,7 +127,14 @@ export default function App() {
       return '';
     }
   });
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(() => {
+    try {
+      const local = localStorage.getItem('esv_auto_update_enabled');
+      return local !== 'false';
+    } catch (e) {
+      return true;
+    }
+  });
 
   // First-Time Interactive Onboarding Walkthrough State
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -155,6 +164,14 @@ export default function App() {
       const cleanup = window.electronAPI.onUpdateMessage((data) => {
         if (data.status === 'downloaded') {
           setUpdatePrompt({ show: true, version: data.info?.version || '' });
+        } else if (data.status === 'available') {
+          const autoUpdate = localStorage.getItem('esv_auto_update_enabled') !== 'false';
+          if (autoUpdate || window.userTriggeredUpdate) {
+            window.userTriggeredUpdate = false;
+            if (window.electronAPI?.startDownloadUpdate) {
+              window.electronAPI.startDownloadUpdate();
+            }
+          }
         }
       });
       return cleanup;
@@ -316,7 +333,8 @@ export default function App() {
         return {
           ...item,
           completedPassages: currentMap,
-          completed: allDone
+          completed: allDone,
+          completionDate: allDone ? getTodayBeijingDate() : null
         };
       }
       return item;
@@ -341,7 +359,8 @@ export default function App() {
         return {
           ...item,
           completed: newCompleted,
-          completedPassages: newPassageMap
+          completedPassages: newPassageMap,
+          completionDate: newCompleted ? getTodayBeijingDate() : null
         };
       }
       return item;
@@ -506,13 +525,13 @@ export default function App() {
         progressPercent={progressPercent}
         completedDays={completedDays}
         totalDays={totalDays}
-        onOpenSettings={() => setShowApiKeyModal(true)}
+        onOpenSettings={() => setActiveTab('settings')}
         theme={theme}
         onToggleTheme={handleToggleTheme}
       />
 
       {/* Main Content Area - Scrollable across all screens */}
-      <main ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto min-h-0 relative">
+      <main ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 flex flex-col overflow-y-auto min-h-0 relative">
         {activeTab === 'plan' && (
           <ReadingPlanView
             planData={planData}
@@ -531,7 +550,7 @@ export default function App() {
         {activeTab === 'reader' && (
           <PassageViewer
             currentPassage={currentPassage}
-            onSelectPassage={(ref) => setCurrentPassage(ref)}
+            onSelectPassage={(ref) => setCurrentPassage(canonicalizeReference(ref))}
             onOpenCommentary={(ref) => setCommentaryPassage(ref)}
             onSaveVerse={handleSaveVerse}
             esvApiKey={esvApiKey}
@@ -555,6 +574,27 @@ export default function App() {
             initialVerse={selectedMemoryVerse}
             savedVerses={savedVerses}
             onUpdateProgress={handleUpdateMemoryProgress}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <SettingsView
+            settings={{
+              esvApiKey,
+              notifyUnread: notificationsEnabled,
+              autoUpdateEnabled
+            }}
+            onSaveSettings={(newSettings) => {
+              setEsvApiKey(newSettings.esvApiKey);
+              try {
+                localStorage.setItem('esv_api_key', newSettings.esvApiKey);
+                localStorage.setItem('esv_notifications_enabled', String(newSettings.notifyUnread));
+                localStorage.setItem('esv_auto_update_enabled', String(newSettings.autoUpdateEnabled));
+              } catch (e) {}
+              setNotificationsEnabled(newSettings.notifyUnread);
+              setAutoUpdateEnabled(newSettings.autoUpdateEnabled);
+            }}
+            onResetProgress={handleResetToDefault}
           />
         )}
       </main>
@@ -584,151 +624,6 @@ export default function App() {
         isOpen={showOnboarding}
         onClose={handleDismissOnboarding}
       />
-
-      {/* Settings / API Key Modal */}
-      {showApiKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-slate-700 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-serif font-bold text-slate-100">Settings & Configuration</h3>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                v{appVersion}
-              </span>
-            </div>
-             <p className="text-xs text-slate-400 font-sans">
-              Passages default to <strong>Bible Gateway ESV</strong>. Updates preserve 100% of your saved reading progress & memory data.
-            </p>
-
-            {/* Configurable Unified Timezone Dropdown */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
-                Active Timezone Reference
-              </label>
-              <select
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-amber-300 font-semibold focus:outline-none focus:border-amber-400 cursor-pointer"
-              >
-                <option value="local">
-                  Local Time ({Intl.DateTimeFormat().resolvedOptions().timeZone || 'Detected'})
-                </option>
-                <option value="Asia/Shanghai">Beijing Time (Asia/Shanghai)</option>
-                <option value="UTC">UTC (Universal Coordinated Time)</option>
-                <option value="America/New_York">Eastern Time (America/New_York)</option>
-                <option value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</option>
-                <option value="Europe/London">London Time (Europe/London)</option>
-                <option value="Asia/Tokyo">Tokyo Time (Asia/Tokyo)</option>
-                <option value="Asia/Singapore">Singapore Time (Asia/Singapore)</option>
-              </select>
-            </div>
-
-            {/* Daily Reading Notifications Toggle */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
-                Daily Reading Notifications
-              </label>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-xs text-slate-400 font-sans">
-                  Send reminder alerts when you have uncompleted readings.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = !notificationsEnabled;
-                    setNotificationsEnabled(next);
-                    localStorage.setItem('esv_notifications_enabled', String(next));
-                    if (next) {
-                      if (typeof window !== 'undefined' && window.Notification) {
-                        window.Notification.requestPermission();
-                      }
-                      if (window.electronAPI?.sendNotification) {
-                        window.electronAPI.sendNotification({
-                          title: '📖 ESV Bible Tracker',
-                          body: 'Reading reminders and milestone alerts successfully enabled!'
-                        });
-                      }
-                      localStorage.removeItem('blockNotificationPrompt');
-                    }
-                  }}
-                  className={`w-10 h-6 flex items-center rounded-full p-1 cursor-pointer transition-all duration-200 ${
-                    notificationsEnabled ? 'bg-amber-500' : 'bg-slate-850 border border-slate-800'
-                  }`}
-                >
-                  <div
-                    className={`bg-slate-100 w-4 h-4 rounded-full shadow-md transform transition-all duration-200 ${
-                      notificationsEnabled ? 'translate-x-4' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-              {notificationsEnabled && (
-                <div className="flex items-center justify-between px-1.5 pt-0.5">
-                  <span className="text-[10px] text-slate-500 font-sans">
-                    Notifications disabled in Mac System Settings?
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.electronAPI?.openSystemNotifications) {
-                        window.electronAPI.openSystemNotifications();
-                      }
-                    }}
-                    className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"
-                  >
-                    ⚙️ Open Mac Settings
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowApiKeyModal(false);
-                    setShowOnboarding(true);
-                  }}
-                  className="text-xs text-amber-400 hover:text-amber-300 font-semibold"
-                >
-                  Re-open Onboarding Tour
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleResetToDefault}
-                  className="text-xs text-rose-400 hover:text-rose-300 font-semibold"
-                  title="Wipe local testing state and restore clean default shared state"
-                >
-                  Reset to Clean Default State
-                </button>
-              </div>
-
-              <div className="flex items-center justify-end pt-1 space-x-2">
-                <button
-                  onClick={() => setShowApiKeyModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    try {
-                      localStorage.setItem('esv_tracker_timezone', timezone);
-                    } catch (e) {}
-                    setShowApiKeyModal(false);
-                    // Force reload to apply timezone modifications dynamically everywhere
-                    window.location.reload();
-                  }}
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
-                >
-                  Save Settings
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Update Ready Restart Prompt Modal */}
       {updatePrompt.show && (
