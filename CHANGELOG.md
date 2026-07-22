@@ -116,6 +116,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.9] - 2026-07-21
 
 ### 🚀 Release Summary
+- ⚠️ **DO NOT USE / BREAKING RELEASE**: This version crashes immediately at startup due to Node ESM resolver package.json parser issues inside ASAR packages. Please install v1.0.10 or later.
 - **CommonJS Migration**: Re-architected Electron main process to CommonJS (`main.cjs`) to resolve JSON parser crashes inside ASAR archives on launch.
 - **Clean Footnotes Rendering**: Formatted footnotes to clean clickable superscript list items (`[a]`, `[b]`), with trailing ID numbers and whitespace trimmed.
 - **Dynamic Timezone Selection**: Added timezone reference selection in settings.
@@ -124,24 +125,28 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.8] - 2026-07-22
 
 ### 🚀 Release Summary
+- ⚠️ **DO NOT USE / BREAKING RELEASE**: This version crashes immediately at startup due to Node ESM resolver package.json parser issues inside ASAR packages. Please install v1.0.10 or later.
 - **ASAR Unpack Configuration**: Re-enabled ASAR packaging and added `asarUnpack` rules for `electron-updater` and `builder-util-runtime`. By keeping these packages on the real filesystem (outside the ASAR archive), we fully bypass Node's internal ESM C++ package-reader bug, successfully launching the native M4 arm64 application.
 
 
 ## [1.0.7] - 2026-07-22
 
 ### 🚀 Release Summary
+- ⚠️ **DO NOT USE / BREAKING RELEASE**: This version crashes immediately at startup due to Node ESM resolver package.json parser issues inside ASAR packages. Please install v1.0.10 or later.
 - **Clean Build Directory**: Configured the build runner to clear the `dist/` directory before packaging, preventing 7-Zip lock errors (`System ERROR: E_FAIL`).
 
 
 ## [1.0.6] - 2026-07-22
 
 ### 🚀 Release Summary
+- ⚠️ **DO NOT USE / BREAKING RELEASE**: This version crashes immediately at startup due to Node ESM resolver package.json parser issues inside ASAR packages. Please install v1.0.10 or later.
 - **Fix ASAR Load Exception**: Bypassed Node's ESM package reader bug inside ASAR archives by using `createRequire` to import `electron-updater`, fixing app launch crashes on Apple Silicon Macs.
 
 
 ## [1.0.5] - 2026-07-22
 
 ### 🚀 Release Summary
+- ⚠️ **DO NOT USE / BREAKING RELEASE**: This version crashes immediately at startup due to Node ESM resolver package.json parser issues inside ASAR packages. Please install v1.0.10 or later.
 - **Automatic Release Publishing**: Integrated GitHub API handlers to automatically convert Draft Releases to public Published Releases once assets finish uploading.
 - **Unified Multi-Architecture Build**: Optimized `electron-builder` configuration to package both Apple Silicon (`arm64`) and Intel (`x64`) DMGs in a single unified invocation to avoid socket upload timeouts.
 
