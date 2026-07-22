@@ -1,4 +1,4 @@
-# Self-Signed macOS Code-Signing Guide (Plan B)
+# Self-Signed macOS Code-Signing Guide
 
 To enable automatic updates (`electron-updater` / `ShipIt`) for testers and other users without purchasing a paid Apple Developer Account ($99/yr), follow these steps to generate and trust a self-signed code-signing certificate.
 
