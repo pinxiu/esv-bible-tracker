@@ -56,7 +56,7 @@ function createWindow() {
     }
   });
 
-  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'production';
 
   if (isDev && process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
@@ -68,13 +68,19 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    // Auto check for updates on startup in packaged mode (if not on read-only volume)
+    // Auto check for updates on startup in packaged mode (if not on read-only volume and app-update.yml exists)
     if (app.isPackaged && !checkReadOnlyVolume()) {
-      setTimeout(() => {
-        autoUpdater.checkForUpdates().catch(err => {
-          console.warn('Auto updater startup check error:', err);
-        });
-      }, 3000);
+      const fs = require('fs');
+      const updateConfigPath = path.join(process.resourcesPath, 'app-update.yml');
+      if (fs.existsSync(updateConfigPath)) {
+        setTimeout(() => {
+          autoUpdater.checkForUpdates().catch(err => {
+            console.warn('Auto updater startup check error:', err);
+          });
+        }, 3000);
+      } else {
+        console.info('Auto updater startup check bypassed: app-update.yml is not present.');
+      }
     }
   });
 
@@ -178,6 +184,12 @@ ipcMain.handle('check-for-updates', () => {
   if (checkReadOnlyVolume()) {
     sendUpdateMessage('error', { error: 'Cannot update while running on a read-only volume. Please move the application to your Applications folder and try again.' });
     return { success: false, reason: 'Read-only volume' };
+  }
+  const fs = require('fs');
+  const updateConfigPath = path.join(process.resourcesPath, 'app-update.yml');
+  if (!fs.existsSync(updateConfigPath)) {
+    sendUpdateMessage('error', { error: 'Auto-updater configuration file (app-update.yml) is missing. Auto-updates are disabled for this build.' });
+    return { success: false, reason: 'app-update.yml missing' };
   }
   try {
     autoUpdater.checkForUpdates();

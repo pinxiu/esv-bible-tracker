@@ -18,8 +18,15 @@ import { esvDb } from './services/esvDatabase';
 import { Sparkles, CheckCircle2, ArrowUp, Bug } from 'lucide-react';
 
 export default function App() {
-  // Active Navigation Tab: 'plan' | 'reader' | 'saved' | 'memory'
-  const [activeTab, setActiveTab] = useState('plan');
+  const [activeTab, setActiveTabState] = useState('plan');
+  const [previousTab, setPreviousTab] = useState('plan');
+
+  const setActiveTab = (tab) => {
+    if (activeTab !== 'settings') {
+      setPreviousTab(activeTab);
+    }
+    setActiveTabState(tab);
+  };
 
   useEffect(() => {
     debugLogger.addLog('info', `Switched active view tab to: "${activeTab}"`);
@@ -593,6 +600,10 @@ export default function App() {
               } catch (e) {}
               setNotificationsEnabled(newSettings.notifyUnread);
               setAutoUpdateEnabled(newSettings.autoUpdateEnabled);
+              setActiveTab(previousTab);
+            }}
+            onCancel={() => {
+              setActiveTab(previousTab);
             }}
             onResetProgress={handleResetToDefault}
           />

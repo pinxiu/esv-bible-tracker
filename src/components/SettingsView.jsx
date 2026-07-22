@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Bell, Key, Globe, RotateCcw, Check, Sparkles } from 'lucide-react';
 
-export default function SettingsView({ settings, onSaveSettings, onResetProgress }) {
+export default function SettingsView({ settings, onSaveSettings, onResetProgress, onCancel }) {
   const [esvApiKey, setEsvApiKey] = useState(settings.esvApiKey || '');
   const [notifyUnread, setNotifyUnread] = useState(settings.notifyUnread ?? true);
   const [notificationTime, setNotificationTime] = useState(settings.notificationTime || '08:00');
@@ -104,6 +104,34 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
             />
           </label>
 
+          {notifyUnread && (
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-800">
+              <span className="text-xs font-semibold text-slate-400">Notification Settings</span>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={handleTestNotification}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
+                >
+                  Test Notification
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.electronAPI?.openSystemNotifications) {
+                      window.electronAPI.openSystemNotifications();
+                    } else {
+                      alert('Mac notification settings link is only available in desktop mode.');
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold border border-amber-500/30 transition-all cursor-pointer"
+                >
+                  ⚙️ Open Mac Settings
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
             <div>
               <div className="text-xs font-semibold text-slate-200">Active Timezone</div>
@@ -139,14 +167,6 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
               className="w-4 h-4 accent-amber-500 rounded"
             />
           </label>
-
-          <button
-            type="button"
-            onClick={handleTestNotification}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all"
-          >
-            Test System Notification
-          </button>
         </div>
 
         {/* Submit Button */}
@@ -160,13 +180,22 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
             <span>Reset Reading Progress</span>
           </button>
 
-          <button
-            type="submit"
-            className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all"
-          >
-            {savedStatus ? <Check className="w-4 h-4" /> : null}
-            <span>{savedStatus ? 'Settings Saved!' : 'Save Preferences'}</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-100 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+            >
+              {savedStatus ? <Check className="w-4 h-4" /> : null}
+              <span>{savedStatus ? 'Settings Saved!' : 'Save Preferences'}</span>
+            </button>
+          </div>
         </div>
       </form>
 

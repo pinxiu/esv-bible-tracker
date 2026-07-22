@@ -12,3 +12,7 @@ out/
 # macOS / OS files
 .DS_Store
 *.log
+
+# E2E Testing Outputs
+test-results/
+playwright-report/

@@ -162,7 +162,33 @@ async function runRelease() {
   console.log('🚀 ESV Bible Tracker — Intelligent Auto-Release Tool');
   console.log('==================================================\n');
 
-  // 1. Read package.json & repo owner
+  // 1. Clean previous build assets
+  console.log('🧹 Cleaning previous build assets...');
+  try {
+    const distPath = path.join(rootDir, 'dist');
+    if (fs.existsSync(distPath)) {
+      fs.rmSync(distPath, { recursive: true, force: true });
+    }
+  } catch (e) {
+    console.warn('Could not fully clean dist directory:', e.message);
+  }
+
+  // 2. Build web application bundle
+  console.log('\n🔨 Building web application bundle...');
+  execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });
+
+  // 3. Run E2E regression tests with Playwright
+  console.log('\n🧪 Running E2E regression tests with Playwright...');
+  try {
+    execSync('npm run test', { cwd: rootDir, stdio: 'inherit' });
+    console.log('✅ E2E tests passed successfully!');
+  } catch (error) {
+    console.error('\n❌ E2E regression tests failed! Release aborted.');
+    console.error('Please fix the test failures before attempting to release.');
+    process.exit(1);
+  }
+
+  // 4. Read package.json & repo owner
   const pkgPath = path.join(rootDir, 'package.json');
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
   const currentVersion = pkg.version || '1.0.0';
@@ -171,9 +197,9 @@ async function runRelease() {
 
   const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 
-  console.log(`📌 Current Version: v${currentVersion}`);
+  console.log(`\n📌 Current Version: v${currentVersion}`);
 
-  // 2. Check GitHub Repository availability
+  // 5. Check GitHub Repository availability
   let isRepoOnline = false;
   if (token) {
     console.log(`🔍 Checking GitHub repository: ${repoOwner}/${repoName}...`);
@@ -187,7 +213,7 @@ async function runRelease() {
     }
   }
 
-  // 3. Auto-Detect Version & Auto-Generate Release Description
+  // 6. Auto-Detect Version & Auto-Generate Release Description
   const arg = process.argv[2] ? process.argv[2].toLowerCase() : '';
   let nextVersion = currentVersion;
   let releaseNotes = '';
@@ -206,12 +232,12 @@ async function runRelease() {
   console.log(`✨ Target Release Version: v${nextVersion}`);
   console.log(`📝 Auto-Generated Release Log:\n   - ${releaseNotes}\n`);
 
-  // 4. Update package.json
+  // 7. Update package.json
   pkg.version = nextVersion;
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
   console.log(`✅ Updated package.json version to v${nextVersion}`);
 
-  // 5. Prepend to CHANGELOG.md
+  // 8. Prepend to CHANGELOG.md
   const changelogPath = path.join(rootDir, 'CHANGELOG.md');
   const todayDate = new Date().toISOString().split('T')[0];
   const newChangelogEntry = `\n## [${nextVersion}] - ${todayDate}\n\n### 🚀 Release Summary\n- ${releaseNotes}\n`;
@@ -227,20 +253,6 @@ async function runRelease() {
     }
   }
   console.log(`✅ Updated CHANGELOG.md`);
-
-  // 6. Clean and Build
-  console.log('\n🧹 Cleaning previous build assets...');
-  try {
-    const distPath = path.join(rootDir, 'dist');
-    if (fs.existsSync(distPath)) {
-      fs.rmSync(distPath, { recursive: true, force: true });
-    }
-  } catch (e) {
-    console.warn('Could not fully clean dist directory:', e.message);
-  }
-
-  console.log('\n🔨 Building web application bundle...');
-  execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });
 
   // 7. Publish to GitHub Releases if token present & repo exists online
   if (token && isRepoOnline) {

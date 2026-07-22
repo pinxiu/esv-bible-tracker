@@ -1,0 +1,89 @@
+name: Daily Release Gatekeeper
+
+on:
+  schedule:
+    - cron: '0 16 * * *' # Midnight Beijing time (16:00 UTC)
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-release:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Web Application
+        run: npm run build
+
+      - name: Create and Push Release Branch
+        id: branch_creation
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BRANCH_NAME="release/v$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          
+          # Configure Git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create and push branch
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME --force
+
+      - name: Run E2E Playwright Tests
+        id: run_tests
+        run: npm run test
+        continue-on-error: true
+
+      - name: Handle Test Failure
+        if: steps.run_tests.outcome == 'failure'
+        run: |
+          echo "❌ E2E regression tests failed on branch ${{ env.BRANCH_NAME }}!"
+          exit 1
+
+      - name: Send Failure Email Notification
+        if: failure()
+        uses: dawidd6/action-send-email@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
+          server_port: ${{ secrets.SMTP_PORT || 465 }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "⚠️ Release Blocked: Daily E2E Test Failure (v${{ env.VERSION }})"
+          to: pinxiu.gong@gmail.com
+          from: "ESV Bible Tracker CI <ci@bibleplan.com>"
+          body: |
+            Hello,
+
+            The daily E2E regression test run has failed for ESV Bible Tracker v${{ env.VERSION }}.
+            
+            The release branch "${{ env.BRANCH_NAME }}" has been kept open for your review.
+            
+            Please review the test failure details in the GitHub Action run logs:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Best regards,
+            ESV Bible Tracker CI
+          secure: true
+
+      - name: Run Release and Publish
+        if: steps.run_tests.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run release
