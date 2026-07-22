@@ -6,8 +6,14 @@ To enable automatic updates (`electron-updater` / `ShipIt`) for testers and othe
 
 ## Step 1: Create the Certificate on the Developer's Mac
 
-On the machine where you run `npm run release`:
+On the machine where you run `npm run release`, you can automatically generate and import the certificate using the provided helper script:
 
+```bash
+chmod +x scripts/create_dev_cert.sh
+./scripts/create_dev_cert.sh
+```
+
+Alternatively, to do it manually:
 1. Open **Keychain Access** on your Mac.
 2. From the menu bar, select **Keychain Access ➔ Certificate Assistant ➔ Create a Certificate...**.
 3. Configure the fields exactly as follows:
@@ -15,7 +21,8 @@ On the machine where you run `npm run release`:
    - **Identity Type**: `Self Signed Root`
    - **Certificate Type**: `Code Signing`
 4. Click **Create**, then click **Done**.
-5. Your self-signed certificate is now registered in your local Login keychain!
+
+Your self-signed certificate is now registered in your local Login keychain!
 
 ---
 
