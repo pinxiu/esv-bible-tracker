@@ -640,6 +640,12 @@ export default function App() {
                       if (typeof window !== 'undefined' && window.Notification) {
                         window.Notification.requestPermission();
                       }
+                      if (window.electronAPI?.sendNotification) {
+                        window.electronAPI.sendNotification({
+                          title: '📖 ESV Bible Tracker',
+                          body: 'Reading reminders and milestone alerts successfully enabled!'
+                        });
+                      }
                       localStorage.removeItem('blockNotificationPrompt');
                     }
                   }}
