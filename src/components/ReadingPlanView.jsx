@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Circle, BookOpen, ExternalLink, Calendar, Filter, Sparkles, Check, AlertCircle, BookCheck } from 'lucide-react';
+import { CheckCircle2, Circle, BookOpen, ExternalLink, Calendar, Filter, Sparkles, Check, AlertCircle, BookCheck, Trophy, BrainCircuit, Play, ArrowRight } from 'lucide-react';
 import { isDatePast, isDateToday, getTodayBeijingMonthDay, getTodayBeijingMD } from '../utils/dateUtils';
 import todayVerseBg from '../assets/today_verse_bg.jpg';
 
@@ -68,7 +68,8 @@ export default function ReadingPlanView({
   todayDateStr,
   missedDaysCount = 0,
   onCatchUpOldest,
-  onCatchUpToday
+  onCatchUpToday,
+  setActiveTab
 }) {
   const [filter, setFilter] = useState('today'); // 'today', 'all', 'missed', 'completed'
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,140 +179,269 @@ export default function ReadingPlanView({
         />
       </div>
 
-      {/* Reading Plan Grid / List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredPlan.map(item => {
-          const isCompleted = !!item.completed;
-          const isMissed = !isCompleted && isDatePast(item.date, item.year);
-          const isToday = isDateToday(item.date, item.year);
+      {/* Reading Plan Grid / List or Today Dashboard */}
+      {filter === 'today' ? (
+        <div className="space-y-6">
+          {/* Upper Section: Side-by-Side (Schedule & Stats/Next Steps) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Left: Today's Schedule Card */}
+            {filteredPlan.length > 0 ? (
+              filteredPlan.map(item => {
+                const isCompleted = !!item.completed;
+                const isMissed = !isCompleted && isDatePast(item.date, item.year);
+                const isToday = isDateToday(item.date, item.year);
 
-          const passagesList = item.passages && item.passages.length > 0
-            ? item.passages
-            : (item.text ? item.text.split(/;\s*/) : []);
+                const passagesList = item.passages && item.passages.length > 0
+                  ? item.passages
+                  : (item.text ? item.text.split(/;\s*/) : []);
 
-          const completedPassages = item.completedPassages || {};
-          const completedCount = passagesList.filter(p => completedPassages[p]).length;
+                const completedPassages = item.completedPassages || {};
+                const completedCount = passagesList.filter(p => completedPassages[p]).length;
 
-          return (
-            <div
-              key={item.id || `${item.week}-${item.day}`}
-              className={`glass-card p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
-                isToday
-                  ? 'border-amber-500/50 bg-amber-950/20 ring-1 ring-amber-500/30'
-                  : isCompleted
-                    ? 'border-emerald-500/30 bg-emerald-950/10'
-                    : isMissed
-                      ? 'border-rose-500/30 bg-rose-950/10'
-                      : 'border-slate-800 hover:border-slate-700'
-              }`}
-            >
-              <div>
-                {/* Header: Week, Date, Status */}
-                <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2.5">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-900 text-amber-400 border border-slate-800">
-                      Week {item.week}
-                    </span>
-                    <span className="text-xs text-slate-400 font-sans">{item.date}</span>
-                    {isToday && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950">
-                        TODAY
-                      </span>
-                    )}
-                  </div>
+                return (
+                  <div
+                    key={item.id || `${item.week}-${item.day}`}
+                    className={`glass-card p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
+                      isToday
+                        ? 'border-amber-500/50 bg-amber-950/20 ring-1 ring-amber-500/30'
+                        : isCompleted
+                          ? 'border-emerald-500/30 bg-emerald-950/10'
+                          : isMissed
+                            ? 'border-rose-500/30 bg-rose-950/10'
+                            : 'border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div>
+                      {/* Header: Week, Date, Status */}
+                      <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-900 text-amber-400 border border-slate-800">
+                            Week {item.week}
+                          </span>
+                          <span className="text-xs text-slate-400 font-sans">{item.date}</span>
+                          {isToday && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950">
+                              TODAY
+                            </span>
+                          )}
+                        </div>
 
-                  {/* Day Status Badge */}
-                  <div className="flex items-center space-x-1">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      isCompleted ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-900 text-slate-400 border border-slate-800'
-                    }`}>
-                      {completedCount} / {passagesList.length} Read
-                    </span>
-                  </div>
-                </div>
-
-                {/* Individual Passages Breakdown */}
-                <div className="space-y-2">
-                  {passagesList.map((passage, pIdx) => {
-                    const isPassageDone = !!completedPassages[passage];
-                    return (
-                      <div
-                        key={pIdx}
-                        className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
-                          isPassageDone
-                            ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'
-                            : 'bg-slate-900/60 border-slate-800/90 text-slate-200 hover:border-amber-500/30'
-                        }`}
-                      >
-                        {/* Passage Checkbox & Reference */}
-                        <div className="flex items-center space-x-2.5 min-w-0 flex-1">
-                          <button
-                            onClick={() => onTogglePassage(item.day || item.id, passage)}
-                            className="p-0.5 rounded text-slate-400 hover:text-amber-400 transition-colors shrink-0"
-                            title={isPassageDone ? `Uncheck ${passage}` : `Mark ${passage} read`}
-                          >
-                            {isPassageDone ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
-                            ) : (
-                              <Circle className="w-4 h-4 text-slate-500 hover:text-amber-400" />
-                            )}
-                          </button>
-                          <span className={`font-serif text-sm font-semibold truncate ${isPassageDone ? 'line-through text-slate-400' : 'text-slate-100'}`}>
-                            {passage}
+                        {/* Day Status Badge */}
+                        <div className="flex items-center space-x-1">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isCompleted ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-900 text-slate-400 border border-slate-800'
+                          }`}>
+                            {completedCount} / {passagesList.length} Read
                           </span>
                         </div>
+                      </div>
 
-                        {/* Per-Passage Read & Notes Action Buttons */}
-                        <div className="flex items-center space-x-1 shrink-0">
-                          <button
-                            onClick={() => onOpenPassage(passage)}
-                            className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-semibold flex items-center space-x-1 transition-all"
-                            title={`Read ${passage} in ESV Reader`}
-                          >
-                            <BookOpen className="w-3 h-3" />
-                            <span>Read</span>
-                          </button>
+                      {/* Individual Passages Breakdown */}
+                      <div className="space-y-2">
+                        {passagesList.map((passage, pIdx) => {
+                          const isPassageDone = !!completedPassages[passage];
+                          return (
+                            <div
+                              key={pIdx}
+                              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                                isPassageDone
+                                  ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'
+                                  : 'bg-slate-900/60 border-slate-800/90 text-slate-200 hover:border-amber-500/30'
+                              }`}
+                            >
+                              {/* Passage Checkbox & Reference */}
+                              <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                                <button
+                                  onClick={() => onTogglePassage(item.day || item.id, passage)}
+                                  className="p-0.5 rounded text-slate-400 hover:text-amber-400 transition-colors shrink-0"
+                                  title={isPassageDone ? `Uncheck ${passage}` : `Mark ${passage} read`}
+                                >
+                                  {isPassageDone ? (
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
+                                  ) : (
+                                    <Circle className="w-4 h-4 text-slate-500 hover:text-amber-400" />
+                                  )}
+                                </button>
+                                <span className={`font-serif text-sm font-semibold truncate ${isPassageDone ? 'line-through text-slate-400' : 'text-slate-100'}`}>
+                                  {passage}
+                                </span>
+                              </div>
 
-                          <button
-                            onClick={() => onOpenCommentary(passage)}
-                            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all"
-                            title={`Open commentaries for ${passage}`}
+                              {/* Per-Passage Read & Notes Action Buttons */}
+                              <div className="flex items-center space-x-1 shrink-0">
+                                <button
+                                  onClick={() => onOpenPassage(passage)}
+                                  className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-semibold flex items-center space-x-1 transition-all"
+                                  title={`Read ${passage} in ESV Reader`}
+                                >
+                                  <BookOpen className="w-3 h-3" />
+                                  <span>Read</span>
+                                </button>
+
+                                <button
+                                  onClick={() => onOpenCommentary(passage)}
+                                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all"
+                                  title={`Open commentaries for ${passage}`}
+                                >
+                                  <ExternalLink className="w-3 h-3 text-sky-400" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Toggle Whole Day Completed Button */}
+                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400">Mark all passages:</span>
+                      <button
+                        onClick={() => onToggleDay(item.day || item.id)}
+                        className={`px-3 py-1 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all ${
+                          isCompleted
+                            ? 'bg-emerald-500 text-slate-950 font-bold'
+                            : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100'
+                        }`}
+                      >
+                        <BookCheck className="w-3.5 h-3.5" />
+                        <span>{isCompleted ? 'Day Completed! 🎉' : 'Complete All'}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="glass-card p-5 rounded-2xl border border-slate-800 bg-slate-900/40 flex flex-col items-center justify-center text-center min-h-[220px] space-y-3">
+                <Calendar className="w-8 h-8 text-amber-550/80 animate-pulse" />
+                <h4 className="text-sm font-serif font-bold text-slate-200">Rest Day</h4>
+                <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                  No readings scheduled for today. Take this time to catch up on missed days or review memory verses!
+                </p>
+              </div>
+            )}
+
+            {/* Right: Stats, Badges & Next Steps Panel */}
+            {(() => {
+              const completedDaysCount = planData.filter(item => item.completed).length;
+              const totalDaysCount = planData.length || 260;
+              const readingProgressPercent = Math.round((completedDaysCount / totalDaysCount) * 100) || 0;
+              const savedVerses = JSON.parse(localStorage.getItem('esv_saved_verses') || '[]');
+              const savedVersesCount = savedVerses.length;
+
+              // Generate badges dynamically
+              const badges = [];
+              if (savedVersesCount > 0) badges.push({ text: "📖 Word Guardian", color: "bg-purple-500/10 text-purple-300 border-purple-500/30" });
+              if (missedDaysCount === 0 && completedDaysCount > 0) badges.push({ text: "🔥 Consistent", color: "bg-orange-500/10 text-orange-300 border-orange-500/30" });
+              if (readingProgressPercent > 5) badges.push({ text: "🚀 On Track", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" });
+              if (badges.length === 0) badges.push({ text: "🌱 Beginner", color: "bg-sky-500/10 text-sky-300 border-sky-500/30" });
+
+              return (
+                <div className="glass-card p-5 rounded-2xl border border-slate-800 bg-slate-900/20 flex flex-col justify-between space-y-4">
+                  <div>
+                    {/* Header */}
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-350 flex items-center space-x-1.5">
+                        <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Progress & Next Steps</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {badges.map((badge, idx) => (
+                          <span
+                            key={idx}
+                            className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border ${badge.color}`}
                           >
-                            <ExternalLink className="w-3 h-3 text-sky-400" />
-                          </button>
+                            {badge.text}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="p-3 bg-slate-950/40 rounded-xl border border-slate-800/50 text-center">
+                        <div className="text-[10px] text-slate-400 uppercase tracking-wide">Reading Plan</div>
+                        <div className="text-sm font-serif font-bold text-amber-450 mt-0.5">
+                          {readingProgressPercent}% <span className="text-[10px] text-slate-500 font-sans font-normal">({completedDaysCount}/{totalDaysCount})</span>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="p-3 bg-slate-950/40 rounded-xl border border-slate-800/50 text-center">
+                        <div className="text-[10px] text-slate-400 uppercase tracking-wide">Memory Verses</div>
+                        <div className="text-sm font-serif font-bold text-sky-450 mt-0.5">
+                          {savedVersesCount} <span className="text-[10px] text-slate-500 font-sans font-normal">saved</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Items / Next Steps */}
+                    <div className="space-y-2">
+                      <h5 className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Action Items</h5>
+                      
+                      {/* Catch Up Action */}
+                      {missedDaysCount > 0 && (
+                        <div className="p-2.5 bg-rose-500/5 border border-rose-500/20 rounded-xl flex items-center justify-between gap-3">
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <AlertCircle className="w-3.5 h-3.5 text-rose-450 shrink-0" />
+                            <span className="text-xs text-rose-300 font-semibold truncate">
+                              Catch up on {missedDaysCount} missed day{missedDaysCount > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <button
+                            onClick={onCatchUpOldest}
+                            className="px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-400 text-slate-950 text-[10px] font-bold shadow transition-all shrink-0 flex items-center space-x-1"
+                          >
+                            <span>Start</span>
+                            <Play className="w-2.5 h-2.5 text-slate-950 fill-slate-950" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Memory Practice Action */}
+                      <div className="p-2.5 bg-sky-500/5 border border-sky-500/20 rounded-xl flex items-center justify-between gap-3">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <BrainCircuit className="w-3.5 h-3.5 text-sky-455 shrink-0" />
+                          <span className="text-xs text-sky-300 font-semibold truncate">
+                            Practice your scripture memorization
+                          </span>
+                        </div>
+                        {setActiveTab && (
+                          <button
+                            onClick={() => setActiveTab('memory')}
+                            className="px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-[10px] font-bold shadow transition-all shrink-0 flex items-center space-x-1"
+                          >
+                            <span>Practice</span>
+                            <ArrowRight className="w-2.5 h-2.5 text-slate-950" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Browse All Plan Action */}
+                      <div className="p-2.5 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-center justify-between gap-3">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span className="text-xs text-amber-300 font-semibold truncate">
+                            Explore full reading schedule
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setFilter('all')}
+                          className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-bold shadow transition-all shrink-0 flex items-center space-x-1"
+                        >
+                          <span>Browse</span>
+                          <ArrowRight className="w-2.5 h-2.5 text-slate-950" />
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
                 </div>
-              </div>
+              );
+            })()}
 
-              {/* Toggle Whole Day Completed Button */}
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400">Mark all passages:</span>
-                <button
-                  onClick={() => onToggleDay(item.day || item.id)}
-                  className={`px-3 py-1 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all ${
-                    isCompleted
-                      ? 'bg-emerald-500 text-slate-950 font-bold'
-                      : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100'
-                  }`}
-                >
-                  <BookCheck className="w-3.5 h-3.5" />
-                  <span>{isCompleted ? 'Day Completed! 🎉' : 'Complete All'}</span>
-                </button>
-              </div>
-            </div>
-          );
-        })}
+          </div>
 
-        {/* Verse of the Day Card (rendered inside the grid on the Today tab) */}
-        {filter === 'today' && (
-          <div className={`${
-            filteredPlan.length === 0 
-              ? 'col-span-full min-h-[350px] p-8' 
-              : 'col-span-1 md:col-span-1 lg:col-span-2 min-h-[220px] p-6'
-          } relative rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl flex flex-col justify-center text-center`}>
+          {/* Lower Section: Verse of the Day (Full-width, fills the rest of screen) */}
+          <div className="relative rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl p-8 text-center min-h-[220px] flex flex-col justify-center">
             {/* Background image overlay */}
             <div 
               className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen"
@@ -320,38 +450,150 @@ export default function ReadingPlanView({
             {/* Dark vignette gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent pointer-events-none" />
 
-            <div className="relative z-10 space-y-4 flex flex-col justify-center">
+            <div className="relative z-10 space-y-4 max-w-2xl mx-auto flex flex-col justify-center">
               <span className="text-[9px] uppercase font-bold tracking-widest text-amber-400/90 bg-amber-400/10 px-2.5 py-0.5 rounded-full w-max mx-auto border border-amber-400/20">
                 Verse of the Day
               </span>
               
-              <div className="space-y-3 max-w-xl mx-auto">
-                <blockquote className="text-base sm:text-lg font-serif italic text-slate-100 leading-relaxed font-semibold">
+              <div className="space-y-3">
+                <blockquote className="text-base sm:text-lg lg:text-xl font-serif italic text-slate-100 leading-relaxed font-semibold">
                   “{getDailyVerse().text}”
                 </blockquote>
-                <cite className="block text-[10px] font-sans font-bold tracking-wider text-amber-300 uppercase not-italic">
+                <cite className="block text-xs font-sans font-bold tracking-wider text-amber-300 uppercase not-italic">
                   — {getDailyVerse().ref}
                 </cite>
               </div>
-
-              {filteredPlan.length === 0 && (
-                <div className="pt-2 max-w-sm mx-auto space-y-3">
-                  <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                    ✨ No scheduled readings for today! Take a moment to reflect on today's verse, or browse the full 52-week plan to read ahead.
-                  </p>
-                  <button
-                    onClick={() => setFilter('all')}
-                    className="mx-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
-                  >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    <span>Browse All 52 Weeks</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredPlan.map(item => {
+            const isCompleted = !!item.completed;
+            const isMissed = !isCompleted && isDatePast(item.date, item.year);
+            const isToday = isDateToday(item.date, item.year);
+
+            const passagesList = item.passages && item.passages.length > 0
+              ? item.passages
+              : (item.text ? item.text.split(/;\s*/) : []);
+
+            const completedPassages = item.completedPassages || {};
+            const completedCount = passagesList.filter(p => completedPassages[p]).length;
+
+            return (
+              <div
+                key={item.id || `${item.week}-${item.day}`}
+                className={`glass-card p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
+                  isToday
+                    ? 'border-amber-500/50 bg-amber-950/20 ring-1 ring-amber-500/30'
+                    : isCompleted
+                      ? 'border-emerald-500/30 bg-emerald-950/10'
+                      : isMissed
+                        ? 'border-rose-500/30 bg-rose-950/10'
+                        : 'border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <div>
+                  {/* Header: Week, Date, Status */}
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2.5">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-900 text-amber-400 border border-slate-800">
+                        Week {item.week}
+                      </span>
+                      <span className="text-xs text-slate-400 font-sans">{item.date}</span>
+                      {isToday && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950">
+                          TODAY
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Day Status Badge */}
+                    <div className="flex items-center space-x-1">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isCompleted ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-900 text-slate-400 border border-slate-800'
+                      }`}>
+                        {completedCount} / {passagesList.length} Read
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Individual Passages Breakdown */}
+                  <div className="space-y-2">
+                    {passagesList.map((passage, pIdx) => {
+                      const isPassageDone = !!completedPassages[passage];
+                      return (
+                        <div
+                          key={pIdx}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                            isPassageDone
+                              ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'
+                              : 'bg-slate-900/60 border-slate-800/90 text-slate-200 hover:border-amber-500/30'
+                          }`}
+                        >
+                          {/* Passage Checkbox & Reference */}
+                          <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                            <button
+                              onClick={() => onTogglePassage(item.day || item.id, passage)}
+                              className="p-0.5 rounded text-slate-400 hover:text-amber-400 transition-colors shrink-0"
+                              title={isPassageDone ? `Uncheck ${passage}` : `Mark ${passage} read`}
+                            >
+                              {isPassageDone ? (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
+                              ) : (
+                                <Circle className="w-4 h-4 text-slate-500 hover:text-amber-400" />
+                              )}
+                            </button>
+                            <span className={`font-serif text-sm font-semibold truncate ${isPassageDone ? 'line-through text-slate-400' : 'text-slate-100'}`}>
+                              {passage}
+                            </span>
+                          </div>
+
+                          {/* Per-Passage Read & Notes Action Buttons */}
+                          <div className="flex items-center space-x-1 shrink-0">
+                            <button
+                              onClick={() => onOpenPassage(passage)}
+                              className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-semibold flex items-center space-x-1 transition-all"
+                              title={`Read ${passage} in ESV Reader`}
+                            >
+                              <BookOpen className="w-3 h-3" />
+                              <span>Read</span>
+                            </button>
+
+                            <button
+                              onClick={() => onOpenCommentary(passage)}
+                              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all"
+                              title={`Open commentaries for ${passage}`}
+                            >
+                              <ExternalLink className="w-3 h-3 text-sky-400" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Toggle Whole Day Completed Button */}
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400">Mark all passages:</span>
+                  <button
+                    onClick={() => onToggleDay(item.day || item.id)}
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all ${
+                      isCompleted
+                        ? 'bg-emerald-500 text-slate-950 font-bold'
+                        : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100'
+                    }`}
+                  >
+                    <BookCheck className="w-3.5 h-3.5" />
+                    <span>{isCompleted ? 'Day Completed! 🎉' : 'Complete All'}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Empty State for other filters (search / missed / completed empty lists) */}
       {filteredPlan.length === 0 && filter !== 'today' && (

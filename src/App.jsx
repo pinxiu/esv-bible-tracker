@@ -524,6 +524,7 @@ export default function App() {
             missedDaysCount={missedDaysCount}
             onCatchUpOldest={handleCatchUpOldest}
             onCatchUpToday={handleCatchUpToday}
+            setActiveTab={setActiveTab}
           />
         )}
 
