@@ -127,11 +127,7 @@ function autoGenerateReleaseDetails(currentVersion) {
   let bumpType = 'patch';
   const notes = [];
 
-  notes.push('Upgraded Progress Dashboard with a 4-column active stats layout displaying separate Reading Streak (Read Streak) and Verse practice streak (Mem Streak).');
-  notes.push('Implemented actual-read date completion tracking (completionDate) to calculate reading streaks strictly based on the days completed, preventing retroactive streak padding when catching up on missed readings.');
-  notes.push('Dynamically matched milestones, unlocked checks, and ultimate trophies to the actual length of the user treasury (savedVersesCount) instead of a hardcoded 195 cap.');
-  notes.push('Simplified Trophy Case launcher inside the Progress Dashboard into a single, space-saving clickable text link.');
-  notes.push('Overhauled light mode color styles to replace all muddy dark-grey boxes with clean translucent white backgrounds, and introduced a fresh, high-contrast completed card mint/teal theme.');
+  notes.push('Preserved developer certificate code signature in the installation script, resolving macOS ShipIt cache signature verification failures on auto-updater relaunch.');
 
   const nextVersion = bumpVersion(currentVersion, bumpType);
   return { bumpType, nextVersion, releaseNotes: notes.join(' ') };
