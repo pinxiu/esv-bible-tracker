@@ -55,4 +55,4 @@ npm run build:local
 ```
 
 ### Self-Signed Certificate Setup
-To build signed releases, please refer to the detailed instructions inside **[DEVELOPER_SIGNING.md](file:///Users/phoebekwok/.gemini/antigravity/scratch/esv-bible-tracker-mac/DEVELOPER_SIGNING.md)**.
+To build signed releases, please refer to the detailed instructions inside **[DEVELOPER_SIGNING.md](DEVELOPER_SIGNING.md)**.
