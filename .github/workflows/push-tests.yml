@@ -43,7 +43,7 @@ jobs:
 
       - name: Send Failure Email Notification
         if: failure()
-        uses: dawidd6/action-send-email@v3
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
           server_port: ${{ secrets.SMTP_PORT || 465 }}
