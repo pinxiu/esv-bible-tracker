@@ -5,6 +5,13 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.22] - 2026-07-22
+
+### 🚀 Release Summary
+- **Anchored Tab Navigation**: Anchored the header's navigation buttons absolutely to the center of the header bar (`absolute left-1/2 -translate-x-1/2`), preventing any horizontal wiggling or shifts when version update check status text expands.
+- **Instant-Load Trophy Case Modal**: Refactored the modal overlay to remain mounted in the DOM, utilizing CSS opacity and scale transitions for immediate display without loading delays, combined with a smooth slide-up animation.
+
+
 ## [1.0.21] - 2026-07-22
 
 ### 🚀 Release Summary
