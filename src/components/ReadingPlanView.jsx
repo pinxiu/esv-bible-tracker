@@ -162,7 +162,13 @@ export default function ReadingPlanView({
           type="text"
           placeholder="Search passages, books, weeks..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSearchQuery(val);
+            if (val && filter !== 'all') {
+              setFilter('all');
+            }
+          }}
           className="w-full sm:w-64 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-amber-400 font-sans"
         />
       </div>
