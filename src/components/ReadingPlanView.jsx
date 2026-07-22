@@ -13,7 +13,7 @@ export default function ReadingPlanView({
   onCatchUpOldest,
   onCatchUpToday
 }) {
-  const [filter, setFilter] = useState('all'); // 'all', 'today', 'missed', 'completed'
+  const [filter, setFilter] = useState('today'); // 'today', 'all', 'missed', 'completed'
   const [searchQuery, setSearchQuery] = useState('');
 
   const todayMonthDayStr = getTodayBeijingMonthDay();
@@ -82,8 +82,8 @@ export default function ReadingPlanView({
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           {[
-            { id: 'all', label: 'All 52 Weeks' },
             { id: 'today', label: `Today (${todayMonthDayStr})` },
+            { id: 'all', label: 'All 52 Weeks' },
             { id: 'missed', label: `Missed (${missedDaysCount})` },
             { id: 'completed', label: 'Completed' }
           ].map(btn => (
