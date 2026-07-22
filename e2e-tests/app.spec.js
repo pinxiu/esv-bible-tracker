@@ -139,4 +139,14 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     // Time should have no seconds like "XX:XX AM" (8 characters)
     expect(clockTextNarrow).toMatch(/\d{2}:\d{2}\s+(AM|PM)/i);
   });
+
+  test('Regression Check: app-update.yml generation logic is present in install.sh', async () => {
+    const fs = require('fs');
+    const fsPath = require('path');
+    const installScriptPath = fsPath.join(__dirname, '../install.sh');
+    const content = fs.readFileSync(installScriptPath, 'utf8');
+    expect(content).toContain('app-update.yml');
+    expect(content).toContain('provider: github');
+    expect(content).toContain('repo: esv-bible-tracker');
+  });
 });

@@ -331,3 +331,18 @@ html.light {
 .light .text-yellow-600 {
   color: #a16207 !important; /* Dark golden yellow-700 */
 }
+
+/* Responsive Clock Width Threshold (1125px) */
+@media (max-width: 1125px) {
+  .hide-under-1125 {
+    display: none !important;
+  }
+  .show-under-1125 {
+    display: inline !important;
+  }
+}
+@media (min-width: 1126px) {
+  .show-under-1125 {
+    display: none !important;
+  }
+}

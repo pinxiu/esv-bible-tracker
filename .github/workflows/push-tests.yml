@@ -1,0 +1,68 @@
+name: Push Tests Gating
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  run-related-tests:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Fetch previous commit to allow git diff checking
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Web Application
+        run: npm run build
+
+      - name: Run Related E2E Tests
+        id: test_run
+        run: npm run test:related
+        continue-on-error: true
+
+      - name: Handle Test Failure
+        if: steps.test_run.outcome == 'failure'
+        run: |
+          echo "❌ Related E2E tests failed!"
+          exit 1
+
+      - name: Send Failure Email Notification
+        if: failure()
+        uses: dawidd6/action-send-email@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
+          server_port: ${{ secrets.SMTP_PORT || 465 }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "⚠️ CI Blocked: Push E2E Test Failure on ${{ github.ref_name }}"
+          to: pinxiu.gong@gmail.com
+          from: "ESV Bible Tracker CI <ci@bibleplan.com>"
+          body: |
+            Hello,
+
+            The E2E regression tests related to your latest commit have failed on branch "${{ github.ref_name }}".
+            
+            Commit SHA: ${{ github.sha }}
+            Commit Message: ${{ github.event.head_commit.message }}
+            
+            Please review the test failure details in the GitHub Action run logs:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Best regards,
+            ESV Bible Tracker CI
+          secure: true

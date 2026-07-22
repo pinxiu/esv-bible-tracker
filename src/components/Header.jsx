@@ -182,8 +182,7 @@ export default function Header({
           <img src={logoIcon} alt="ESV Bible Tracker" className="w-8 h-8 rounded-xl shadow-md object-cover border border-amber-500/30 shrink-0" />
           <div>
             <h1 className="font-serif font-bold text-sm text-slate-100 flex items-center select-none">
-              <span className="hidden lg:inline">ESV Bible Tracker</span>
-              <span className="inline lg:hidden">ESV Tracker</span>
+              <span>ESV Bible Tracker</span>
               <button
                 onClick={handleVersionClick}
                 className="align-super text-[9px] font-sans font-semibold text-amber-400 hover:text-amber-300 transition-all hover:underline cursor-pointer ml-1 select-none whitespace-nowrap shrink-0"
@@ -192,7 +191,7 @@ export default function Header({
                 <sup>{getVersionText()}</sup>
               </button>
             </h1>
-            <p className="text-[9px] text-slate-400 font-sans hidden xl:block">52-Week Reading & Memory Plan</p>
+            <p className="text-[9px] text-slate-400 font-sans">52-Week Reading & Memory Plan</p>
           </div>
         </div>
       </div>
@@ -208,7 +207,7 @@ export default function Header({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-2 py-1 lg:px-3.5 lg:py-1.5 rounded-lg text-[11px] lg:text-xs font-semibold transition-all ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               activeTab === tab.id
                 ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-slate-200'
@@ -220,19 +219,19 @@ export default function Header({
       </div>
 
       {/* Right: Active Timezone Clock & Settings */}
-      <div className="flex items-center space-x-1.5 lg:space-x-3 titlebar-no-drag">
+      <div className="flex items-center space-x-3 titlebar-no-drag">
         {/* Active Timezone Clock */}
-        <div className="flex items-center space-x-1 lg:space-x-2 px-1.5 py-1 lg:px-3 lg:py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-[10px] lg:text-xs text-slate-300 header-timezone-box">
-          <Clock className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-amber-400" />
-          <span className="font-mono text-amber-200 font-semibold hidden lg:inline">{activeTimeWithSec || 'Time'}</span>
-          <span className="font-mono text-amber-200 font-semibold inline lg:hidden">{activeTimeNoSec || 'Time'}</span>
-          <span className="text-[9px] text-amber-400/90 bg-amber-400/10 px-1.5 py-0.5 rounded font-sans max-w-[80px] truncate hidden lg:inline-block" title={tzLabel}>
+        <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 header-timezone-box">
+          <Clock className="w-3.5 h-3.5 text-amber-400" />
+          <span className="font-mono text-amber-200 font-semibold hide-under-1125">{activeTimeWithSec || 'Time'}</span>
+          <span className="font-mono text-amber-200 font-semibold show-under-1125">{activeTimeNoSec || 'Time'}</span>
+          <span className="text-[9px] text-amber-400/90 bg-amber-400/10 px-1.5 py-0.5 rounded font-sans max-w-[80px] truncate hide-under-1125" title={tzLabel}>
             {tzLabel}
           </span>
         </div>
 
         {/* Progress Badge */}
-        <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+        <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
           <span className="text-slate-400">Plan:</span>
           <span className="font-bold text-amber-400">{progressPercent}%</span>
         </div>
@@ -240,19 +239,19 @@ export default function Header({
         {/* Dark / Light Theme Toggle Button */}
         <button
           onClick={onToggleTheme}
-          className="p-1.5 lg:p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-400 hover:text-amber-300 transition-all flex items-center justify-center"
+          className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-400 hover:text-amber-300 transition-all flex items-center justify-center"
           title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
-          {theme === 'dark' ? <Sun className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-amber-400" /> : <Moon className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-indigo-400" />}
+          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
         </button>
 
         {/* Settings Button */}
         <button
           onClick={onOpenSettings}
-          className="p-1.5 lg:p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-amber-400 transition-all"
+          className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-amber-400 transition-all"
           title="Settings & Onboarding Tour"
         >
-          <Settings className="w-3.5 lg:w-4 h-3.5 lg:h-4" />
+          <Settings className="w-4 h-4" />
         </button>
       </div>
     </header>
