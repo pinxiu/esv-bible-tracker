@@ -42,7 +42,7 @@ jobs:
           exit 1
 
       - name: Send Failure Email Notification
-        if: failure()
+        if: failure() && secrets.SMTP_PASSWORD != ''
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
