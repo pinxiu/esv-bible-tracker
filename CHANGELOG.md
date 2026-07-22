@@ -5,6 +5,15 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.24] - 2026-07-22
+
+### 🚀 Release Summary
+- **Encouraging Empty States**: Added custom styled empty states with visual icons and personalized, encouraging messages for the Missed list (celebrating caught up status) and Completed list (guiding first step reviews) instead of a generic "no items matched" message.
+- **GitHub Release Title Cleanup**: Standardized all historical release titles on GitHub to follow the version-only format (e.g. `1.0.22` instead of `v1.0.22`) to correct naming anomalies.
+- **Unified Release Notes Synchronization**: Created a background sync script that matches and updates historical GitHub release descriptions to exactly match the formatted markdown records in `CHANGELOG.md`.
+- **Intelligent Auto-Release Descriptions**: Refactored the release script to parse descriptions directly from `CHANGELOG.md` when preparing and publishing draft releases, ensuring future releases are automatically formatted consistently.
+
+
 ## [1.0.23] - 2026-07-22
 
 ### 🚀 Release Summary
