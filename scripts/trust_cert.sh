@@ -20,6 +20,14 @@ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keyc
 # Clean up
 rm "$TEMP_CERT"
 
+# Remove Gatekeeper quarantine attributes from the app if installed in Applications
+APP_PATH="/Applications/ESV Bible Tracker.app"
+if [ -d "$APP_PATH" ]; then
+  echo "🚀 Clearing macOS Gatekeeper quarantine flags..."
+  sudo xattr -rd com.apple.quarantine "$APP_PATH" 2>/dev/null || true
+  sudo xattr -cr "$APP_PATH" 2>/dev/null || true
+fi
+
 echo "---------------------------------------------"
 echo "🎉 SUCCESS! The certificate is now trusted."
 echo "You can now run ESV Bible Tracker updates without signature errors."
