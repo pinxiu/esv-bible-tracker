@@ -55,7 +55,7 @@
         "zip"
       ],
       "icon": "build/icon.icns",
-      "identity": null,
+      "identity": "ESV Bible Tracker Developer",
       "hardenedRuntime": false,
       "gatekeeperAssess": false
     },
