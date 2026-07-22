@@ -5,6 +5,12 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.23] - 2026-07-22
+
+### 🚀 Release Summary
+- Preserved developer certificate code signature in the installation script, resolving macOS ShipIt cache signature verification failures on auto-updater relaunch.
+
+
 ## [1.0.22] - 2026-07-22
 
 ### 🚀 Release Summary
