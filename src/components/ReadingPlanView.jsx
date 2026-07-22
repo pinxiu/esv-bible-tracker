@@ -868,8 +868,42 @@ export default function ReadingPlanView({
 
       {/* Empty State for other filters (search / missed / completed empty lists) */}
       {filteredPlan.length === 0 && filter !== 'today' && (
-        <div className="col-span-full text-center py-12 text-slate-500 font-sans">
-          No reading items match your current filter selection.
+        <div className="col-span-full text-center py-16 px-6 glass-card rounded-2xl border border-slate-800/40 bg-slate-950/20 max-w-md mx-auto my-6 font-sans">
+          {(() => {
+            if (searchQuery) {
+              return (
+                <div className="space-y-1.5">
+                  <span className="text-2xl block mb-2">🔍</span>
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">No Results Found</h4>
+                  <p className="text-xs text-slate-400">No reading items match your search for &ldquo;{searchQuery}&rdquo;.</p>
+                </div>
+              );
+            }
+            if (filter === 'missed') {
+              return (
+                <div className="space-y-1.5">
+                  <span className="text-3xl block mb-2 animate-bounce">🎉</span>
+                  <h4 className="text-xs font-bold text-emerald-450 uppercase tracking-wider">All Caught Up!</h4>
+                  <p className="text-xs text-slate-350 font-medium">You have no missed reading passages. Keep up the amazing consistency!</p>
+                </div>
+              );
+            }
+            if (filter === 'completed') {
+              return (
+                <div className="space-y-1.5">
+                  <span className="text-3xl block mb-2">📖</span>
+                  <h4 className="text-xs font-bold text-amber-450 uppercase tracking-wider">Start Your Journey</h4>
+                  <p className="text-xs text-slate-350 font-medium">Your completed reading passages will appear here. Check off today&rsquo;s readings to see your progress bloom!</p>
+                </div>
+              );
+            }
+            return (
+              <div className="space-y-1.5">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">No Readings</h4>
+                <p className="text-xs text-slate-400">No reading items match your current selection.</p>
+              </div>
+            );
+          })()}
         </div>
       )}
 
