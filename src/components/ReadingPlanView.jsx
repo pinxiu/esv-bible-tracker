@@ -1,6 +1,63 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Circle, BookOpen, ExternalLink, Calendar, Filter, Sparkles, Check, AlertCircle, BookCheck } from 'lucide-react';
 import { isDatePast, isDateToday, getTodayBeijingMonthDay, getTodayBeijingMD } from '../utils/dateUtils';
+import todayVerseBg from '../assets/today_verse_bg.jpg';
+
+const DAILY_VERSES = [
+  {
+    ref: "Psalm 119:105",
+    text: "Your word is a lamp to my feet and a light to my path."
+  },
+  {
+    ref: "Joshua 1:9",
+    text: "Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the LORD your God is with you wherever you go."
+  },
+  {
+    ref: "Isaiah 40:8",
+    text: "The grass withers, the flower fades, but the word of our God will stand forever."
+  },
+  {
+    ref: "Romans 15:4",
+    text: "For whatever was written in former days was written for our instruction, that through endurance and through the encouragement of the Scriptures we might have hope."
+  },
+  {
+    ref: "Proverbs 3:5-6",
+    text: "Trust in the LORD with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."
+  },
+  {
+    ref: "Psalm 19:7",
+    text: "The law of the LORD is perfect, reviving the soul; the testimony of the LORD is sure, making wise the simple."
+  },
+  {
+    ref: "Matthew 4:4",
+    text: "Man shall not live by bread alone, but by every word that comes from the mouth of God."
+  },
+  {
+    ref: "Colossians 3:16",
+    text: "Let the word of Christ dwell in you richly, teaching and admonishing one another in all wisdom, singing psalms and hymns and spiritual songs, with thankfulness in your hearts to God."
+  },
+  {
+    ref: "2 Timothy 3:16",
+    text: "All Scripture is breathed out by God and profitable for teaching, for reproof, for correction, and for training in righteousness."
+  },
+  {
+    ref: "Psalm 119:11",
+    text: "I have stored up your word in my heart, that I might not sin against you."
+  },
+  {
+    ref: "Hebrews 4:12",
+    text: "For the word of God is living and active, sharper than any two-edged sword, piercing to the division of soul and of spirit."
+  },
+  {
+    ref: "James 1:22",
+    text: "But be doers of the word, and not hearers only, deceiving yourselves."
+  }
+];
+
+function getDailyVerse() {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  return DAILY_VERSES[dayOfYear % DAILY_VERSES.length];
+}
 
 export default function ReadingPlanView({
   planData = [],
@@ -237,6 +294,54 @@ export default function ReadingPlanView({
           );
         })}
       </div>
+
+      {/* Empty State / Daily Verse Card */}
+      {filteredPlan.length === 0 && (
+        <div className="col-span-full flex justify-center py-6">
+          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-850 bg-slate-900/60 overflow-hidden shadow-2xl flex flex-col justify-between p-8 text-center min-h-[350px]">
+            {/* Background image overlay */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen"
+              style={{ backgroundImage: `url(${todayVerseBg})` }}
+            />
+            {/* Dark vignette gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent pointer-events-none" />
+
+            <div className="relative z-10 space-y-6 flex-1 flex flex-col justify-center">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-amber-400/90 bg-amber-400/10 px-3 py-1 rounded-full w-max mx-auto border border-amber-400/20">
+                Verse of the Day
+              </span>
+              
+              <div className="space-y-4 max-w-lg mx-auto">
+                <blockquote className="text-lg sm:text-xl font-serif italic text-slate-100 leading-relaxed font-semibold">
+                  “{getDailyVerse().text}”
+                </blockquote>
+                <cite className="block text-xs font-sans font-bold tracking-wider text-amber-300 uppercase not-italic">
+                  — {getDailyVerse().ref}
+                </cite>
+              </div>
+
+              <div className="pt-4 max-w-sm mx-auto space-y-4">
+                <p className="text-xs text-slate-400 font-sans leading-relaxed">
+                  {filter === 'today' 
+                    ? "✨ No scheduled readings for today! Take a moment to reflect on today's verse, or browse the full 52-week plan to read ahead."
+                    : "No reading items match your current filter."}
+                </p>
+
+                {filter === 'today' && (
+                  <button
+                    onClick={() => setFilter('all')}
+                    className="mx-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Browse All 52 Weeks</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
