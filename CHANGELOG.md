@@ -8,7 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.26] - Unreleased
 
 ### 🚀 Release Summary
-- Upcoming features and refinements under development.
+- Patch 1.0.25 changelog, bump dev version to 1.0.26, and automate post-release version bumps.
 
 
 ## [1.0.25] - 2026-07-23

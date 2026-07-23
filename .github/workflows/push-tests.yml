@@ -7,7 +7,7 @@ on:
       - master
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   run-related-tests:
@@ -71,3 +71,8 @@ jobs:
             Best regards,
             ESV Bible Tracker CI
           secure: true
+
+      - name: Update CHANGELOG on Push
+        if: success()
+        run: |
+          node scripts/update-changelog.js
