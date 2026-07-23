@@ -8,6 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.26] - Unreleased
 
 ### 🚀 Release Summary
+- Fix writeFileSync typo in update-changelog script and verify fuzzy deduplication gating.
 - Patch 1.0.25 changelog, bump dev version to 1.0.26, and automate post-release version bumps.
 
 
