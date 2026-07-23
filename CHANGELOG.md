@@ -5,6 +5,21 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
+## [1.0.26] - Unreleased
+
+### 🚀 Release Summary
+- Upcoming features and refinements under development.
+
+
+## [1.0.25] - 2026-07-23
+
+### 🚀 Release Summary
+- **Concise Timezone Clock under 1125px**: Refined the timezone clock box to dynamically hide the seconds readout and timezone location label at window widths smaller than `1125px`, keeping the brand title as `ESV Bible Tracker` and menu buttons at their default size while preventing any overlaps.
+- **Auto-Updater Installation Configuration**: Restored the automatic generation of the `app-update.yml` configuration file inside `/Applications/ESV Bible Tracker.app` during local installation runs, resolving local update check failures.
+- **E2E Release Gatekeeper & Related Gating**: Added Playwright E2E regression tests as a pre-requisite for daily releases and commit pushes, utilizing a smart script to run only tests related to changed files.
+- **Workflow Decoupling**: Mapped all SMTP secrets to step-level environment variables in both `push-tests.yml` and `daily-release.yml` to prevent GitHub Actions conditional expression compilation failures.
+
+
 ## [1.0.24] - 2026-07-22
 
 ### 🚀 Release Summary

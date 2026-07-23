@@ -213,69 +213,115 @@ async function runRelease() {
     }
   }
 
-  // 6. Auto-Detect Version & Auto-Generate Release Description
+  // 6. Determine release version and notes
   const arg = process.argv[2] ? process.argv[2].toLowerCase() : '';
-  let nextVersion = currentVersion;
-  let releaseNotes = '';
+  let targetVersion = currentVersion;
 
   if (['patch', 'minor', 'major'].includes(arg) || parseSemVer(arg)) {
-    nextVersion = bumpVersion(currentVersion, arg);
-    const autoInfo = autoGenerateReleaseDetails(currentVersion);
-    releaseNotes = autoInfo.releaseNotes;
-  } else {
-    const autoInfo = autoGenerateReleaseDetails(currentVersion);
-    nextVersion = autoInfo.nextVersion;
-    releaseNotes = autoInfo.releaseNotes;
-    console.log(`🤖 Auto-detected SemVer bump: ${autoInfo.bumpType.toUpperCase()}`);
+    // If explicit override bump requested
+    targetVersion = bumpVersion(currentVersion, arg);
+    pkg.version = targetVersion;
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
+    console.log(`✅ Manually bumped version in package.json to v${targetVersion}`);
   }
 
-  console.log(`✨ Target Release Version: v${nextVersion}`);
-  console.log(`📝 Auto-Generated Release Log:\n   - ${releaseNotes}\n`);
+  // Extract release notes from CHANGELOG.md for the target version
+  let releaseNotes = getReleaseNotesFromChangelog(targetVersion);
 
-  // 7. Update package.json
-  pkg.version = nextVersion;
-  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-  console.log(`✅ Updated package.json version to v${nextVersion}`);
+  if (!releaseNotes) {
+    console.warn(`⚠️ Warning: No release summary found in CHANGELOG.md for [${targetVersion}]. Using auto-generated fallback.`);
+    const autoInfo = autoGenerateReleaseDetails(currentVersion);
+    releaseNotes = autoInfo.releaseNotes;
+  }
 
-  // 8. Prepend to CHANGELOG.md
+  console.log(`✨ Target Release Version: v${targetVersion}`);
+  console.log(`📝 Release Notes:\n${releaseNotes}\n`);
+
+  // 7. Update header in CHANGELOG.md to lock in release date
   const changelogPath = path.join(rootDir, 'CHANGELOG.md');
   const todayDate = new Date().toISOString().split('T')[0];
-  const newChangelogEntry = `\n## [${nextVersion}] - ${todayDate}\n\n### 🚀 Release Summary\n- ${releaseNotes}\n`;
 
   if (fs.existsSync(changelogPath)) {
-    const existingContent = fs.readFileSync(changelogPath, 'utf8');
-    const headerPos = existingContent.indexOf('---');
-    if (headerPos !== -1) {
-      const updatedChangelog = existingContent.slice(0, headerPos + 3) + '\n' + newChangelogEntry + existingContent.slice(headerPos + 3);
-      fs.writeFileSync(changelogPath, updatedChangelog, 'utf8');
+    let changelogContent = fs.readFileSync(changelogPath, 'utf8');
+
+    // Replace "## [version] - Unreleased" with "## [version] - YYYY-MM-DD"
+    const unreleasedHeaderRegex = new RegExp(`##\\s*\\[${targetVersion.replace(/\./g, '\\.')}\\]\\s*-\\s*Unreleased`, 'i');
+    if (unreleasedHeaderRegex.test(changelogContent)) {
+      changelogContent = changelogContent.replace(unreleasedHeaderRegex, `## [${targetVersion}] - ${todayDate}`);
+      fs.writeFileSync(changelogPath, changelogContent, 'utf8');
+      console.log(`✅ Locked release date in CHANGELOG.md for v${targetVersion}`);
     } else {
-      fs.writeFileSync(changelogPath, existingContent + newChangelogEntry, 'utf8');
+      // If the header doesn't exist, prepend it (fallback)
+      const newChangelogEntry = `\n## [${targetVersion}] - ${todayDate}\n\n### 🚀 Release Summary\n- ${releaseNotes}\n`;
+      const headerPos = changelogContent.indexOf('---');
+      if (headerPos !== -1) {
+        changelogContent = changelogContent.slice(0, headerPos + 3) + '\n' + newChangelogEntry + changelogContent.slice(headerPos + 3);
+        fs.writeFileSync(changelogPath, changelogContent, 'utf8');
+        console.log(`✅ Prepend release entry in CHANGELOG.md for v${targetVersion}`);
+      }
     }
   }
-  console.log(`✅ Updated CHANGELOG.md`);
 
-  // 7. Publish to GitHub Releases if token present & repo exists online
+  // 8. Publish to GitHub Releases if token present & repo exists online
   if (token && isRepoOnline) {
     console.log('\n📦 Packaging & Publishing macOS releases (arm64 & x64) to GitHub Releases...');
     execSync('npx electron-builder --mac --arm64 --x64 --publish always', { cwd: rootDir, stdio: 'inherit', env: { ...process.env, GH_TOKEN: token, GITHUB_TOKEN: token } });
     
     // Automatically convert draft release to published release via GitHub API
-    console.log(`\n📢 Publishing GitHub Draft Release v${nextVersion}...`);
-    await publishDraftRelease(token, repoOwner, repoName, nextVersion);
+    console.log(`\n📢 Publishing GitHub Draft Release v${targetVersion}...`);
+    await publishDraftRelease(token, repoOwner, repoName, targetVersion);
 
-    console.log(`\n🎉 SUCCESS! Release v${nextVersion} fully published to GitHub Releases.`);
+    console.log(`\n🎉 SUCCESS! Release v${targetVersion} fully published to GitHub Releases.`);
     console.log('📡 All active users opening the app will automatically receive this OTA update!');
   } else {
     console.log('\n📦 Building local macOS app directory...');
     execSync('npx electron-builder --mac dir', { cwd: rootDir, stdio: 'inherit' });
   }
 
-  // 8. Re-install local app
+  // 9. Re-install local app
   console.log('\n📲 Installing updated local app to /Applications...');
   execSync('./install.sh', { cwd: rootDir, stdio: 'inherit' });
 
+  // 10. Post-Release: Bump to next version and push changes back to git
+  const nextVersion = bumpVersion(targetVersion, 'patch');
+  console.log(`\n🔄 Post-Release: Bumping codebase to next development version v${nextVersion}...`);
+
+  // Update package.json to the next version
+  pkg.version = nextVersion;
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
+  console.log(`✅ Updated package.json version to v${nextVersion} (development)`);
+
+  // Prepend next version placeholder to CHANGELOG.md
+  if (fs.existsSync(changelogPath)) {
+    const existingContent = fs.readFileSync(changelogPath, 'utf8');
+    const newPlaceholderEntry = `\n## [${nextVersion}] - Unreleased\n\n### 🚀 Release Summary\n- Upcoming features and refinements under development.\n`;
+    const headerPos = existingContent.indexOf('---');
+    if (headerPos !== -1) {
+      const updatedChangelog = existingContent.slice(0, headerPos + 3) + '\n' + newPlaceholderEntry + existingContent.slice(headerPos + 3);
+      fs.writeFileSync(changelogPath, updatedChangelog, 'utf8');
+      console.log(`✅ Added placeholder entry in CHANGELOG.md for v${nextVersion}`);
+    }
+  }
+
+  // If running in GitHub Actions, automatically commit and push version bumps back to main
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    console.log('\n🤖 CI Environment: Pushing codebase version bump back to GitHub main branch...');
+    try {
+      execSync('git config --global user.name "github-actions[bot]"', { stdio: 'inherit' });
+      execSync('git config --global user.email "github-actions[bot]@users.noreply.github.com"', { stdio: 'inherit' });
+      execSync('git add package.json CHANGELOG.md', { stdio: 'inherit' });
+      execSync(`git commit -m "chore: bump version to v${nextVersion} [skip ci]"`, { stdio: 'inherit' });
+      execSync('git push origin HEAD:main', { stdio: 'inherit' });
+      console.log('✅ Version bump pushed successfully to origin/main!');
+    } catch (e) {
+      console.error('⚠️ Failed to push version bump to origin/main:', e.message);
+    }
+  } else {
+    console.log(`\n👉 Run 'git commit -am "chore: bump version to v${nextVersion}" && git push' locally to sync origin.`);
+  }
+
   console.log('\n==================================================');
-  console.log(`✨ ESV Bible Tracker v${nextVersion} build complete!`);
+  console.log(`✨ ESV Bible Tracker v${targetVersion} build complete!`);
   console.log('==================================================\n');
 }
 
