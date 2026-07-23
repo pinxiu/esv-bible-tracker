@@ -36,7 +36,7 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
 
   test('App launches and displays the default view correctly', async () => {
     const title = await window.title();
-    expect(title).toBe('This Title is Intentional Failing Test!');
+    expect(title).toBe('ESV Bible Reading Plan & Memory Tracker');
     
     // Verify default view is the Today-First Reading Plan (subheading "Today is ...")
     await expect(window.locator('text=Beijing Time Zone')).toBeVisible();
