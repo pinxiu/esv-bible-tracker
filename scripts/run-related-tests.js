@@ -1,24 +1,42 @@
 const { execSync } = require('child_process');
 
-// Determine changed files compared to origin/main (or HEAD~1 if offline)
+// Determine changed files compared to origin/main (or HEAD~1 if in CI or offline)
 let diffFiles = [];
-try {
-  // Try fetching changes compared to remote main first
-  execSync('git fetch origin main --quiet', { stdio: 'ignore' });
-  const output = execSync('git diff --name-only origin/main', { encoding: 'utf8' });
-  diffFiles = output.split('\n').filter(Boolean);
-} catch (e) {
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+if (isCI) {
   try {
+    console.log('👷 CI environment detected. Checking files changed in the pushed commit(s)...');
     const output = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' });
     diffFiles = output.split('\n').filter(Boolean);
-  } catch (err) {
-    console.log('⚠️ Could not determine git diff. Defaulting to run all tests.');
+  } catch (e) {
+    console.log('⚠️ CI: Could not determine git diff against HEAD~1. Defaulting to run all tests.');
     try {
       execSync('npx playwright test', { stdio: 'inherit' });
     } catch (testErr) {
       process.exit(1);
     }
     process.exit(0);
+  }
+} else {
+  try {
+    // Try fetching changes compared to remote main first
+    execSync('git fetch origin main --quiet', { stdio: 'ignore' });
+    const output = execSync('git diff --name-only origin/main', { encoding: 'utf8' });
+    diffFiles = output.split('\n').filter(Boolean);
+  } catch (e) {
+    try {
+      const output = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' });
+      diffFiles = output.split('\n').filter(Boolean);
+    } catch (err) {
+      console.log('⚠️ Could not determine git diff. Defaulting to run all tests.');
+      try {
+        execSync('npx playwright test', { stdio: 'inherit' });
+      } catch (testErr) {
+        process.exit(1);
+      }
+      process.exit(0);
+    }
   }
 }
 
