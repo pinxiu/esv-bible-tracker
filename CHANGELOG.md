@@ -5,7 +5,13 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
-## [1.0.26] - Unreleased
+## [1.0.27] - Unreleased
+
+### 🚀 Release Summary
+- Upcoming features and refinements under development.
+
+
+## [1.0.26] - 2026-07-23
 
 ### 🚀 Release Summary
 - Fix writeFileSync typo in update-changelog script and verify fuzzy deduplication gating.
