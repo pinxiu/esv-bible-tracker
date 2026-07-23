@@ -59,12 +59,15 @@ jobs:
       - name: Send Failure Email Notification
         if: failure() && env.SMTP_PASSWORD != ''
         env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT || '465' }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
-          server_port: ${{ secrets.SMTP_PORT || 465 }}
-          username: ${{ secrets.SMTP_USERNAME }}
+          server_address: ${{ env.SMTP_SERVER }}
+          server_port: ${{ env.SMTP_PORT }}
+          username: ${{ env.SMTP_USERNAME }}
           password: ${{ env.SMTP_PASSWORD }}
           subject: "⚠️ Release Blocked: Daily E2E Test Failure (v${{ env.VERSION }})"
           to: pinxiu.gong@gmail.com
