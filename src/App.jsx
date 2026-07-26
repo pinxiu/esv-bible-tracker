@@ -606,6 +606,12 @@ export default function App() {
               setActiveTab(previousTab);
             }}
             onResetProgress={handleResetToDefault}
+            onShowTutorial={() => {
+              try {
+                localStorage.removeItem('esv_onboarding_dismissed');
+              } catch (e) {}
+              setShowOnboarding(true);
+            }}
           />
         )}
       </main>

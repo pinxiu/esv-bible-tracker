@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Bell, Key, Globe, RotateCcw, Check, Sparkles } from 'lucide-react';
 
-export default function SettingsView({ settings, onSaveSettings, onResetProgress, onCancel }) {
+export default function SettingsView({ settings, onSaveSettings, onResetProgress, onShowTutorial, onCancel }) {
   const [esvApiKey, setEsvApiKey] = useState(settings.esvApiKey || '');
   const [notifyUnread, setNotifyUnread] = useState(settings.notifyUnread ?? true);
   const [notificationTime, setNotificationTime] = useState(settings.notificationTime || '08:00');
@@ -164,6 +164,23 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
               className="w-4 h-4 accent-amber-500 rounded"
             />
           </label>
+        </div>
+
+        <div className="glass-card p-5 rounded-2xl border border-slate-800 flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
+              <Sparkles className="w-4 h-4" />
+              <span>App Tutorial</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">Review the reading plan, Reader, Treasury, and memory-practice guide.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onShowTutorial}
+            className="shrink-0 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-all cursor-pointer"
+          >
+            View Tutorial Again
+          </button>
         </div>
 
         {/* Submit Button */}
