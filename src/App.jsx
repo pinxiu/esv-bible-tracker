@@ -14,6 +14,7 @@ import { BIBLE_PLAN as initialPlanData } from './data/biblePlanData';
 import { INITIAL_MEMORY_VERSES as initialMemoryVerses } from './data/initialMemoryVerses';
 import { getTodayBeijingDate, isDatePast, isDateToday, formatDateDisplay } from './utils/dateUtils';
 import { canonicalizeReference } from './utils/textNormalizer';
+import { findOldestMissedUnreadPassage, getPassagesForDay } from './utils/readingPlan.mjs';
 import { esvDb } from './services/esvDatabase';
 import { Sparkles, CheckCircle2, ArrowUp, Bug } from 'lucide-react';
 
@@ -88,9 +89,7 @@ export default function App() {
     if (!planList || !Array.isArray(planList)) return 'Genesis 1-2';
     for (const day of planList) {
       if (!day.completed) {
-        const passagesList = day.passages && day.passages.length > 0
-          ? day.passages
-          : (day.text ? day.text.split(/;\s*/) : []);
+        const passagesList = getPassagesForDay(day);
         
         const completedMap = day.completedPassages || {};
         const unread = passagesList.find(p => !completedMap[p]);
@@ -165,12 +164,16 @@ export default function App() {
   });
 
   const [updatePrompt, setUpdatePrompt] = useState({ show: false, version: '' });
+  const [updateInstallError, setUpdateInstallError] = useState('');
 
   useEffect(() => {
     if (window.electronAPI?.onUpdateMessage) {
       const cleanup = window.electronAPI.onUpdateMessage((data) => {
         if (data.status === 'downloaded') {
           setUpdatePrompt({ show: true, version: data.info?.version || '' });
+        } else if (data.status === 'error' && data.action === 'manual-download') {
+          setUpdatePrompt({ show: true, version: '' });
+          setUpdateInstallError(data.error);
         } else if (data.status === 'available') {
           const autoUpdate = localStorage.getItem('esv_auto_update_enabled') !== 'false';
           if (autoUpdate || window.userTriggeredUpdate) {
@@ -450,11 +453,8 @@ export default function App() {
 
   // Catch-Up Assistant: Jump to oldest missed day
   const handleCatchUpOldest = () => {
-    const oldestMissed = planData.find(d => isDatePast(d.date, d.year) && !d.completed);
-    if (oldestMissed) {
-      const targetPassage = oldestMissed.passages ? oldestMissed.passages[0] : oldestMissed.text.split(';')[0];
-      handleOpenPassage(targetPassage);
-    }
+    const targetPassage = findOldestMissedUnreadPassage(planData, isDatePast);
+    if (targetPassage) handleOpenPassage(targetPassage);
   };
 
   // Catch-Up Assistant: Jump to today's date in Beijing timezone
@@ -646,22 +646,27 @@ export default function App() {
             <div className="space-y-1">
               <h3 className="text-lg font-serif font-bold text-slate-100">Update Ready!</h3>
               <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                Version {updatePrompt.version ? `v${updatePrompt.version}` : ''} has been successfully downloaded. Restart the app now to complete the update?
+                {updateInstallError || `Version ${updatePrompt.version ? `v${updatePrompt.version}` : ''} has been successfully downloaded. Restart the app now to complete the update?`}
               </p>
             </div>
             <div className="flex flex-col space-y-2 pt-2">
               <button
-                onClick={() => {
+                onClick={async () => {
+                  if (updateInstallError && window.electronAPI?.openLatestRelease) {
+                    await window.electronAPI.openLatestRelease();
+                    return;
+                  }
                   if (window.electronAPI?.quitAndInstall) {
-                    window.electronAPI.quitAndInstall();
+                    const result = await window.electronAPI.quitAndInstall();
+                    if (result && !result.success) setUpdateInstallError(result.reason || 'The update could not be installed.');
                   }
                 }}
                 className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/25 transition-all"
               >
-                Restart & Update Now
+                {updateInstallError ? 'Download Latest Release' : 'Restart & Update Now'}
               </button>
               <button
-                onClick={() => setUpdatePrompt({ show: false, version: '' })}
+                onClick={() => { setUpdatePrompt({ show: false, version: '' }); setUpdateInstallError(''); }}
                 className="w-full py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all border border-slate-800/80 hover:border-slate-700"
               >
                 Later

@@ -27,7 +27,15 @@ autoUpdater.on('update-not-available', (info) => {
 });
 
 autoUpdater.on('error', (err) => {
-  sendUpdateMessage('error', { error: err ? err.message : 'Unknown update error' });
+  const rawError = err ? err.message : 'Unknown update error';
+  const signatureMismatch = /code signature|specified code requirement|did not pass validation/i.test(rawError);
+  sendUpdateMessage('error', {
+    error: signatureMismatch
+      ? 'This update was signed with a different certificate. Install the latest release manually once; future updates will use the stable signing identity.'
+      : rawError,
+    rawError,
+    action: signatureMismatch ? 'manual-download' : undefined
+  });
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
@@ -214,9 +222,20 @@ ipcMain.handle('start-download-update', () => {
 
 ipcMain.handle('quit-and-install', () => {
   if (checkReadOnlyVolume()) {
-    return;
+    return { success: false, reason: 'Cannot update from a read-only volume.' };
   }
-  autoUpdater.quitAndInstall();
+  try {
+    setImmediate(() => autoUpdater.quitAndInstall(false, true));
+    return { success: true };
+  } catch (err) {
+    sendUpdateMessage('error', { error: `Could not restart and install the update: ${err.message}` });
+    return { success: false, reason: err.message };
+  }
+});
+
+ipcMain.handle('open-latest-release', () => {
+  shell.openExternal('https://github.com/pinxiu/esv-bible-tracker/releases/latest');
+  return { success: true };
 });
 
 ipcMain.handle('simulate-restart-update', () => {

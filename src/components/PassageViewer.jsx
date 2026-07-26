@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchPassage } from '../services/bibleApi';
-import { BookOpen, ExternalLink, BookmarkPlus, Type, MessageSquarePlus, Check, Sparkles, RefreshCw, ArrowLeft, Zap, BrainCircuit, Highlighter, Database, Globe, Search, X, ArrowUp } from 'lucide-react';
+import { fetchPassage, fetchEsvAudio, searchEsv, normalizePassageRef } from '../services/bibleApi';
+import { ExternalLink, BookmarkPlus, Type, MessageSquarePlus, Check, Zap, BrainCircuit, Highlighter, Search, X, ArrowUp, SlidersHorizontal, Volume2, WifiOff } from 'lucide-react';
 
 export default function PassageViewer({
   currentPassage,
@@ -34,17 +34,40 @@ export default function PassageViewer({
   const [isMemoryVerse, setIsMemoryVerse] = useState(false);
   const [highlightColor, setHighlightColor] = useState('gold');
   const [savedSuccess, setSavedSuccess] = useState(false);
-
-  // Toggle Source: Default to Bible Gateway (online), optional toggle to use Embedded ESV Bank
-  const [useEmbeddedBank, setUseEmbeddedBank] = useState(false);
-  const [showBankTooltip, setShowBankTooltip] = useState(false);
+  const [audioUrl, setAudioUrl] = useState('');
+  const [audioError, setAudioError] = useState('');
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchError, setSearchError] = useState('');
+  const [showDisplayMenu, setShowDisplayMenu] = useState(false);
+  const [displayOptions, setDisplayOptions] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('esv_reader_display_options'));
+      return saved ? {
+        verseNumbers: saved.verseNumbers !== false,
+        headings: saved.headings !== false,
+        footnotes: saved.footnotes ?? saved.footer ?? true
+      } : { verseNumbers: true, headings: true, footnotes: true };
+    } catch {
+      return { verseNumbers: true, headings: true, footnotes: true };
+    }
+  });
 
   // Network online status detection
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [showOfflineNotice, setShowOfflineNotice] = useState(
+    typeof navigator !== 'undefined' ? !navigator.onLine : false
+  );
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const handleOnline = () => {
+      setIsOnline(true);
+      setShowOfflineNotice(false);
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setShowOfflineNotice(true);
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -55,27 +78,54 @@ export default function PassageViewer({
     };
   }, []);
 
-  const effectiveUseEmbeddedBank = !isOnline || useEmbeddedBank;
+  const effectiveUseEmbeddedBank = !isOnline;
 
   // Custom passage input query
   const [inputQuery, setInputQuery] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('esv_reader_display_options', JSON.stringify(displayOptions));
+  }, [displayOptions]);
+
+  useEffect(() => () => {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+  }, [audioUrl]);
 
   // Active Footnote Modal State
   const [activeFootnote, setActiveFootnote] = useState(null);
 
   // Container Ref for scroll persistence & return to top
   const containerRef = useRef(null);
+  const passageContentRef = useRef(null);
+  const displayMenuRef = useRef(null);
   const [showPassageScrollTop, setShowPassageScrollTop] = useState(false);
+
+  useEffect(() => {
+    if (!showDisplayMenu) return undefined;
+
+    const closeDisplayMenu = (event) => {
+      if (!displayMenuRef.current?.contains(event.target)) {
+        setShowDisplayMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeDisplayMenu);
+    return () => document.removeEventListener('mousedown', closeDisplayMenu);
+  }, [showDisplayMenu]);
 
   useEffect(() => {
     let isMounted = true;
     if (currentPassage) {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      setAudioUrl('');
+      setAudioError('');
       setLoading(true);
       fetchPassage(currentPassage, esvApiKey, effectiveUseEmbeddedBank).then(data => {
         if (isMounted) {
           setPassageData(data);
           setLoading(false);
           if (data && (data.source === 'Embedded ESV Bank' || data.source === 'Fallback')) {
+            setShowOfflineNotice(true);
             // Check if network fetch failed
             if (typeof navigator !== 'undefined' && !navigator.onLine) {
               setIsOnline(false);
@@ -125,11 +175,16 @@ export default function PassageViewer({
   // Handle text selection in passage reader
   const handleTextSelection = () => {
     const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    const passageNode = passageContentRef.current;
+    if (!passageNode || !passageNode.contains(range.commonAncestorContainer)) return;
     const text = selection ? selection.toString().trim() : '';
+    // A chapter/verse marker by itself is navigation metadata, not highlightable Scripture.
+    if (!text || !/[A-Za-z]/.test(text)) return;
     if (text && text.length > 2) {
       setSelectedText(text);
       try {
-        const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         setPopoverPos({
           top: Math.max(100, Math.min(window.innerHeight - 250, rect.top + window.scrollY - 100)),
@@ -166,11 +221,45 @@ export default function PassageViewer({
     }, 1200);
   };
 
-  const handleSearchPassage = (e) => {
+  const handleSearchPassage = async (e) => {
     e.preventDefault();
     if (!inputQuery || inputQuery.trim().length < 2) return;
-    onSelectPassage(inputQuery.trim());
-    setInputQuery('');
+    const query = inputQuery.trim();
+    const normalizedQuery = normalizePassageRef(query);
+    const looksLikeReference = /\d/.test(query) || normalizedQuery !== query;
+    if (looksLikeReference) {
+      setSearchResults([]);
+      onSelectPassage(normalizedQuery);
+      return;
+    }
+    setLoading(true);
+    setSearchError('');
+    try {
+      const data = await searchEsv(query, esvApiKey);
+      setSearchResults(data.results || []);
+    } catch (error) {
+      setSearchError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleDisplayOption = (key) => {
+    setDisplayOptions(current => ({ ...current, [key]: !current[key] }));
+  };
+
+  const handleLoadAudio = async () => {
+    setAudioError('');
+    setAudioLoading(true);
+    try {
+      const nextUrl = await fetchEsvAudio(currentPassage, esvApiKey);
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      setAudioUrl(nextUrl);
+    } catch (error) {
+      setAudioError(error.message);
+    } finally {
+      setAudioLoading(false);
+    }
   };
 
   return (
@@ -178,17 +267,16 @@ export default function PassageViewer({
       ref={containerRef}
       onScroll={handleScroll}
       className="p-8 max-w-5xl mx-auto space-y-6 relative h-full overflow-y-auto pb-24"
-      onMouseUp={handleTextSelection}
     >
       {/* TOP PASSAGE NAVIGATOR SEARCH BAR */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div className="glass-panel relative z-40 overflow-visible p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         {/* Full-width Search Form */}
         <form onSubmit={handleSearchPassage} className="flex items-center space-x-2 flex-1 w-full">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="e.g. Gn 1:1-3, Ps 1..."
+              placeholder='e.g. Jn3:16, Ps 1, "love"'
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-amber-300 font-semibold focus:outline-none focus:border-amber-400 placeholder-slate-500 font-sans shadow-inner"
@@ -196,60 +284,21 @@ export default function PassageViewer({
           </div>
           <button
             type="submit"
+            title="Search by Bible reference, abbreviated book name, whole book, or words contained in Scripture."
             className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 flex items-center space-x-1.5 shadow-lg shadow-amber-500/20 transition-all"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>Load Passage</span>
+            <span>Search</span>
           </button>
         </form>
 
         {/* Font Size & Bank Source Controls */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* Toggle Source: Bible Gateway (default) vs Embedded Bank */}
-          <div className="relative inline-block">
-            <button
-              onClick={() => {
-                if (isOnline) {
-                  setUseEmbeddedBank(!useEmbeddedBank);
-                } else {
-                  setShowBankTooltip(true);
-                  setTimeout(() => setShowBankTooltip(false), 2500);
-                }
-              }}
-              onMouseEnter={() => setShowBankTooltip(true)}
-              onMouseLeave={() => setShowBankTooltip(false)}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                !isOnline
-                  ? 'bg-slate-900/40 text-slate-500 border-slate-800/60 opacity-50 cursor-not-allowed'
-                  : useEmbeddedBank
-                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm'
-                    : 'bg-slate-900 text-slate-300 border-slate-800 hover:text-slate-100 hover:border-slate-700'
-              }`}
-            >
-              {effectiveUseEmbeddedBank ? (
-                <Database className={`w-3.5 h-3.5 ${!isOnline ? 'text-slate-500' : 'text-purple-400'}`} />
-              ) : (
-                <Globe className="w-3.5 h-3.5 text-sky-400" />
-              )}
-              <span>{useEmbeddedBank ? 'Bank: Embedded' : 'Bank: Gateway'}</span>
-            </button>
-
-            {/* Instant White Text Tooltip on 0ms Hover or Click */}
-            {showBankTooltip && (
-              <div className="absolute top-full right-0 mt-2 z-50 px-3 py-1.5 rounded-lg bg-slate-900/95 border border-slate-700/80 text-xs text-slate-100 font-sans shadow-2xl animate-fadeIn pointer-events-none whitespace-nowrap">
-                {!isOnline
-                  ? "Bible Gateway is unavailable offline. Using Embedded ESV Bank."
-                  : useEmbeddedBank
-                    ? "Currently using Embedded ESV Bank (Offline). Click to switch to Bible Gateway"
-                    : "Currently using Bible Gateway (Default). Click to switch to Embedded ESV Bank"}
-              </div>
-            )}
-          </div>
-
           {/* Quick Highlight Full Passage Button */}
           <button
             onClick={() => {
-              const textToHighlight = passageData ? (passageData.text || passageData.reference) : currentPassage;
+              const textToHighlight = passageContentRef.current?.innerText?.trim() || passageData?.text || '';
+              if (!textToHighlight) return;
               setSelectedText(textToHighlight);
               setPopoverPos({ top: 180, left: 300 });
             }}
@@ -281,6 +330,31 @@ export default function PassageViewer({
             ))}
           </div>
 
+          <div ref={displayMenuRef} className="relative z-[100]">
+            <button
+              onClick={() => setShowDisplayMenu(value => !value)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-slate-300 border border-slate-800 text-xs font-semibold hover:border-slate-700"
+              aria-expanded={showDisplayMenu}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 text-amber-400" />
+              Display
+            </button>
+            {showDisplayMenu && (
+              <div className="absolute right-0 top-full mt-2 z-[110] w-52 p-2 rounded-xl bg-slate-950 border border-slate-700 shadow-2xl">
+                {[
+                  ['verseNumbers', 'Verse numbers'],
+                  ['headings', 'Headings'],
+                  ['footnotes', 'Footnotes']
+                ].map(([key, label]) => (
+                  <label key={key} className="flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-slate-900 cursor-pointer text-xs text-slate-200">
+                    <span>{label}</span>
+                    <input type="checkbox" checked={displayOptions[key]} onChange={() => toggleDisplayOption(key)} className="accent-amber-500" />
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* External Commentary Action Button */}
           <button
             onClick={() => onOpenCommentary(currentPassage)}
@@ -291,6 +365,47 @@ export default function PassageViewer({
           </button>
         </div>
       </div>
+
+      {showOfflineNotice && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-6 text-center space-y-4">
+            <div className="mx-auto w-11 h-11 rounded-full bg-purple-500/15 text-purple-300 flex items-center justify-center">
+              <WifiOff className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-slate-100">Using offline Scripture</h3>
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                The online ESV source is unavailable, so the Reader has switched automatically to the embedded offline version.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowOfflineNotice(false)}
+              className="w-full py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold"
+            >
+              Continue reading
+            </button>
+          </div>
+        </div>
+      )}
+
+      {searchError && <p className="text-xs text-rose-300">{searchError}</p>}
+      {searchResults.length > 0 && (
+        <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="px-4 py-3 text-xs font-bold text-amber-300 border-b border-slate-800">
+            ESV search results for “{inputQuery.trim()}”
+          </div>
+          {searchResults.map((result, index) => (
+            <button
+              key={`${result.reference}-${index}`}
+              onClick={() => { onSelectPassage(result.reference); setSearchResults([]); }}
+              className="block w-full text-left px-4 py-3 border-b border-slate-800/60 hover:bg-slate-900"
+            >
+              <span className="block text-xs font-bold text-amber-300">{result.reference}</span>
+              <span className="block mt-1 text-sm text-slate-300 font-serif">{result.content}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Floating Highlight / Verse Memory Action Popover */}
       {popoverPos && selectedText && (
@@ -394,7 +509,7 @@ export default function PassageViewer({
       )}
 
       {/* Main Passage Content Area */}
-      <div className="glass-card p-8 rounded-2xl border border-slate-800 min-h-[500px] relative shadow-2xl">
+      <div className="glass-card z-0 p-8 rounded-2xl border border-slate-800 min-h-[500px] relative shadow-2xl">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-28 space-y-4">
             <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
@@ -402,11 +517,42 @@ export default function PassageViewer({
           </div>
         ) : passageData ? (
           <div className="space-y-6">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-800 pb-3">
+              <span className="text-[10px] text-slate-500">{passageData.source}</span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-2xl font-bold font-serif text-amber-400">
+                {passageData.reference || currentPassage} (ESV)
+              </h2>
+              <button
+                onClick={() => {
+                  if (!audioUrl && !audioLoading) handleLoadAudio();
+                }}
+                disabled={!passageData.esvAvailable || !esvApiKey || effectiveUseEmbeddedBank}
+                title={passageData.esvAvailable ? 'Listen while continuing to read the passage.' : 'Audio is unavailable for this fallback source.'}
+                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 hover:text-amber-300 hover:border-amber-500/40 disabled:opacity-35 disabled:cursor-not-allowed shrink-0"
+                aria-label="Listen to passage"
+              >
+                <Volume2 className="w-6 h-6" />
+              </button>
+            </div>
+            {(audioLoading || audioUrl || audioError) && (
+              <div className="rounded-xl border border-amber-500/20 bg-slate-950/60 px-4 py-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+                  <Volume2 className="w-4 h-4" />
+                  <span>{audioLoading ? 'Loading audio…' : 'Listen while you read'}</span>
+                </div>
+                {audioUrl && <audio controls autoPlay src={audioUrl} className="w-full h-9" />}
+                {audioError && <p className="text-xs text-rose-300">{audioError}</p>}
+              </div>
+            )}
             {/* Render formatted Bible Gateway / ESV HTML with Footnote event handler */}
             <div
+              ref={passageContentRef}
               onClick={handlePassageClick}
+              onMouseUp={handleTextSelection}
               style={{ fontSize: fontSize }}
-              className="esv-passage-content font-serif leading-relaxed text-slate-200"
+              className={`esv-passage-content reader-managed-title font-serif leading-relaxed text-slate-200 ${!displayOptions.verseNumbers ? 'hide-verse-numbers' : ''} ${!displayOptions.headings ? 'hide-reader-headings' : ''} ${!displayOptions.footnotes ? 'hide-reader-footnotes' : ''}`}
             >
               {passageData.html ? (
                 <div dangerouslySetInnerHTML={{ __html: passageData.html }} />

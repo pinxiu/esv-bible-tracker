@@ -539,7 +539,16 @@ export default function ReadingPlanView({
                           return (
                             <div
                               key={pIdx}
-                              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                              onClick={() => onTogglePassage(item.day || item.id, passage)}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault();
+                                  onTogglePassage(item.day || item.id, passage);
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500/50 ${
                                 isPassageDone
                                   ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'
                                   : 'bg-slate-900/60 border-slate-800/90 text-slate-200 hover:border-amber-500/30'
@@ -548,7 +557,10 @@ export default function ReadingPlanView({
                               {/* Passage Checkbox & Reference */}
                               <div className="flex items-center space-x-2.5 min-w-0 flex-1">
                                 <button
-                                  onClick={() => onTogglePassage(item.day || item.id, passage)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    onTogglePassage(item.day || item.id, passage);
+                                  }}
                                   className="p-0.5 rounded text-slate-400 hover:text-amber-400 transition-colors shrink-0"
                                   title={isPassageDone ? `Uncheck ${passage}` : `Mark ${passage} read`}
                                 >
@@ -566,7 +578,10 @@ export default function ReadingPlanView({
                               {/* Per-Passage Actions */}
                               <div className="flex items-center space-x-1 shrink-0">
                                 <button
-                                  onClick={() => onOpenPassage(passage)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    onOpenPassage(passage);
+                                  }}
                                   className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-semibold flex items-center space-x-1 transition-all"
                                   title={`Read ${passage}`}
                                 >
@@ -575,7 +590,10 @@ export default function ReadingPlanView({
                                 </button>
 
                                 <button
-                                  onClick={() => onOpenCommentary(passage)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    onOpenCommentary(passage);
+                                  }}
                                   className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all"
                                   title={`Commentaries`}
                                 >
@@ -796,7 +814,16 @@ export default function ReadingPlanView({
                       return (
                         <div
                           key={pIdx}
-                          className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                          onClick={() => onTogglePassage(item.day || item.id, passage)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              onTogglePassage(item.day || item.id, passage);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500/50 ${
                             isPassageDone
                               ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'
                               : 'bg-slate-900/60 border-slate-800/90 text-slate-200 hover:border-amber-500/30'
@@ -805,7 +832,10 @@ export default function ReadingPlanView({
                           {/* Passage Checkbox & Reference */}
                           <div className="flex items-center space-x-2.5 min-w-0 flex-1">
                             <button
-                              onClick={() => onTogglePassage(item.day || item.id, passage)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onTogglePassage(item.day || item.id, passage);
+                              }}
                               className="p-0.5 rounded text-slate-400 hover:text-amber-400 transition-colors shrink-0"
                               title={isPassageDone ? `Uncheck ${passage}` : `Mark ${passage} read`}
                             >
@@ -823,7 +853,10 @@ export default function ReadingPlanView({
                           {/* Per-Passage Read & Notes Action Buttons */}
                           <div className="flex items-center space-x-1 shrink-0">
                             <button
-                              onClick={() => onOpenPassage(passage)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onOpenPassage(passage);
+                              }}
                               className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-semibold flex items-center space-x-1 transition-all"
                               title={`Read ${passage} in ESV Reader`}
                             >
@@ -832,7 +865,10 @@ export default function ReadingPlanView({
                             </button>
 
                             <button
-                              onClick={() => onOpenCommentary(passage)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onOpenCommentary(passage);
+                              }}
                               className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all"
                               title={`Open commentaries for ${passage}`}
                             >

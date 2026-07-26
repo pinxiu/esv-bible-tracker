@@ -4,12 +4,129 @@ import { cleanScriptureText, canonicalizeReference } from '../utils/textNormaliz
 // Cache for fetched passages
 const passageCache = new Map();
 
+function getEsvHeaders(esvApiKey) {
+  return { Authorization: `Token ${esvApiKey.trim()}` };
+}
+
+export async function searchEsv(query, esvApiKey, pageSize = 20) {
+  if (!esvApiKey?.trim()) throw new Error('Add your ESV API token in Settings to search Scripture.');
+  const response = await fetch(
+    `https://api.esv.org/v3/passage/search/?q=${encodeURIComponent(query.trim())}&page-size=${pageSize}`,
+    { headers: getEsvHeaders(esvApiKey) }
+  );
+  if (!response.ok) throw new Error(`ESV search failed (${response.status}).`);
+  return response.json();
+}
+
+export async function fetchEsvAudio(passageRef, esvApiKey) {
+  if (!esvApiKey?.trim()) throw new Error('Add your ESV API token in Settings to play audio.');
+  const response = await fetch(
+    `https://api.esv.org/v3/passage/audio/?q=${encodeURIComponent(normalizePassageRef(passageRef))}`,
+    { headers: getEsvHeaders(esvApiKey) }
+  );
+  if (!response.ok) throw new Error(`ESV audio failed (${response.status}).`);
+  return URL.createObjectURL(await response.blob());
+}
+
 /**
  * Normalizes passage reference for Bible Gateway search
  */
 export function normalizePassageRef(ref) {
   if (!ref) return "";
   return canonicalizeReference(ref);
+}
+
+function footnoteLetter(number) {
+  let value = Math.max(1, Number.parseInt(number, 10) || 1);
+  let label = '';
+  while (value > 0) {
+    value -= 1;
+    label = String.fromCharCode(97 + (value % 26)) + label;
+    value = Math.floor(value / 26);
+  }
+  return label;
+}
+
+function decodeFootnoteTitle(value) {
+  return value
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&amp;/gi, '&')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanOfficialEsvHtml(htmlContent, passageRef, footnoteOffset = 0) {
+  if (!htmlContent) return { html: '', footnoteCount: 0 };
+  let cleaned = htmlContent;
+  let footnoteCount = 0;
+
+  // The ESV API combines the first chapter and verse as “3:1”. Render them
+  // independently so chapter 3 stays on the baseline and verse 1 is superscript.
+  cleaned = cleaned.replace(
+    /<b class=["']chapter-num["']([^>]*)>\s*(\d+)\s*:\s*(\d+)(?:&nbsp;|\u00a0|\s)*<\/b>/gi,
+    '<span class="chapter-num"$1>$2</span><sup class="verse-num">$3</sup>&thinsp;'
+  );
+
+  cleaned = cleaned.replace(
+    /<sup class=["']footnote["']>\s*<a[^>]*class=["']fn["'][^>]*title=["']([^"']*)["'][^>]*>\s*(\d+)\s*<\/a>\s*<\/sup>/gi,
+    (match, encodedTitle, number) => {
+      const localNumber = Number.parseInt(number, 10) || 1;
+      footnoteCount = Math.max(footnoteCount, localNumber);
+      const letter = footnoteLetter(footnoteOffset + localNumber);
+      const text = encodeURIComponent(decodeFootnoteTitle(encodedTitle) || 'Translation note');
+      return `<span class="esv-fn-badge align-super font-sans font-bold text-amber-400 hover:text-amber-300 cursor-pointer select-none mx-0.5 px-0.5" data-fn-letter="${letter}" data-fn-text="${text}" data-fn-ref="${passageRef}">[${letter}]</span>`;
+    }
+  );
+
+  cleaned = cleaned.replace(/<div class=["'][^"']*footnotes[^"']*["']>[\s\S]*?<\/div>/gi, '');
+  cleaned = cleaned.replace(/<small class=["'][^"']*audio[^"']*["']>[\s\S]*?<\/small>/gi, '');
+  cleaned = cleaned.replace(/<h2 class=["']extra_text["']>[\s\S]*?<\/h2>/gi, '');
+  cleaned = cleaned.replace(/<p>\s*\(\s*<a[^>]*class=["']copyright["'][^>]*>ESV<\/a>\s*\)\s*<\/p>/gi, '');
+  cleaned = cleaned.replace(/<p>\s*\(ESV\)\s*<\/p>/gi, '');
+  cleaned = cleaned.replace(/<h3([^>]*)>([\s\S]*?)<\/h3>/gi, '<h3$1 class="section-heading">$2</h3>');
+  cleaned = cleaned.replace(/([A-Za-z])([’'])\s+([A-Za-z])/g, '$1$2$3');
+
+  return {
+    html: `<div class="esv-official-passage font-serif text-lg leading-relaxed text-slate-200 space-y-2">${cleaned}</div>`,
+    footnoteCount
+  };
+}
+
+function expandWholeBookReference(reference) {
+  const match = reference.match(/^(.+?)\s+1-(\d+)$/);
+  if (!match) return [reference];
+  const lastChapter = Number.parseInt(match[2], 10);
+  if (!Number.isFinite(lastChapter) || lastChapter < 2) return [reference];
+  return Array.from({ length: lastChapter }, (_, index) => `${match[1]} ${index + 1}`);
+}
+
+async function fetchOfficialEsvHtml(reference, esvApiKey) {
+  const references = expandWholeBookReference(reference);
+  const passages = [];
+  let canonicalReference = reference;
+  let footnoteOffset = 0;
+
+  for (const chapterReference of references) {
+    const response = await fetch(
+      `https://api.esv.org/v3/passage/html/?q=${encodeURIComponent(chapterReference)}&include-footnotes=true&include-footnote-body=true&include-headings=true&include-audio-link=false`,
+      { headers: getEsvHeaders(esvApiKey) }
+    );
+    if (!response.ok) throw new Error(`ESV passage failed (${response.status}).`);
+    const data = await response.json();
+    if (!data.passages?.length) throw new Error(`No ESV passage found for ${chapterReference}.`);
+    for (const passageHtml of data.passages) {
+      const formatted = cleanOfficialEsvHtml(passageHtml, chapterReference, footnoteOffset);
+      passages.push(formatted.html);
+      footnoteOffset += formatted.footnoteCount;
+    }
+    if (references.length === 1) canonicalReference = data.canonical || data.query || reference;
+  }
+
+  return { reference: canonicalReference, html: passages.join('\n') };
 }
 
 /**
@@ -96,8 +213,8 @@ function cleanBibleGatewayHtml(htmlContent, passageRef) {
   cleaned = cleaned.replace(/<span class=["']indent-2["']>([\s\S]*?)<\/span>/gi, '<span class="indent-2 block pl-12 font-serif text-slate-200 my-0.5">$1</span>');
 
   // Chapter & Verse numbers
-  cleaned = cleaned.replace(/<span class=["']chapternum["']>([\s\S]*?)<\/span>/gi, '<span class="text-2xl font-bold font-sans text-amber-400 mr-2 border-b-2 border-amber-400/50 pb-0.5">$1</span>');
-  cleaned = cleaned.replace(/<sup class=["']versenum["']>([\s\S]*?)<\/sup>/gi, '<sup class="text-xs font-sans font-bold text-amber-400/90 mr-1.5 ml-1 select-none">$1</sup>');
+  cleaned = cleaned.replace(/<span class=["']chapternum["']>([\s\S]*?)<\/span>/gi, '<span class="chapternum font-bold font-sans text-amber-400 mr-2">$1</span>');
+  cleaned = cleaned.replace(/<sup class=["']versenum["']>([\s\S]*?)<\/sup>/gi, '<sup class="versenum font-sans font-bold text-amber-400/90 mr-1 ml-1 select-none">$1</sup>');
 
   // Extract Footnotes into interactive popover data attributes & remove bottom footer section
   const footnotesMap = {};
@@ -150,7 +267,9 @@ function cleanBibleGatewayHtml(htmlContent, passageRef) {
   cleaned = cleaned.replace(/<br\s*\/?>/gi, '');
 
   // Fix missing spaces after inline punctuation ONLY when on the same line (preserves line breaks & poetry lines 100%)
-  cleaned = cleaned.replace(/([;:,!\?\.\)\]”"’']+)(?=[A-Za-z])/g, '$1 ');
+  cleaned = cleaned.replace(/([;:,!\?\.\)\]”"]+)(?=[A-Za-z])/g, '$1 ');
+  // Apostrophes are word joiners in possessives/contractions: “Isaac' s” → “Isaac's”.
+  cleaned = cleaned.replace(/([A-Za-z])([’'])\s+([A-Za-z])/g, '$1$2$3');
 
   const displayTitle = canonicalizeReference(passageRef);
 
@@ -206,24 +325,19 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
       if (window.debugLogger) {
         window.debugLogger.addLog('info', `Sending network request to Official ESV API: ${cleanRef}`);
       }
-      const response = await fetch(
-        `https://api.esv.org/v3/passage/html/?q=${encodeURIComponent(cleanRef)}&include-footnotes=true&include-headings=true`,
-        { headers: { Authorization: `Token ${esvApiKey}` } }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        if (data.passages && data.passages.length > 0) {
+      const data = await fetchOfficialEsvHtml(cleanRef, esvApiKey);
+      if (data.html) {
           const result = {
-            reference: data.query || cleanRef,
-            html: data.passages.join(''),
-            source: 'Official ESV API'
+            reference: data.reference || cleanRef,
+            html: data.html,
+            source: 'Official ESV API',
+            esvAvailable: true
           };
           if (window.debugLogger) {
             window.debugLogger.addLog('info', `Received official ESV API response for ${cleanRef} (source: ${result.source})`);
           }
           passageCache.set(cacheKey, result);
           return result;
-        }
       }
     } catch (e) {
       if (window.debugLogger) {
@@ -260,7 +374,8 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
             reference: cleanRef,
             html: formattedHtml,
             verses: parsedVerses,
-            source: 'Bible Gateway (ESV)'
+            source: 'Bible Gateway (ESV)',
+            esvAvailable: false
           };
           if (window.debugLogger) {
             window.debugLogger.addLog('info', `Loaded passage from Bible Gateway: ${cleanRef} (Length: ${formattedHtml.length} chars)`);
@@ -283,6 +398,7 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
   }
   const fallbackLocalData = esvDb.lookupPassage(cleanRef);
   if (fallbackLocalData) {
+    fallbackLocalData.esvAvailable = false;
     passageCache.set(cacheKey, fallbackLocalData);
     return fallbackLocalData;
   }
@@ -294,6 +410,7 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
       <p class="leading-relaxed font-serif text-lg mb-4">"The word of God is living and active, sharper than any two-edged sword..." (Hebrews 4:12)</p>
       <p class="text-xs text-slate-400 font-sans">Connecting to Bible Gateway ESV for ${cleanRef}...</p>
     </div>`,
-    source: 'Fallback'
+    source: 'Fallback',
+    esvAvailable: false
   };
 }

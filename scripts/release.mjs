@@ -264,6 +264,11 @@ async function runRelease() {
 
   // 8. Publish to GitHub Releases if token present & repo exists online
   if (token && isRepoOnline) {
+    if (!process.env.CSC_LINK || !process.env.CSC_KEY_PASSWORD) {
+      console.error('\n❌ Release aborted: CSC_LINK and CSC_KEY_PASSWORD are required.');
+      console.error('Every published update must use the same exported signing identity (.p12). Regenerating a certificate breaks ShipIt updates.');
+      process.exit(1);
+    }
     console.log('\n📦 Packaging & Publishing macOS releases (arm64 & x64) to GitHub Releases...');
     execSync('npx electron-builder --mac --arm64 --x64 --publish always', { cwd: rootDir, stdio: 'inherit', env: { ...process.env, GH_TOKEN: token, GITHUB_TOKEN: token } });
     

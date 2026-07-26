@@ -8,25 +8,29 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.30] - Unreleased
 
 ### 🚀 Release Summary
-- Upcoming features and refinements under development.
+- **Official ESV Reader Integration**: Added authenticated ESV HTML, audio, and phrase search with automatic Bible Gateway and embedded-offline fallback.
+- **Reader Presentation Controls**: Added compact display settings, inline audio, clickable lettered footnotes, correct chapter/verse typography, whole-book chapter loading, and Scripture-only highlighting.
+- **Reader and Plan Interaction Polish**: Added first-verse spacing, outside-click dismissal for the Display menu, full-row passage completion toggles, and correct oldest-unread catch-up navigation.
+- **Memory Typewriter Modes**: Added first-letter word completion, whole-word backtracking, forced capitalization/punctuation tolerance, and strict no-backtracking practice.
+- **Stable macOS Signing**: Added a fail-closed Keychain signing script, signed local installer workflow, strict bundle verification, updater recovery guidance, and signing regression tests.
 
 
 ## [1.0.29] - 2026-07-26
 
 ### 🚀 Release Summary
-- Upcoming features and refinements under development.
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
 
 
 ## [1.0.28] - 2026-07-25
 
 ### 🚀 Release Summary
-- Upcoming features and refinements under development.
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
 
 
 ## [1.0.27] - 2026-07-24
 
 ### 🚀 Release Summary
-- Upcoming features and refinements under development.
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
 
 
 ## [1.0.26] - 2026-07-23
@@ -70,9 +74,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.21] - 2026-07-22
 
 ### 🚀 Release Summary
-- **Symmetrical Progress Card Padding**: Removed the inner grouping wrapper inside the Progress Card, allowing elements to distribute evenly via flexbox. The bottom margin now mathematically matches the top padding perfectly.
-- **Enlarged Stats Value Fonts**: Increased stats value text sizes to `text-xl` and increased vertical padding to fill the container layout cleanly without vertical gaps.
-- **Unified Trophy Case Text Link**: Removed the trailing right-arrow `→` from the Trophy Case link, rendering it as a clean inline text link.
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release. It points to the same application commit as v1.0.20.
 
 
 ## [1.0.20] - 2026-07-22
@@ -137,7 +139,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.12] - 2026-07-21
 
 ### 🚀 Release Summary
-- **Read-Only Volume Fixes**: Handled read-only volume launch errors and optimized asset bundles.
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release. Its tag contained only release/version metadata beyond v1.0.11.
 
 
 ## [1.0.11] - 2026-07-21
@@ -186,9 +188,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.5] - 2026-07-22
 
 ### 🚀 Release Summary
-- ⚠️ **DO NOT USE / BREAKING RELEASE**: This version crashes immediately at startup due to Node ESM resolver package.json parser issues inside ASAR packages. Please install v1.0.10 or later.
-- **Automatic Release Publishing**: Integrated GitHub API handlers to automatically convert Draft Releases to public Published Releases once assets finish uploading.
-- **Unified Multi-Architecture Build**: Optimized `electron-builder` configuration to package both Apple Silicon (`arm64`) and Intel (`x64`) DMGs in a single unified invocation to avoid socket upload timeouts.
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release. It points to the same application commit as v1.0.4.
 
 
 ## [1.0.4] - 2026-07-21

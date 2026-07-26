@@ -17,19 +17,40 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check for releasable changes
+        id: release_gate
+        shell: bash
+        run: |
+          LATEST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+
+          if [[ -z "$LATEST_TAG" ]]; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "No prior release tag exists; continuing with the release."
+          elif git diff --quiet "$LATEST_TAG"..HEAD -- . ':(exclude).github/workflows/**'; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "No changes outside GitHub workflow files since $LATEST_TAG; skipping today's release."
+          else
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "Releasable changes found since $LATEST_TAG."
+          fi
+
       - name: Setup Node.js
+        if: steps.release_gate.outputs.should_release == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
 
       - name: Install Dependencies
+        if: steps.release_gate.outputs.should_release == 'true'
         run: npm ci
 
       - name: Build Web Application
+        if: steps.release_gate.outputs.should_release == 'true'
         run: npm run build
 
       - name: Create and Push Release Branch
+        if: steps.release_gate.outputs.should_release == 'true'
         id: branch_creation
         run: |
           VERSION=$(node -p "require('./package.json').version")
@@ -46,18 +67,19 @@ jobs:
           git push origin $BRANCH_NAME --force
 
       - name: Run E2E Playwright Tests
+        if: steps.release_gate.outputs.should_release == 'true'
         id: run_tests
         run: npm run test
         continue-on-error: true
 
       - name: Handle Test Failure
-        if: steps.run_tests.outcome == 'failure'
+        if: steps.release_gate.outputs.should_release == 'true' && steps.run_tests.outcome == 'failure'
         run: |
           echo "❌ E2E regression tests failed on branch ${{ env.BRANCH_NAME }}!"
           exit 1
 
       - name: Send Failure Email Notification
-        if: failure() && env.SMTP_PASSWORD != ''
+        if: steps.release_gate.outputs.should_release == 'true' && failure() && env.SMTP_PASSWORD != ''
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
           SMTP_PORT: ${{ secrets.SMTP_PORT || '465' }}
@@ -87,7 +109,7 @@ jobs:
           secure: true
 
       - name: Run Release and Publish
-        if: steps.run_tests.outcome == 'success'
+        if: steps.release_gate.outputs.should_release == 'true' && steps.run_tests.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
