@@ -179,6 +179,20 @@ export default function PassageViewer({
     const range = selection.getRangeAt(0);
     const passageNode = passageContentRef.current;
     if (!passageNode || !passageNode.contains(range.commonAncestorContainer)) return;
+
+    const elementForNode = (node) => (
+      node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement
+    );
+    const footnoteSelector = '.esv-fn-badge, .esv-fn-marker, .footnote, .crossreference';
+    const startFootnote = elementForNode(range.startContainer)?.closest(footnoteSelector);
+    const endFootnote = elementForNode(range.endContainer)?.closest(footnoteSelector);
+    if (startFootnote && startFootnote === endFootnote) {
+      setSelectedText('');
+      setPopoverPos(null);
+      selection.removeAllRanges();
+      return;
+    }
+
     const text = selection ? selection.toString().trim() : '';
     // A chapter/verse marker by itself is navigation metadata, not highlightable Scripture.
     if (!text || !/[A-Za-z]/.test(text)) return;
