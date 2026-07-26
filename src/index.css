@@ -299,6 +299,74 @@ html.light {
   margin-top: 0.25rem;
 }
 
+.esv-passage-content .esv-fn-badge,
+.esv-passage-content .esv-fn-marker {
+  font-size: 0.55em !important;
+  line-height: 1 !important;
+}
+
+.hide-verse-numbers .versenum,
+.hide-verse-numbers sup[class*="versenum"],
+.hide-verse-numbers .verse-num,
+.hide-verse-numbers b[class*="verse-num"],
+.hide-verse-numbers .chapter-num,
+.hide-verse-numbers .chapternum {
+  display: none !important;
+}
+
+.esv-passage-content .verse-num,
+.esv-passage-content .versenum,
+.esv-biblegateway-passage .verse-num,
+.esv-biblegateway-passage .versenum {
+  display: inline !important;
+  position: relative;
+  top: -0.45em;
+  vertical-align: baseline;
+  font-size: 0.65em !important;
+  line-height: 0;
+  font-weight: 700 !important;
+}
+
+.esv-passage-content .chapter-num,
+.esv-passage-content .chapternum,
+.esv-biblegateway-passage .chapter-num,
+.esv-biblegateway-passage .chapternum {
+  display: inline !important;
+  position: static;
+  vertical-align: baseline;
+  font-size: 1.25em !important;
+  line-height: 1;
+  font-weight: 700 !important;
+  margin-right: 0.35em;
+}
+
+.hide-verse-numbers .verse-num,
+.hide-verse-numbers .versenum,
+.hide-verse-numbers .chapter-num,
+.hide-verse-numbers .chapternum {
+  display: none !important;
+}
+
+.hide-reader-headings h3,
+.hide-reader-headings h4,
+.hide-reader-headings h5,
+.hide-reader-headings .section-heading,
+.hide-reader-headings .heading {
+  display: none !important;
+}
+
+.reader-managed-title .esv-biblegateway-passage > div:first-child:has(h2),
+.reader-managed-title > div > h2:first-child {
+  display: none !important;
+}
+
+.hide-reader-footnotes .esv-fn-badge,
+.hide-reader-footnotes .esv-fn-marker,
+.hide-reader-footnotes .footnote,
+.hide-reader-footnotes .footnotes {
+  display: none !important;
+}
+
 /* Verse of the Day Card & Vignette (Light Mode) */
 .light .today-verse-card {
   background-color: #ffffff !important;

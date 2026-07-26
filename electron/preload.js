@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   startDownloadUpdate: () => ipcRenderer.invoke('start-download-update'),
   quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
+  openLatestRelease: () => ipcRenderer.invoke('open-latest-release'),
   simulateRestartUpdate: () => ipcRenderer.invoke('simulate-restart-update'),
   openSystemNotifications: () => ipcRenderer.invoke('open-system-notifications'),
   onUpdateMessage: (callback) => {

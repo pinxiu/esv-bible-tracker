@@ -1,30 +1,37 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-echo "Installing ESV Bible Tracker to /Applications..."
-rm -rf "/Applications/ESV Bible Tracker.app"
-cp -R "dist/mac-arm64/ESV Bible Tracker.app" "/Applications/"
+SOURCE_APP="${SOURCE_APP:-dist/mac-arm64/ESV Bible Tracker.app}"
+INSTALL_DIR="${INSTALL_DIR:-$HOME/Applications}"
+TARGET_APP="$INSTALL_DIR/ESV Bible Tracker.app"
+
+if [ ! -d "$SOURCE_APP" ]; then
+  echo "Build not found: $SOURCE_APP" >&2
+  echo "Run: CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --mac dir --arm64" >&2
+  exit 1
+fi
+
+mkdir -p "$INSTALL_DIR"
 
 # Create app-update.yml configuration to enable local update checking
-cat <<EOT > "/Applications/ESV Bible Tracker.app/Contents/Resources/app-update.yml"
+cat <<EOT > "$SOURCE_APP/Contents/Resources/app-update.yml"
 owner: pinxiu
 repo: esv-bible-tracker
 provider: github
 EOT
 
-echo "Verifying code signature..."
-if codesign -v "/Applications/ESV Bible Tracker.app" 2>/dev/null; then
-  echo "✅ Valid code signature found! Preserving developer certificate signature."
-else
-  echo "⚠️ Code signature is invalid or missing. Checking Keychain for certificate..."
-  if security find-identity -v -p codesigning | grep -q "ESV Bible Tracker Developer"; then
-    echo "Signing with 'ESV Bible Tracker Developer' certificate..."
-    codesign --force --deep --sign "ESV Bible Tracker Developer" "/Applications/ESV Bible Tracker.app"
-  else
-    echo "Signing ad-hoc..."
-    codesign --force --deep --sign - "/Applications/ESV Bible Tracker.app"
-  fi
+scripts/sign-mac-app.sh "$SOURCE_APP"
+
+echo "Installing ESV Bible Tracker to $TARGET_APP..."
+rm -rf "$TARGET_APP"
+ditto "$SOURCE_APP" "$TARGET_APP"
+scripts/sign-mac-app.sh --verify-only "$TARGET_APP"
+
+# Refresh Finder, Spotlight, and Launchpad metadata after replacing the bundle.
+LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+touch "$TARGET_APP"
+if [ -x "$LSREGISTER" ]; then
+  "$LSREGISTER" -f "$TARGET_APP"
 fi
 
-echo "✅ ESV Bible Tracker installed successfully to /Applications!"
-echo "You can now launch 'ESV Bible Tracker' from Launchpad, Spotlight, or Applications folder."
+echo "ESV Bible Tracker installed and verified at $TARGET_APP"

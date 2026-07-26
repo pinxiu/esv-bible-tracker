@@ -1,70 +1,63 @@
-# Self-Signed macOS Code-Signing Guide
+# Stable macOS Code-Signing and Local Installation Guide
 
-To enable automatic updates (`electron-updater` / `ShipIt`) for testers and other users without purchasing a paid Apple Developer Account ($99/yr), follow these steps to generate and trust a self-signed code-signing certificate.
+> Important: ShipIt requires every update to satisfy the installed app's code-signing requirement. Never regenerate or swap the publishing certificate. A user moving from an older/different certificate must install one release manually; OTA updates work again after that baseline install.
 
----
+The expected Keychain identity is `ESV Bible Tracker Developer`. The signing script resolves its unique SHA-1 hash, signs with hardened-runtime options, disables Apple's timestamp service for this self-signed identity, and performs strict deep verification. It intentionally fails instead of falling back to an ad-hoc signature.
 
-## Step 1: Create the Certificate on the Developer's Mac
+The repository's `ESV_Developer.cer` contains only the public certificate. It cannot sign an app. Keep the original private key in Keychain and maintain an encrypted `.p12` backup; if `security find-identity -v -p codesigning` reports zero identities, restore that original `.p12` instead of generating a new certificate. A replacement certificate changes the app's designated requirement and breaks ShipIt updates.
 
-On the machine where you run `npm run release`, you can automatically generate and import the certificate using the provided helper script:
+## Build, sign, and install locally
 
-```bash
-chmod +x scripts/create_dev_cert.sh
-./scripts/create_dev_cert.sh
-```
-
-Alternatively, to do it manually:
-1. Open **Keychain Access** on your Mac.
-2. From the menu bar, select **Keychain Access ➔ Certificate Assistant ➔ Create a Certificate...**.
-3. Configure the fields exactly as follows:
-   - **Name**: `ESV Bible Tracker Developer`
-   - **Identity Type**: `Self Signed Root`
-   - **Certificate Type**: `Code Signing`
-4. Click **Create**, then click **Done**.
-
-Your self-signed certificate is now registered in your local Login keychain!
-
----
-
-## Step 2: Configure the Project Build settings
-
-The project is pre-configured in `package.json` to sign the app using this certificate name:
-```json
-"mac": {
-  "identity": "ESV Bible Tracker Developer",
-  "hardenedRuntime": false,
-  "gatekeeperAssess": false
-}
-```
-Now, when you run `npm run release` or `npm run build:local`, `electron-builder` will sign all binaries inside the app bundle using your `ESV Bible Tracker Developer` certificate.
-
----
-
-## Step 3: Export and Share the Certificate with Testers
-
-For other users/testers to install updates, their Macs must trust your self-signed certificate:
-
-1. In **Keychain Access**, find `ESV Bible Tracker Developer` under the **login** keychain.
-2. Right-click the certificate and select **Export "ESV Bible Tracker Developer"...**.
-3. Save it as a `.cer` file (e.g. `ESV_Developer.cer`).
-4. Share this `ESV_Developer.cer` file with your testers.
-
----
-
-## Step 4: Tester Setup (One-time step for each tester's Mac)
-
-On the tester's / user's Mac, they can download and trust your certificate in a single command by running the following in their **Terminal**:
+The complete local workflow installs to `~/Applications`:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/pinxiu/esv-bible-tracker/main/scripts/trust_cert.sh | bash
+npm run build
+npm run install:local
 ```
 
-Alternatively, to do it manually:
-1. Double-click the received `ESV_Developer.cer` file to import it into their Keychain Access.
-2. In Keychain Access, locate the imported **`ESV Bible Tracker Developer`** certificate.
-3. Double-click it to open the info window.
-4. Expand the **Trust** section at the top.
-5. Change **When using this certificate** from "Use System Defaults" to **Always Trust**.
-6. Close the window and authenticate with their macOS password.
+`install:local` packages an unsigned Apple Silicon bundle, writes `app-update.yml`, signs the final bundle with the trusted Keychain identity, replaces `~/Applications/ESV Bible Tracker.app`, and verifies the installed copy.
 
-🎉 **Done!** The tester's Mac will now trust any updates signed by your `ESV Bible Tracker Developer` certificate, and the auto-updater will run successfully!
+To sign an existing bundle without installing it:
+
+```bash
+npm run sign:mac
+```
+
+Override the bundle or identity when needed:
+
+```bash
+MAC_CODESIGN_IDENTITY="ESV Bible Tracker Developer" \
+  bash scripts/sign-mac-app.sh "dist/mac-arm64/ESV Bible Tracker.app"
+```
+
+Confirm the identity is available before signing:
+
+```bash
+security find-identity -v -p codesigning
+```
+
+If it is missing, run `scripts/create_dev_cert.sh` once and mark the certificate as trusted in Keychain Access. Do not regenerate it for later releases.
+
+## Published releases
+
+Published releases require the same exported signing identity on every build machine.
+
+Set these variables before `npm run release`:
+
+```bash
+export CSC_LINK="/secure/path/ESV-Bible-Tracker-signing-identity.p12"
+export CSC_KEY_PASSWORD="the-p12-password"
+```
+
+The release script aborts before publishing if either value is missing. Keep the `.p12` backed up securely and do not commit it.
+
+For public distribution, use an Apple Developer ID Application certificate and notarize the release. For a private self-signed distribution, export the original certificate and private key once and reuse that same `.p12`; testers must trust its public certificate.
+
+Before publishing, verify the resulting app:
+
+```bash
+codesign --verify --deep --strict --verbose=2 "dist/mac-arm64/ESV Bible Tracker.app"
+codesign -dv --verbose=4 "dist/mac-arm64/ESV Bible Tracker.app"
+```
+
+If a currently installed build was signed by another identity, download and install the latest release manually from GitHub once. Do not try to bypass macOS signature validation.

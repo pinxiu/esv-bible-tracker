@@ -90,6 +90,9 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
   const ignoreSpaces = true; // Always ignore extra spaces under the hood
   const [includeReference, setIncludeReference] = useState(true);
   const [autoCompleteAtEnd, setAutoCompleteAtEnd] = useState(false);
+  const [firstLetterMode, setFirstLetterMode] = useState(false);
+  const [noBacktrackMode, setNoBacktrackMode] = useState(false);
+  const [mistakeIndices, setMistakeIndices] = useState(() => new Set());
 
   // User typewriter input text
   const [userInput, setUserInput] = useState('');
@@ -202,6 +205,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
     setHintExtraCount(0);
     setShowFullPassageHint(false);
     setShowStageCompletionModal(false);
+    setMistakeIndices(new Set());
   };
 
   const activeVerseItem = (memoryMode === 'verse-by-verse' && fetchedVerses.length > 1)
@@ -246,12 +250,38 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
 
   // Handle Typewriter input change
   const handleInputChange = (e) => {
-    const val = e.target.value;
+    let val = e.target.value;
+    const previousLength = userInput.length;
+    let madeFirstLetterMistake = false;
+
+    if (noBacktrackMode && val.length < previousLength) return;
+
+    if (firstLetterMode && val.length === previousLength + 1 && previousLength < activeScriptureText.length) {
+      const typedChar = val[val.length - 1];
+      if (/\s/.test(typedChar)) return;
+      let wordStart = previousLength;
+      while (wordStart < activeScriptureText.length && /\s/.test(activeScriptureText[wordStart])) wordStart++;
+      const wordMatch = activeScriptureText.slice(wordStart).match(/^\S+\s*/);
+      if (wordMatch) {
+        const completedWord = wordMatch[0];
+        const expected = activeScriptureText[wordStart];
+        const matches = ignoreCaps ? typedChar.toLowerCase() === expected.toLowerCase() : typedChar === expected;
+        val = activeScriptureText.slice(0, wordStart) + completedWord;
+        if (!matches) {
+          madeFirstLetterMistake = true;
+          setMistakeIndices(current => {
+            const next = new Set(current);
+            for (let i = wordStart; i < wordStart + completedWord.trimEnd().length; i++) next.add(i);
+            return next;
+          });
+        }
+      }
+    }
     setUserInput(val);
 
     const validation = validateVerseInput(val, activeScriptureText, {
-      ignoreCaps,
-      ignorePunctuation,
+      ignoreCaps: ignoreCaps || firstLetterMode,
+      ignorePunctuation: ignorePunctuation || firstLetterMode,
       ignoreSpaces
     });
 
@@ -259,7 +289,8 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
 
     // Trigger completion modal if exact match OR if autoCompleteAtEnd toggle is enabled and typing reaches the end!
     const reachedEnd = autoCompleteAtEnd && val.length >= activeScriptureText.length && activeScriptureText.length > 0;
-    if (validation.isExactMatch || reachedEnd) {
+    const hasMistakes = mistakeIndices.size > 0 || madeFirstLetterMistake;
+    if ((validation.isExactMatch || reachedEnd) && (!noBacktrackMode || !hasMistakes) && (!firstLetterMode || !hasMistakes)) {
       setIsCompleted(true);
 
       if (memoryMode === 'verse-by-verse' && fetchedVerses.length > 1) {
@@ -287,6 +318,22 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
         }
       }
     }
+  };
+
+  const handleFirstLetterBackspace = () => {
+    const withoutTrailingSpaces = userInput.replace(/\s+$/, '');
+    if (!withoutTrailingSpaces) return;
+    const wordStart = withoutTrailingSpaces.lastIndexOf(' ') + 1;
+    const nextValue = withoutTrailingSpaces.slice(0, wordStart);
+    setUserInput(nextValue);
+    setMistakeIndices(current => new Set([...current].filter(index => index < wordStart)));
+    const validation = validateVerseInput(nextValue, activeScriptureText, {
+      ignoreCaps: true,
+      ignorePunctuation: true,
+      ignoreSpaces: true
+    });
+    setAccuracyScore(validation.accuracy);
+    setIsCompleted(false);
   };
 
   // Symmetric Show/Hide Hint Handlers
@@ -407,7 +454,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
           isMatch = true;
         }
 
-        if (isMatch) {
+        if (isMatch && !mistakeIndices.has(i)) {
           elements.push(
             <span key={i} className="text-emerald-400 font-bold">
               {typedChar}
@@ -727,6 +774,16 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
                     ref={inputRef}
                     value={userInput}
                     onChange={handleInputChange}
+                    onKeyDown={(e) => {
+                      if (firstLetterMode && e.key === 'Backspace' && !noBacktrackMode) {
+                        e.preventDefault();
+                        handleFirstLetterBackspace();
+                        return;
+                      }
+                      if (noBacktrackMode && ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     className="opacity-0 absolute inset-0 w-full h-full cursor-text resize-none bg-transparent"
                     autoFocus
                   />
@@ -915,6 +972,39 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
                   />
                 </label>
 
+                <label className={`flex items-center justify-between cursor-pointer p-2.5 rounded-xl border transition-all ${
+                  firstLetterMode ? 'bg-purple-500/10 border-purple-500/30' : 'bg-slate-900/60 border-slate-800'
+                }`}>
+                  <div className="flex flex-col pr-2">
+                    <span className="text-xs font-semibold text-slate-200">First-letter mode</span>
+                    <span className="text-[10px] text-slate-400">Correct first letter reveals the word; a mistake reveals it in red.</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={firstLetterMode}
+                    onChange={(e) => {
+                      const enabled = e.target.checked;
+                      setFirstLetterMode(enabled);
+                      if (enabled) {
+                        setIgnoreCaps(true);
+                        setIgnorePunctuation(true);
+                      }
+                      resetPracticeState();
+                    }}
+                    className="w-4 h-4 accent-purple-500"
+                  />
+                </label>
+
+                <label className={`flex items-center justify-between cursor-pointer p-2.5 rounded-xl border transition-all ${
+                  noBacktrackMode ? 'bg-rose-500/10 border-rose-500/30' : 'bg-slate-900/60 border-slate-800'
+                }`}>
+                  <div className="flex flex-col pr-2">
+                    <span className="text-xs font-semibold text-slate-200">No backtracking</span>
+                    <span className="text-[10px] text-slate-400">Locks editing; only a 100% clean attempt passes.</span>
+                  </div>
+                  <input type="checkbox" checked={noBacktrackMode} onChange={(e) => { setNoBacktrackMode(e.target.checked); resetPracticeState(); }} className="w-4 h-4 accent-rose-500" />
+                </label>
+
                 {/* Ignore Capitalization */}
                 <label className={`flex items-center justify-between cursor-pointer p-2.5 rounded-xl border transition-all ${
                   ignoreCaps 
@@ -924,9 +1014,10 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
                   <span className={`text-xs ${ignoreCaps ? 'font-bold text-amber-300' : 'font-semibold text-slate-200'}`}>Ignore Capitalization</span>
                   <input
                     type="checkbox"
-                    checked={ignoreCaps}
+                    checked={ignoreCaps || firstLetterMode}
                     onChange={(e) => setIgnoreCaps(e.target.checked)}
-                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                    disabled={firstLetterMode}
+                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer disabled:opacity-60"
                   />
                 </label>
 
@@ -939,9 +1030,10 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
                   <span className={`text-xs ${ignorePunctuation ? 'font-bold text-amber-300' : 'font-semibold text-slate-200'}`}>Ignore Punctuation (. , ! ?)</span>
                   <input
                     type="checkbox"
-                    checked={ignorePunctuation}
+                    checked={ignorePunctuation || firstLetterMode}
                     onChange={(e) => setIgnorePunctuation(e.target.checked)}
-                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                    disabled={firstLetterMode}
+                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer disabled:opacity-60"
                   />
                 </label>
               </div>
