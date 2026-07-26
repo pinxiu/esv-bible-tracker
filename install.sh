@@ -35,3 +35,7 @@ if [ -x "$LSREGISTER" ]; then
 fi
 
 echo "ESV Bible Tracker installed and verified at $TARGET_APP"
+
+if [ "${LAUNCH_AFTER_INSTALL:-true}" = "true" ]; then
+  open "$TARGET_APP"
+fi

@@ -112,5 +112,7 @@ jobs:
         if: steps.release_gate.outputs.should_release == 'true' && steps.run_tests.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.MAC_CODESIGN_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CODESIGN_P12_PASSWORD }}
         run: |
           npm run release

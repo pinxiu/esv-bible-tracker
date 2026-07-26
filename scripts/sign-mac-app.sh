@@ -60,7 +60,6 @@ echo "Signing '$APP_PATH' with $IDENTITY_NAME ($IDENTITY_HASH)..."
 codesign \
   --force \
   --deep \
-  --options runtime \
   --timestamp=none \
   --sign "$IDENTITY_HASH" \
   "$APP_PATH"

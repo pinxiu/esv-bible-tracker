@@ -50,7 +50,10 @@ npm install
 # Run in development mode
 npm run electron:dev
 
-# Build & install locally to /Applications
+# One-time: repair access to the original stable signing identity
+npm run signing:repair
+
+# Build, sign, verify, install to ~/Applications, and launch
 npm run build:local
 ```
 

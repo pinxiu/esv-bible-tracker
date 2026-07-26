@@ -13,6 +13,7 @@
     "electron:build": "vite build && electron-builder --mac",
     "package": "npm run build && electron-builder --mac dir",
     "sign:mac": "bash scripts/sign-mac-app.sh",
+    "signing:repair": "bash scripts/repair_signing_identity.sh",
     "install:local": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dir --arm64 && ./install.sh",
     "test:signing": "node --test tests/signing-scripts.test.mjs",
     "test:unit": "node --test tests/*.test.mjs",
@@ -63,7 +64,7 @@
         "zip"
       ],
       "icon": "build/icon.icns",
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false
     },
     "files": [

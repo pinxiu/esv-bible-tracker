@@ -2,7 +2,7 @@
 
 > Important: ShipIt requires every update to satisfy the installed app's code-signing requirement. Never regenerate or swap the publishing certificate. A user moving from an older/different certificate must install one release manually; OTA updates work again after that baseline install.
 
-The expected Keychain identity is `ESV Bible Tracker Developer`. The signing script resolves its unique SHA-1 hash, signs with hardened-runtime options, disables Apple's timestamp service for this self-signed identity, and performs strict deep verification. It intentionally fails instead of falling back to an ad-hoc signature.
+The expected Keychain identity is `ESV Bible Tracker Developer`. The signing script resolves its unique SHA-1 hash, uses the non-hardened signing profile proven by v1.0.23–v1.0.24, disables Apple's timestamp service for this self-signed identity, and performs strict deep verification. Hardened Runtime requires an Apple-issued Developer ID workflow and must remain disabled for this internal self-signed distribution. The script intentionally fails instead of falling back to an ad-hoc signature.
 
 The repository's `ESV_Developer.cer` contains only the public certificate. It cannot sign an app. Keep the original private key in Keychain and maintain an encrypted `.p12` backup; if `security find-identity -v -p codesigning` reports zero identities, restore that original `.p12` instead of generating a new certificate. A replacement certificate changes the app's designated requirement and breaks ShipIt updates.
 
@@ -11,11 +11,11 @@ The repository's `ESV_Developer.cer` contains only the public certificate. It ca
 The complete local workflow installs to `~/Applications`:
 
 ```bash
-npm run build
-npm run install:local
+npm run signing:repair # one time on the developer Mac
+npm run build:local
 ```
 
-`install:local` packages an unsigned Apple Silicon bundle, writes `app-update.yml`, signs the final bundle with the trusted Keychain identity, replaces `~/Applications/ESV Bible Tracker.app`, and verifies the installed copy.
+`build:local` builds and packages an unsigned Apple Silicon bundle, writes `app-update.yml`, signs the final bundle with the stable Keychain identity, replaces `~/Applications/ESV Bible Tracker.app`, verifies and registers the installed copy, and launches it. Do not run `codesign --sign -`; an ad-hoc signature breaks automatic updates.
 
 To sign an existing bundle without installing it:
 
@@ -50,6 +50,8 @@ export CSC_KEY_PASSWORD="the-p12-password"
 ```
 
 The release script aborts before publishing if either value is missing. Keep the `.p12` backed up securely and do not commit it.
+
+For scheduled GitHub releases, configure repository secrets `MAC_CODESIGN_P12_BASE64` (the original `.p12`, base64 encoded) and `MAC_CODESIGN_P12_PASSWORD`. Every release runner must receive that same identity.
 
 For public distribution, use an Apple Developer ID Application certificate and notarize the release. For a private self-signed distribution, export the original certificate and private key once and reuse that same `.p12`; testers must trust its public certificate.
 
