@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, BookOpen, BrainCircuit, Bookmark, Sparkles, X, ChevronRight, ChevronLeft, CheckCircle2, Award, Search, BarChart2, RefreshCw } from 'lucide-react';
 
 export default function OnboardingModal({ isOpen, onClose }) {
   const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    if (isOpen) setStep(1);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -41,7 +45,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
           </p>
           <div className="space-y-2 text-xs">
             <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-200 rounded-lg">
-              <strong>1. Sequential Catch-Up:</strong> Instantly jumps to your oldest uncompleted reading date.
+              <strong>1. Sequential Catch-Up:</strong> Opens the first unread passage within your oldest missed reading date.
             </div>
             <div className="p-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-lg">
               <strong>2. Start from Today:</strong> Jumps straight to today's reading while preserving past progress.
@@ -55,20 +59,21 @@ export default function OnboardingModal({ isOpen, onClose }) {
     },
     {
       id: 3,
-      title: "Reader, Multi-Chapter Ranges & Instant Tooltips",
-      subtitle: "Read passage ranges, view footnotes & instant online/offline bank tooltips.",
+      title: "Official ESV Reader, Search & Audio",
+      subtitle: "Read or search Scripture, listen while reading, and continue automatically when offline.",
       icon: BookOpen,
       color: "text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
       content: (
         <div className="space-y-3 text-slate-300 text-sm leading-relaxed font-sans">
           <p>
-            Type single passages or multi-chapter ranges (e.g. <span className="text-amber-300 font-semibold">Gen 16-18</span>, <span className="text-amber-300 font-semibold">2 Timothy 1</span>) to read with authentic ESV formatting.
+            Search for a passage or phrase (for example <span className="text-amber-300 font-semibold">Jn3:16</span>, <span className="text-amber-300 font-semibold">Ps 1</span>, or <span className="text-amber-300 font-semibold">"love"</span>) using the official ESV API.
           </p>
           <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-1.5">
-            <div className="text-emerald-300 font-semibold">🔍 Interactive Reader Highlights:</div>
-            <div>• <strong>Multi-Chapter Ranges:</strong> Automatically fetches and formats ranges like <em>Gen 16-18</em></div>
-            <div>• <strong>Instant Bank Tooltips:</strong> Instant 0ms white-text tooltips for Bible Gateway vs Embedded ESV Bank</div>
-            <div>• <strong>Offline Detection:</strong> Gateway toggle greys out offline with instant status info</div>
+            <div className="text-emerald-300 font-semibold">🔍 Reader Highlights:</div>
+            <div>• <strong>Books & Ranges:</strong> Load whole books or ranges such as <em>2 Tim</em> and <em>Gen 16-18</em></div>
+            <div>• <strong>Listen While Reading:</strong> Use the audio button beside the title without leaving the formatted passage</div>
+            <div>• <strong>Display Menu:</strong> Show or hide verse numbers, headings, and footnotes</div>
+            <div>• <strong>Automatic Offline Fallback:</strong> The embedded Bible opens automatically when online sources are unavailable</div>
           </div>
         </div>
       )
@@ -96,7 +101,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
     {
       id: 5,
       title: "Typewriter & Verse-by-Verse Memorization",
-      subtitle: "Embedded ESV loading, proportional stage progress & smart verse navigation!",
+      subtitle: "First-letter assistance, strict recall, proportional progress & smart navigation!",
       icon: BrainCircuit,
       color: "text-purple-400 bg-purple-500/20 border-purple-500/30",
       content: (
@@ -110,6 +115,8 @@ export default function OnboardingModal({ isOpen, onClose }) {
             <div>• <strong>High-Performance Viewport:</strong> 600-char sliding window renders long passages like Matthew 5 instantly</div>
             <div>• <strong>Proportional Progress:</strong> Partial verse completion updates mastery % proportionally</div>
             <div>• <strong>Smart Verse Navigation:</strong> Dynamic buttons jump to previous or next unfinished verses</div>
+            <div>• <strong>First-Letter Mode:</strong> Type a word's first letter to reveal it; capitalization, punctuation, and spaces are ignored</div>
+            <div>• <strong>No Backtracking:</strong> Optionally prevent editing earlier answers for stricter recall practice</div>
           </div>
         </div>
       )

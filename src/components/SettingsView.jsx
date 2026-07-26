@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Bell, Key, Globe, RotateCcw, Check, Sparkles } from 'lucide-react';
 
-export default function SettingsView({ settings, onSaveSettings, onResetProgress, onCancel }) {
+export default function SettingsView({ settings, onSaveSettings, onResetProgress, onShowTutorial, onCancel }) {
   const [esvApiKey, setEsvApiKey] = useState(settings.esvApiKey || '');
   const [notifyUnread, setNotifyUnread] = useState(settings.notifyUnread ?? true);
   const [notificationTime, setNotificationTime] = useState(settings.notificationTime || '08:00');
@@ -60,21 +60,18 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
           </div>
           <h2 className="text-2xl font-serif font-bold text-slate-100">Application Settings</h2>
           <p className="text-sm text-slate-400 font-sans mt-1">
-            Configure ESV API tokens, macOS daily notifications, and timezone options.
+            Configure official ESV access, reading reminders, timezone, and updates.
           </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ESV API Key */}
+        {/* ESV API Token */}
         <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-3">
           <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
             <Key className="w-4 h-4" />
-            <span>Official ESV API Token (Optional)</span>
+            <span>Official ESV API Token</span>
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            The app includes a zero-config free public Bible fetcher. If you have an official API key from <a href="https://api.esv.org/" target="_blank" rel="noreferrer" className="text-amber-400 underline">api.esv.org</a>, paste it below to fetch official ESV publisher formatting directly.
-          </p>
           <input
             type="password"
             placeholder="Paste ESV API Token..."
@@ -84,11 +81,11 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
           />
         </div>
 
-        {/* macOS Notifications & Timezone */}
+        {/* Reading, Timezone & Updates */}
         <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
           <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
             <Bell className="w-4 h-4" />
-            <span>macOS Daily Local Notifications</span>
+            <span>Reading, Timezone & Updates</span>
           </div>
 
           <label className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 cursor-pointer">
@@ -167,6 +164,23 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
               className="w-4 h-4 accent-amber-500 rounded"
             />
           </label>
+        </div>
+
+        <div className="glass-card p-5 rounded-2xl border border-slate-800 flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
+              <Sparkles className="w-4 h-4" />
+              <span>App Tutorial</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">Review the reading plan, Reader, Treasury, and memory-practice guide.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onShowTutorial}
+            className="shrink-0 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-all cursor-pointer"
+          >
+            View Tutorial Again
+          </button>
         </div>
 
         {/* Submit Button */}
