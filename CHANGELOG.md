@@ -5,19 +5,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
-## [1.0.28] - 2026-07-27
-
-### 🚀 Release Summary
-- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
-
-
-## [1.0.27] - 2026-07-26
-
-### 🚀 Release Summary
-- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
-
-
-## [1.0.26] - Unreleased
+## [1.0.30] - Unreleased
 
 ### 🚀 Release Summary
 - **Official ESV Reader Integration**: Added authenticated ESV HTML, audio, and phrase search with automatic Bible Gateway and embedded-offline fallback.
@@ -25,6 +13,31 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 - **Reader and Plan Interaction Polish**: Added first-verse spacing, outside-click dismissal for the Display menu, full-row passage completion toggles, and correct oldest-unread catch-up navigation.
 - **Memory Typewriter Modes**: Added first-letter word completion, whole-word backtracking, forced capitalization/punctuation tolerance, and strict no-backtracking practice.
 - **Stable macOS Signing**: Added a fail-closed Keychain signing script, signed local installer workflow, strict bundle verification, updater recovery guidance, and signing regression tests.
+
+
+## [1.0.29] - 2026-07-26
+
+### 🚀 Release Summary
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
+
+
+## [1.0.28] - 2026-07-25
+
+### 🚀 Release Summary
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
+
+
+## [1.0.27] - 2026-07-24
+
+### 🚀 Release Summary
+- **Dummy Release**: No additional features or application behavior changes were introduced in this release.
+
+
+## [1.0.26] - 2026-07-23
+
+### 🚀 Release Summary
+- Fix writeFileSync typo in update-changelog script and verify fuzzy deduplication gating.
+- Patch 1.0.25 changelog, bump dev version to 1.0.26, and automate post-release version bumps.
 
 
 ## [1.0.25] - 2026-07-23
