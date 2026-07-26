@@ -45,7 +45,8 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
   test('Tab navigation functions smoothly', async () => {
     // Navigate to Reader tab
     await window.click('button:has-text("Reader")');
-    await expect(window.locator('button:has-text("Load Passage")')).toBeVisible();
+    await expect(window.getByPlaceholder('e.g. Jn3:16, Ps 1, "love"')).toBeVisible();
+    await expect(window.getByRole('button', { name: 'Search' })).toBeVisible();
 
     // Navigate to Treasury tab
     await window.click('button:has-text("Treasury")');
