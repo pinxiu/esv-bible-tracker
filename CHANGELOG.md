@@ -11,7 +11,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 - **Official ESV Reader Integration**: Added authenticated ESV HTML, audio, and phrase search with automatic Bible Gateway and embedded-offline fallback.
 - **Reader Presentation Controls**: Added compact display settings, inline audio, clickable lettered footnotes, correct chapter/verse typography, whole-book chapter loading, and Scripture-only highlighting.
 - **Reader and Plan Interaction Polish**: Added first-verse spacing, outside-click dismissal for the Display menu, full-row passage completion toggles, and correct oldest-unread catch-up navigation.
-- **Selection and Settings Cleanup**: Prevented footnote-only highlights and simplified settings labels around official ESV access, reminders, timezone, and updates.
+- **Selection and Settings Cleanup**: Prevented footnote-only highlights, removed the ESV API token section from Settings, and simplified labels around reminders, timezone, and updates.
 - **Replayable Tutorial**: Updated onboarding for the official ESV Reader and memory modes, and added a Settings action to view the tutorial again from step 1.
 - **Memory Typewriter Modes**: Added first-letter word completion, whole-word backtracking, forced capitalization/punctuation tolerance, and strict no-backtracking practice.
 - **Stable macOS Signing**: Added a fail-closed Keychain signing script, signed local installer workflow, strict bundle verification, updater recovery guidance, and signing regression tests.

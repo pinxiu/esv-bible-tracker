@@ -62,9 +62,9 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await expect(window.locator('text=Application Settings')).toBeVisible();
 
     // 1. Test Cancellation
-    // Enter a dummy API key
-    const apiKeyInput = window.locator('input[placeholder*="ESV API Token"]');
-    await apiKeyInput.fill('dummy-test-key-cancel');
+    const autoUpdateInput = window.locator('label:has-text("Auto-Download & Install Updates") input[type="checkbox"]');
+    const originalAutoUpdate = await autoUpdateInput.isChecked();
+    await autoUpdateInput.setChecked(!originalAutoUpdate);
     
     // Click Cancel
     await window.click('button:has-text("Cancel")');
@@ -72,12 +72,12 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     // Verify it closed settings and returned to default tab (verified by Today subheader)
     await expect(window.locator('text=Beijing Time Zone')).toBeVisible();
 
-    // Re-open settings and verify it was NOT saved
+    // Re-open settings and verify the change was NOT saved
     await window.click('button[title*="Settings"]');
-    await expect(apiKeyInput).toHaveValue('');
+    await expect(autoUpdateInput).toBeChecked({ checked: originalAutoUpdate });
 
     // 2. Test Save Preferences
-    await apiKeyInput.fill('dummy-test-key-save');
+    await autoUpdateInput.setChecked(!originalAutoUpdate);
     await window.click('button:has-text("Save Preferences")');
     
     // Verify it closed settings and returned to default tab
@@ -85,10 +85,10 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
 
     // Re-open settings and verify it WAS saved
     await window.click('button[title*="Settings"]');
-    await expect(apiKeyInput).toHaveValue('dummy-test-key-save');
+    await expect(autoUpdateInput).toBeChecked({ checked: !originalAutoUpdate });
 
-    // Reset API key back to empty for clean state
-    await apiKeyInput.fill('');
+    // Reset for clean state
+    await autoUpdateInput.setChecked(originalAutoUpdate);
     await window.click('button:has-text("Save Preferences")');
   });
 

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Bell, Key, Globe, RotateCcw, Check, Sparkles } from 'lucide-react';
+import { Settings, Bell, RotateCcw, Check, Sparkles } from 'lucide-react';
 
 export default function SettingsView({ settings, onSaveSettings, onResetProgress, onShowTutorial, onCancel }) {
-  const [esvApiKey, setEsvApiKey] = useState(settings.esvApiKey || '');
   const [notifyUnread, setNotifyUnread] = useState(settings.notifyUnread ?? true);
   const [notificationTime, setNotificationTime] = useState(settings.notificationTime || '08:00');
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(settings.autoUpdateEnabled ?? true);
@@ -25,7 +24,7 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
     localStorage.setItem('esv_tracker_timezone', timezone);
     onSaveSettings({
       ...settings,
-      esvApiKey,
+      esvApiKey: settings.esvApiKey || '',
       notifyUnread,
       notificationTime,
       timezone,
@@ -60,27 +59,12 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
           </div>
           <h2 className="text-2xl font-serif font-bold text-slate-100">Application Settings</h2>
           <p className="text-sm text-slate-400 font-sans mt-1">
-            Configure official ESV access, reading reminders, timezone, and updates.
+            Configure reading reminders, timezone, updates, and app guidance.
           </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ESV API Token */}
-        <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-3">
-          <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
-            <Key className="w-4 h-4" />
-            <span>Official ESV API Token</span>
-          </div>
-          <input
-            type="password"
-            placeholder="Paste ESV API Token..."
-            value={esvApiKey}
-            onChange={(e) => setEsvApiKey(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-amber-400"
-          />
-        </div>
-
         {/* Reading, Timezone & Updates */}
         <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
           <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
