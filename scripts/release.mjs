@@ -269,8 +269,26 @@ async function runRelease() {
       console.error('Every published update must use the same exported signing identity (.p12). Regenerating a certificate breaks ShipIt updates.');
       process.exit(1);
     }
+    const expectedSigningIdentity = '9ABEB2177488BE80EFBA55B2E9646359A5667477';
+    const availableIdentities = execSync('security find-identity -v -p codesigning', {
+      cwd: rootDir,
+      encoding: 'utf8'
+    });
+    if (!availableIdentities.includes(expectedSigningIdentity)) {
+      throw new Error(`Stable signing identity ${expectedSigningIdentity} is not valid in the active Keychain.`);
+    }
     console.log('\n📦 Packaging & Publishing macOS releases (arm64 & x64) to GitHub Releases...');
     execSync('npx electron-builder --mac --arm64 --x64 --publish always', { cwd: rootDir, stdio: 'inherit', env: { ...process.env, GH_TOKEN: token, GITHUB_TOKEN: token } });
+
+    for (const appPath of [
+      'dist/mac/ESV Bible Tracker.app',
+      'dist/mac-arm64/ESV Bible Tracker.app'
+    ]) {
+      execSync(`./scripts/sign-mac-app.sh --verify-only "${appPath}"`, {
+        cwd: rootDir,
+        stdio: 'inherit'
+      });
+    }
     
     // Automatically convert draft release to published release via GitHub API
     console.log(`\n📢 Publishing GitHub Draft Release v${targetVersion}...`);
@@ -283,9 +301,13 @@ async function runRelease() {
     execSync('npx electron-builder --mac dir', { cwd: rootDir, stdio: 'inherit' });
   }
 
-  // 9. Re-install local app
-  console.log('\n📲 Installing updated local app to /Applications...');
-  execSync('./install.sh', { cwd: rootDir, stdio: 'inherit' });
+  // 9. Re-install local app outside CI only
+  if (process.env.GITHUB_ACTIONS !== 'true') {
+    console.log('\n📲 Installing updated local app to /Applications...');
+    execSync('./install.sh', { cwd: rootDir, stdio: 'inherit' });
+  } else {
+    console.log('\n🤖 CI Environment: Skipping local app installation.');
+  }
 
   // 10. Post-Release: Bump to next version and push changes back to git
   const nextVersion = bumpVersion(targetVersion, 'patch');

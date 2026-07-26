@@ -6,6 +6,8 @@ const signScript = await readFile(new URL('../scripts/sign-mac-app.sh', import.m
 const installScript = await readFile(new URL('../install.sh', import.meta.url), 'utf8');
 const repairScript = await readFile(new URL('../scripts/repair_signing_identity.sh', import.meta.url), 'utf8');
 const trustScript = await readFile(new URL('../scripts/trust_cert.sh', import.meta.url), 'utf8');
+const releaseScript = await readFile(new URL('../scripts/release.mjs', import.meta.url), 'utf8');
+const releaseWorkflow = await readFile(new URL('../.github/workflows/daily-release.yml', import.meta.url), 'utf8');
 
 test('signing script resolves one stable Keychain identity and never falls back to ad-hoc signing', () => {
   assert.match(signScript, /security find-identity -v -p codesigning/);
@@ -44,4 +46,19 @@ test('tester activation verifies the pinned certificate and supports both Applic
   assert.match(trustScript, /SIGNING_AUTHORITY.*ESV Bible Tracker Developer/s);
   assert.match(trustScript, /trustRoot/);
   assert.doesNotMatch(trustScript, /codesign.*--sign\s+-/);
+});
+
+test('CI trusts and validates the stable signing identity before publishing', () => {
+  assert.match(releaseWorkflow, /Prepare Trusted macOS Signing Identity/);
+  assert.match(releaseWorkflow, /9ABEB2177488BE80EFBA55B2E9646359A5667477/);
+  assert.match(releaseWorkflow, /security add-trusted-cert[\s\S]*trustRoot/);
+  assert.match(releaseWorkflow, /security find-identity[\s\S]*EXPECTED_SHA1/);
+  assert.match(releaseWorkflow, /CSC_NAME=ESV Bible Tracker Developer/);
+  assert.match(releaseScript, /Stable signing identity/);
+  assert.match(releaseScript, /sign-mac-app\.sh --verify-only/);
+});
+
+test('release automation never tries to install a desktop app on a CI runner', () => {
+  assert.match(releaseScript, /GITHUB_ACTIONS !== 'true'/);
+  assert.match(releaseScript, /CI Environment: Skipping local app installation/);
 });

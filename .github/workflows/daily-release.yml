@@ -108,6 +108,43 @@ jobs:
             ESV Bible Tracker CI
           secure: true
 
+      - name: Prepare Trusted macOS Signing Identity
+        if: steps.release_gate.outputs.should_release == 'true' && steps.run_tests.outcome == 'success'
+        env:
+          SIGNING_P12_BASE64: ${{ secrets.MAC_CODESIGN_P12_BASE64 }}
+          SIGNING_P12_PASSWORD: ${{ secrets.MAC_CODESIGN_P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          EXPECTED_SHA1="9ABEB2177488BE80EFBA55B2E9646359A5667477"
+          SIGNING_DIR="$RUNNER_TEMP/esv-signing"
+          SIGNING_P12="$SIGNING_DIR/identity.p12"
+          SIGNING_CERT="$SIGNING_DIR/identity.pem"
+          SIGNING_KEYCHAIN="$RUNNER_TEMP/esv-signing.keychain-db"
+          SIGNING_KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
+
+          mkdir -p "$SIGNING_DIR"
+          printf '%s' "$SIGNING_P12_BASE64" | base64 --decode > "$SIGNING_P12"
+          openssl pkcs12 -legacy -in "$SIGNING_P12" -clcerts -nokeys \
+            -passin "pass:$SIGNING_P12_PASSWORD" -out "$SIGNING_CERT"
+
+          ACTUAL_SHA1="$(openssl x509 -in "$SIGNING_CERT" -noout -fingerprint -sha1 | tr -d ':' | cut -d= -f2)"
+          test "$ACTUAL_SHA1" = "$EXPECTED_SHA1"
+
+          sudo security add-trusted-cert -d -r trustRoot \
+            -k /Library/Keychains/System.keychain "$SIGNING_CERT"
+          security create-keychain -p "$SIGNING_KEYCHAIN_PASSWORD" "$SIGNING_KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$SIGNING_KEYCHAIN"
+          security unlock-keychain -p "$SIGNING_KEYCHAIN_PASSWORD" "$SIGNING_KEYCHAIN"
+          security import "$SIGNING_P12" -k "$SIGNING_KEYCHAIN" \
+            -P "$SIGNING_P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$SIGNING_KEYCHAIN_PASSWORD" "$SIGNING_KEYCHAIN"
+          security list-keychains -d user -s "$SIGNING_KEYCHAIN" login.keychain-db
+          security find-identity -v -p codesigning "$SIGNING_KEYCHAIN" | grep "$EXPECTED_SHA1"
+
+          echo "CSC_KEYCHAIN=$SIGNING_KEYCHAIN" >> "$GITHUB_ENV"
+          echo "CSC_NAME=ESV Bible Tracker Developer" >> "$GITHUB_ENV"
+
       - name: Run Release and Publish
         if: steps.release_gate.outputs.should_release == 'true' && steps.run_tests.outcome == 'success'
         env:
@@ -116,3 +153,9 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CODESIGN_P12_PASSWORD }}
         run: |
           npm run release
+
+      - name: Remove Temporary Signing Files
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/esv-signing"
+          rm -f "$RUNNER_TEMP/esv-signing.keychain-db"
