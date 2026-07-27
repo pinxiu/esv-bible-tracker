@@ -1,6 +1,12 @@
-const { app, BrowserWindow, ipcMain, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification, dialog } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
+const os = require('os');
+const { spawn } = require('child_process');
+
+if (process.platform === 'darwin') {
+  process.env.PATH = `/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${process.env.PATH || ''}`;
+}
 
 let mainWindow = null;
 
@@ -182,6 +188,150 @@ ipcMain.handle('get-app-info', () => {
     platform: process.platform,
     isReadOnlyVolume: checkReadOnlyVolume()
   };
+});
+
+ipcMain.handle('save-reading-schedule-template', async () => {
+  const templateName = 'ESV-Reading-Schedule-Template.xlsx';
+  const candidates = [
+    path.join(app.getAppPath(), 'dist', 'reading-schedule-template.xlsx'),
+    path.join(__dirname, '../public/reading-schedule-template.xlsx')
+  ];
+  const sourcePath = candidates.find(candidate => fs.existsSync(candidate));
+
+  if (!sourcePath) {
+    return { success: false, reason: 'The reading schedule template is missing from this app build.' };
+  }
+
+  try {
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Save Reading Schedule Template',
+      defaultPath: path.join(app.getPath('downloads'), templateName),
+      buttonLabel: 'Save Template',
+      filters: [{ name: 'Excel Workbook', extensions: ['xlsx'] }]
+    });
+
+    if (result.canceled || !result.filePath) {
+      return { success: false, canceled: true };
+    }
+
+    await fs.promises.copyFile(sourcePath, result.filePath);
+    return { success: true, filePath: result.filePath };
+  } catch (error) {
+    return { success: false, reason: error.message || 'Could not save the template.' };
+  }
+});
+
+function runGh(args) {
+  return new Promise((resolve) => {
+    const child = spawn('gh', args, { env: process.env });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', data => { stdout += data.toString(); });
+    child.stderr.on('data', data => { stderr += data.toString(); });
+    child.on('close', code => resolve({ success: code === 0, stdout: stdout.trim(), stderr: stderr.trim() }));
+    child.on('error', error => resolve({ success: false, stdout: '', stderr: error.message }));
+  });
+}
+
+const FEEDBACK_BRANCH = 'app-feedback';
+
+async function ensureFeedbackBranch() {
+  const existing = await runGh([
+    'api', `/repos/pinxiu/esv-bible-tracker/git/ref/heads/${FEEDBACK_BRANCH}`,
+    '--jq', '.object.sha'
+  ]);
+  if (existing.success) return { success: true };
+
+  const mainRef = await runGh([
+    'api', '/repos/pinxiu/esv-bible-tracker/git/ref/heads/main',
+    '--jq', '.object.sha'
+  ]);
+  if (!mainRef.success || !mainRef.stdout) return { success: false, error: mainRef.stderr || 'Could not read the main branch.' };
+
+  const created = await runGh([
+    'api', '--method', 'POST',
+    '/repos/pinxiu/esv-bible-tracker/git/refs',
+    '-f', `ref=refs/heads/${FEEDBACK_BRANCH}`,
+    '-f', `sha=${mainRef.stdout}`
+  ]);
+  return created.success ? { success: true } : { success: false, error: created.stderr };
+}
+
+async function uploadFeedbackFile(repoPath, content, message) {
+  const payloadPath = path.join(os.tmpdir(), `esv-feedback-${Date.now()}-${Math.random().toString(16).slice(2)}.json`);
+  await fs.promises.writeFile(payloadPath, JSON.stringify({
+    message,
+    content: Buffer.from(content).toString('base64'),
+    branch: FEEDBACK_BRANCH
+  }), 'utf8');
+  try {
+    return await runGh([
+      'api', '--method', 'PUT',
+      `/repos/pinxiu/esv-bible-tracker/contents/${repoPath}`,
+      '--input', payloadPath
+    ]);
+  } finally {
+    fs.promises.unlink(payloadPath).catch(() => {});
+  }
+}
+
+ipcMain.handle('capture-app', async () => {
+  try {
+    if (!mainWindow || mainWindow.isDestroyed()) return { success: false, error: 'The app window is not available.' };
+    const image = await mainWindow.webContents.capturePage();
+    return image.isEmpty()
+      ? { success: false, error: 'The captured app image was empty.' }
+      : { success: true, dataUrl: image.toDataURL() };
+  } catch (error) {
+    return { success: false, error: error.message || 'Could not capture the app.' };
+  }
+});
+
+ipcMain.handle('submit-feedback', async (event, { title, body, attachments = [] }) => {
+  const feedbackBranch = await ensureFeedbackBranch();
+  if (!feedbackBranch.success) {
+    return { success: false, error: feedbackBranch.error || 'Could not prepare feedback storage.' };
+  }
+
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  let finalBody = body;
+
+  for (let index = 0; index < attachments.length; index += 1) {
+    const attachment = attachments[index];
+    if (!attachment?.data) continue;
+    const cleanName = String(attachment.name || `attachment-${index + 1}`).replace(/[^a-zA-Z0-9._-]/g, '_');
+    const rawBase64 = attachment.data.replace(/^data:[^;]+;base64,/, '');
+    const repoPath = `feedback/attachments/${stamp}-${index + 1}-${cleanName}`;
+    const upload = await uploadFeedbackFile(repoPath, Buffer.from(rawBase64, 'base64'), 'Upload ESV Bible Tracker feedback attachment [skip ci]');
+    if (upload.success) {
+      const url = `https://raw.githubusercontent.com/pinxiu/esv-bible-tracker/${FEEDBACK_BRANCH}/${repoPath}`;
+      finalBody += attachment.isImage
+        ? `\n\n![${cleanName}](${url})`
+        : `\n\n[${cleanName}](${url})`;
+    } else {
+      finalBody += `\n\n_Attachment upload failed: ${cleanName} (${upload.stderr || 'unknown error'})_`;
+    }
+  }
+
+  const submissionPath = `feedback/submissions/${stamp}.md`;
+  const submission = await uploadFeedbackFile(
+    submissionPath,
+    `# ${title}\n\n${finalBody}\n`,
+    'Save ESV Bible Tracker feedback submission [skip ci]'
+  );
+  if (!submission.success) {
+    return { success: false, error: submission.stderr || 'Could not upload feedback to GitHub.' };
+  }
+
+  const issue = await runGh([
+    'issue', 'create',
+    '--repo', 'pinxiu/esv-bible-tracker',
+    '--title', title,
+    '--body', `${finalBody}\n\n---\n[Repository feedback copy](https://github.com/pinxiu/esv-bible-tracker/blob/${FEEDBACK_BRANCH}/${submissionPath})`
+  ]);
+  return issue.success
+    ? { success: true, url: issue.stdout, submissionPath }
+    : { success: false, error: issue.stderr || 'Could not create the feedback issue.' };
 });
 
 // IPC Handlers for Auto Updates

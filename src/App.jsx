@@ -9,14 +9,16 @@ import OnboardingModal from './components/OnboardingModal';
 import DeveloperDebugModal, { debugLogger } from './components/DeveloperDebugModal';
 import NotificationPermissionModal from './components/NotificationPermissionModal';
 import SettingsView from './components/SettingsView';
+import FeedbackModal from './components/FeedbackModal';
 
 import { BIBLE_PLAN as initialPlanData } from './data/biblePlanData';
 import { INITIAL_MEMORY_VERSES as initialMemoryVerses } from './data/initialMemoryVerses';
 import { getTodayBeijingDate, isDatePast, isDateToday, formatDateDisplay } from './utils/dateUtils';
 import { canonicalizeReference } from './utils/textNormalizer';
+import { applyMemoryReview } from './utils/memoryProgress';
 import { findOldestMissedUnreadPassage, getPassagesForDay } from './utils/readingPlan.mjs';
 import { esvDb } from './services/esvDatabase';
-import { Sparkles, CheckCircle2, ArrowUp, Bug } from 'lucide-react';
+import { Sparkles, CheckCircle2, ArrowUp, Bug, MessageSquare } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTabState] = useState('plan');
@@ -153,6 +155,14 @@ export default function App() {
 
   // Developer Debug Backdoor Console State
   const [showDebugModal, setShowDebugModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [isCustomSchedule, setIsCustomSchedule] = useState(() => {
+    try {
+      return localStorage.getItem('esv_custom_schedule_active') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
 
   const [appVersion, setAppVersion] = useState('1.0.8');
   const [timezone, setTimezone] = useState(() => {
@@ -419,33 +429,17 @@ export default function App() {
   };
 
   // Update Memory Mastery Progress & Review Count (support partial completion in verse-by-verse mode)
-  const handleUpdateMemoryProgress = (verseId, stageCompleted, partialFraction = 1) => {
+  const handleUpdateMemoryProgress = (
+    verseId,
+    stageCompleted,
+    partialFraction = 1,
+    { awardMastery = true, countReview = partialFraction >= 1 } = {}
+  ) => {
     setSavedVerses(prev => prev.map(v => {
       if (v.id === verseId) {
-        const prevLevel = v.masteryLevel || 0;
-        const isFullStage = partialFraction >= 1;
-
-        let newLevel = prevLevel;
-        if (stageCompleted === 4 && isFullStage) {
-          newLevel = 100;
-        } else {
-          // Base mastery from previously fully completed stages
-          const baseMastery = (stageCompleted - 1) * 25;
-          // Partial mastery earned in current stage
-          const currentStageBonus = Math.round(25 * Math.min(1, Math.max(0, partialFraction)));
-          const targetLevel = baseMastery + currentStageBonus;
-          newLevel = Math.min(100, Math.max(prevLevel, targetLevel));
-        }
-
-        const newReviewCount = (v.reviewCount || 0) + (isFullStage ? 1 : 0);
-        debugLogger.addLog('info', `Updating memory progress for ${v.reference}: Stage ${stageCompleted}, Mastery ${newLevel}%, Review count ${newReviewCount}`);
-        return {
-          ...v,
-          masteryLevel: newLevel,
-          stageProgress: isFullStage ? Math.max(v.stageProgress || 1, stageCompleted) : (v.stageProgress || 1),
-          reviewCount: newReviewCount,
-          lastReviewed: new Date().toISOString().split('T')[0]
-        };
+        const updated = applyMemoryReview(v, stageCompleted, partialFraction, { awardMastery, countReview });
+        debugLogger.addLog('info', `Updating memory progress for ${v.reference}: Stage ${stageCompleted}, Mastery ${updated.masteryLevel}%, Review count ${updated.reviewCount}`);
+        return updated;
       }
       return v;
     }));
@@ -508,10 +502,12 @@ export default function App() {
         localStorage.removeItem('esv_notifications_enabled');
         localStorage.removeItem('lastNotificationPromptTime');
         localStorage.removeItem('blockNotificationPrompt');
+        localStorage.removeItem('esv_custom_schedule_active');
       } catch (e) {
         console.warn('Failed to clear local storage:', e);
       }
       setPlanData(initialPlanData);
+      setIsCustomSchedule(false);
       setSavedVerses(initialMemoryVerses.map(v => ({
         ...v,
         reference: canonicalizeReference(v.reference)
@@ -552,6 +548,25 @@ export default function App() {
             onCatchUpOldest={handleCatchUpOldest}
             onCatchUpToday={handleCatchUpToday}
             setActiveTab={setActiveTab}
+            onReplacePlan={(nextPlan) => {
+              setPlanData(nextPlan);
+              setCurrentPassage(getNextUnreadPassage(nextPlan));
+              setIsCustomSchedule(true);
+              try {
+                localStorage.setItem('esv_custom_schedule_active', 'true');
+              } catch (e) {}
+            }}
+            isCustomSchedule={isCustomSchedule}
+            onResetDefaultPlan={() => {
+              if (!window.confirm('Replace the customized schedule with the default 52-week schedule? Custom schedule progress will be cleared.')) return;
+              setPlanData(initialPlanData);
+              setCurrentPassage(getNextUnreadPassage(initialPlanData));
+              setIsCustomSchedule(false);
+              try {
+                localStorage.removeItem('esv_custom_schedule_active');
+                localStorage.setItem('esv_bible_plan', JSON.stringify(initialPlanData));
+              } catch (e) {}
+            }}
           />
         )}
 
@@ -621,13 +636,24 @@ export default function App() {
       {showScrollToTop && activeTab !== 'reader' && (
         <button
           onClick={handleScrollToTop}
-          className="fixed bottom-6 right-6 z-40 p-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow-2xl flex items-center space-x-2 border border-amber-400/50 transition-all animate-fadeIn"
+          className="fixed bottom-20 right-6 z-40 p-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow-2xl flex items-center space-x-2 border border-amber-400/50 transition-all animate-fadeIn"
           title="Return to Top"
         >
           <ArrowUp className="w-4 h-4" />
           <span className="text-xs font-sans">Top</span>
         </button>
       )}
+
+      <button
+        type="button"
+        onClick={() => setShowFeedbackModal(true)}
+        className="group fixed bottom-5 right-6 z-40 flex h-11 max-w-11 items-center overflow-hidden rounded-2xl border border-amber-500/40 bg-slate-900 px-3 text-amber-300 shadow-2xl transition-all duration-200 hover:max-w-40 hover:border-amber-400 hover:bg-slate-800"
+        title="Send feedback"
+        aria-label="Send feedback"
+      >
+        <MessageSquare className="h-5 w-5 shrink-0" />
+        <span className="ml-2 whitespace-nowrap text-xs font-bold opacity-0 transition-opacity duration-150 group-hover:opacity-100">Send Feedback</span>
+      </button>
 
       {/* Commentary Modal Overlay */}
       {commentaryPassage && (
@@ -641,6 +667,12 @@ export default function App() {
       <OnboardingModal
         isOpen={showOnboarding}
         onClose={handleDismissOnboarding}
+      />
+
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        activePage={activeTab}
       />
 
       {/* Update Ready Restart Prompt Modal */}

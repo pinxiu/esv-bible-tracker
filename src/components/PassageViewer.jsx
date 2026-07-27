@@ -294,7 +294,7 @@ export default function PassageViewer({
     <div
       ref={containerRef}
       onScroll={handleScroll}
-      className="p-8 max-w-5xl mx-auto space-y-6 relative h-full overflow-y-auto pb-24"
+      className="p-8 max-w-5xl mx-auto space-y-6 relative h-full overflow-y-auto pb-6"
     >
       {/* TOP PASSAGE NAVIGATOR SEARCH BAR */}
       <div className="glass-panel relative z-40 overflow-visible p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6">
@@ -665,7 +665,7 @@ export default function PassageViewer({
               containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
-          className="fixed bottom-6 right-6 z-40 p-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow-2xl flex items-center space-x-2 border border-amber-400/50 transition-all animate-fadeIn"
+          className="fixed bottom-20 right-6 z-40 p-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow-2xl flex items-center space-x-2 border border-amber-400/50 transition-all animate-fadeIn"
           title="Return to Top"
         >
           <ArrowUp className="w-4 h-4" />

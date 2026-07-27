@@ -23,6 +23,11 @@ test('tutorial reflects current reader and memory behavior', () => {
   assert.match(tutorial, /Official ESV Reader, Search & Audio/);
   assert.match(tutorial, /Highlight & Save:/);
   assert.match(tutorial, /Automatic Offline Fallback/);
+  assert.match(tutorial, /Custom Schedules:/);
+  assert.match(tutorial, /Send Feedback:/);
+  assert.match(tutorial, /selected screenshot area/);
+  assert.match(tutorial, /Review Counting:/);
+  assert.match(tutorial, /Continue Reviewing:/);
   assert.match(tutorial, /First-Letter Mode/);
   assert.doesNotMatch(tutorial, /Gateway toggle/);
 });

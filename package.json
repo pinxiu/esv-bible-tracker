@@ -24,7 +24,8 @@
     "postinstall": "node scripts/setup-git-hooks.js"
   },
   "dependencies": {
-    "electron-updater": "^6.8.9"
+    "electron-updater": "^6.8.9",
+    "read-excel-file": "^9.3.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
@@ -65,14 +66,23 @@
       ],
       "icon": "build/icon.icns",
       "hardenedRuntime": false,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "electronLanguages": [
+        "en"
+      ]
     },
     "files": [
       "dist/index.html",
       "dist/assets/**/*",
+      "dist/reading-schedule-template.xlsx",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "!feedback{,/**/*}",
+      "!screenshots{,/**/*}",
+      "!attachments{,/**/*}",
+      "!**/*.map"
     ],
-    "asar": true
+    "asar": true,
+    "compression": "maximum"
   }
 }

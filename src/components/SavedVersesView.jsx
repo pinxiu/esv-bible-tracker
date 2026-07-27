@@ -220,7 +220,7 @@ export default function SavedVersesView({ savedVerses = [], onAddVerse, onUpdate
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="p-8 max-w-7xl mx-auto space-y-6 pb-6">
       {/* Header */}
       <div className="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>

@@ -16,3 +16,8 @@ out/
 # E2E Testing Outputs
 test-results/
 playwright-report/
+
+# User-submitted feedback lives only on the dedicated app-feedback branch.
+/feedback/
+/screenshots/
+/attachments/

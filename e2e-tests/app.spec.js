@@ -23,6 +23,8 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await window.evaluate(() => {
       localStorage.setItem('esv_onboarding_dismissed', 'true');
       localStorage.setItem('blockNotificationPrompt', 'true');
+      localStorage.removeItem('esv_custom_schedule_active');
+      localStorage.removeItem('esv_bible_plan');
     });
     await window.reload();
     await window.waitForLoadState('domcontentloaded');
@@ -149,5 +151,50 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     expect(content).toContain('app-update.yml');
     expect(content).toContain('provider: github');
     expect(content).toContain('repo: esv-bible-tracker');
+  });
+
+  test('Custom schedule paste accepts the shown example and can reset to default', async () => {
+    await window.getByRole('button', { name: 'Customize Schedule' }).click();
+    const scheduleInput = window.getByPlaceholder(/Date,Year,Passages/);
+    await expect(scheduleInput).toBeVisible();
+    await scheduleInput.fill('Date,Year,Passages\n7/13,2026,"Genesis 1-2; Psalm 19"\n7/14,2026,"Genesis 3-5; Mark 2"');
+
+    window.once('dialog', dialog => dialog.accept());
+    await window.getByRole('button', { name: 'Parse & Replace Schedule' }).click();
+    await expect(window.getByRole('button', { name: /All \(1 Weeks\)/ })).toBeVisible();
+    expect(await window.evaluate(() => localStorage.getItem('esv_custom_schedule_active'))).toBe('true');
+
+    await window.getByRole('button', { name: 'Customize Schedule' }).click();
+    const resetButton = window.getByRole('button', { name: 'Reset to Default 52-Week Schedule' });
+    await expect(resetButton).toBeVisible();
+    window.once('dialog', dialog => dialog.accept());
+    await resetButton.click();
+    await expect(resetButton).not.toBeVisible();
+    expect(await window.evaluate(() => localStorage.getItem('esv_custom_schedule_active'))).toBeNull();
+  });
+
+  test('Feedback modal captures the whole app or a selected section and reopens cleanly', async () => {
+    await window.getByRole('button', { name: 'Send feedback' }).click();
+    await expect(window.getByRole('heading', { name: 'Send Feedback' })).toBeVisible();
+    await window.getByRole('button', { name: 'Capture App' }).click();
+    const capturePreview = window.getByAltText('Captured app preview');
+    await expect(capturePreview).toBeVisible();
+    await window.getByRole('button', { name: 'Use Whole App' }).click();
+    await expect(window.getByText(/ESV-Bible-Tracker-\d+\.png/)).toBeVisible();
+
+    await window.getByRole('button', { name: 'Capture App' }).click();
+    await expect(capturePreview).toBeVisible();
+    const previewBox = await capturePreview.boundingBox();
+    await window.mouse.move(previewBox.x + 20, previewBox.y + 20);
+    await window.mouse.down();
+    await window.mouse.move(previewBox.x + 180, previewBox.y + 130);
+    await window.mouse.up();
+    await window.getByRole('button', { name: 'Attach Selected Area' }).click();
+    await expect(window.getByText(/ESV-Bible-Tracker-Section-\d+\.png/)).toBeVisible();
+
+    await window.getByRole('button', { name: 'Close feedback' }).click();
+    await expect(window.getByRole('heading', { name: 'Send Feedback' })).not.toBeVisible();
+    await window.getByRole('button', { name: 'Send feedback' }).click();
+    await expect(window.getByText(/Feedback uploaded successfully/)).not.toBeVisible();
   });
 });

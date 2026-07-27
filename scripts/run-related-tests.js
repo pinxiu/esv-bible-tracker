@@ -57,7 +57,10 @@ if (diffFiles.some(f => f.includes('Header') || f.includes('App.jsx'))) {
   testsToRun.push('Clock|Tab');
 }
 if (diffFiles.some(f => f.includes('ReadingPlanView') || f.includes('PassageViewer') || f.includes('App.jsx'))) {
-  testsToRun.push('Today|Tab');
+  testsToRun.push('Today|Tab|Custom schedule');
+}
+if (diffFiles.some(f => f.includes('FeedbackModal') || f.includes('main.cjs') || f.includes('preload.js'))) {
+  testsToRun.push('Feedback');
 }
 
 if (testsToRun.length === 0) {

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Circle, BookOpen, ExternalLink, Calendar, Filter, Sparkles, Check, AlertCircle, BookCheck, Trophy, BrainCircuit, Play, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Circle, BookOpen, ExternalLink, Calendar, Filter, Sparkles, Check, AlertCircle, BookCheck, Trophy, BrainCircuit, Play, ArrowRight, Upload, Download, ClipboardPaste, RefreshCw, X } from 'lucide-react';
+import readXlsxFile from 'read-excel-file/browser';
 import { isDatePast, isDateToday, getTodayBeijingMonthDay, getTodayBeijingMD, getTodayBeijingDate, getUserTimezone } from '../utils/dateUtils';
+import { parseDelimitedSchedule, parseScheduleRows } from '../utils/readingSchedule';
 import todayVerseBg from '../assets/today_verse_bg.jpg';
 
 const DAILY_VERSES = [
@@ -272,16 +274,87 @@ export default function ReadingPlanView({
   missedDaysCount = 0,
   onCatchUpOldest,
   onCatchUpToday,
-  setActiveTab
+  setActiveTab,
+  onReplacePlan,
+  isCustomSchedule = false,
+  onResetDefaultPlan
 }) {
   const [filter, setFilter] = useState('today'); // 'today', 'all', 'missed', 'completed'
   const [searchQuery, setSearchQuery] = useState('');
   const [showTrophyModal, setShowTrophyModal] = useState(false);
+  const [showScheduleImport, setShowScheduleImport] = useState(false);
+  const [pastedSchedule, setPastedSchedule] = useState('');
+  const [scheduleError, setScheduleError] = useState('');
+  const [scheduleMessage, setScheduleMessage] = useState('');
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
   const todayMonthDayStr = getTodayBeijingMonthDay();
   const todayBeijingMD = getTodayBeijingMD();
 
   const safePlan = Array.isArray(planData) ? planData : [];
+
+  const importSchedule = (nextPlan) => {
+    if (!window.confirm(`Replace the current reading schedule with ${nextPlan.length} imported reading days? Existing completion progress will be cleared.`)) return;
+    onReplacePlan(nextPlan);
+    setShowScheduleImport(false);
+    setPastedSchedule('');
+    setScheduleError('');
+  };
+
+  const handleScheduleFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setScheduleError('');
+    try {
+      const workbookRows = await readXlsxFile(file);
+      const rows = Array.isArray(workbookRows) && workbookRows[0]?.data
+        ? workbookRows[0].data
+        : workbookRows;
+      importSchedule(parseScheduleRows(rows));
+    } catch (error) {
+      setScheduleError(error.message || 'Could not read that spreadsheet.');
+    }
+  };
+
+  const handlePastedSchedule = () => {
+    setScheduleError('');
+    try {
+      importSchedule(parseDelimitedSchedule(pastedSchedule));
+    } catch (error) {
+      setScheduleError(error.message || 'Could not parse that schedule.');
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    setScheduleError('');
+    setScheduleMessage('');
+    setIsSavingTemplate(true);
+
+    try {
+      if (window.electronAPI?.saveReadingScheduleTemplate) {
+        const result = await window.electronAPI.saveReadingScheduleTemplate();
+        if (result?.success) {
+          setScheduleMessage(`Template saved to ${result.filePath}`);
+        } else if (!result?.canceled) {
+          setScheduleError(result?.reason || 'Could not save the template.');
+        }
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.href = './reading-schedule-template.xlsx';
+      link.download = 'ESV-Reading-Schedule-Template.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setScheduleMessage('Template download started. Check your Downloads folder.');
+    } catch (error) {
+      setScheduleError(error.message || 'Could not save the template.');
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
 
   const completedDaysCount = safePlan.filter(item => item.completed).length;
   const totalDaysCount = safePlan.length || 260;
@@ -395,7 +468,7 @@ export default function ReadingPlanView({
   });
 
   return (
-    <div className={`p-8 w-full max-w-7xl mx-auto flex flex-col gap-6 ${filter === 'today' ? 'h-full flex-1 min-h-0 pb-6' : 'pb-24'}`}>
+    <div className={`p-8 w-full max-w-7xl mx-auto flex flex-col gap-6 ${filter === 'today' ? 'h-full flex-1 min-h-0' : ''} pb-6`}>
       {/* Header Banner */}
       <div className="glass-panel p-6 rounded-2xl border border-amber-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
@@ -403,15 +476,25 @@ export default function ReadingPlanView({
             <Calendar className="w-4 h-4" />
             <span>Beijing Time Zone (UTC+8) • Today is {todayMonthDayStr} ({todayBeijingMD})</span>
           </div>
-          <h2 className="text-2xl font-serif font-bold text-slate-100">52-Week Chronological Reading Plan</h2>
+          <h2 className="text-2xl font-serif font-bold text-slate-100">Scripture Reading Plan</h2>
           <p className="text-sm text-slate-400 font-sans mt-1">
             Check off individual books/passages each day, catch up on past readings, and read ESV commentaries.
           </p>
         </div>
 
-        {/* Catch-Up Assistant Alert Banner */}
-        {missedDaysCount > 0 && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl">
+        <div className="flex flex-col items-end gap-2">
+          <button
+            type="button"
+            onClick={() => setShowScheduleImport(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-300 hover:border-amber-500/40 hover:text-amber-300"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Customize Schedule
+          </button>
+
+          {/* Catch-Up Assistant Alert Banner */}
+          {missedDaysCount > 0 && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl">
             <div className="flex items-center space-x-2 text-xs font-semibold text-amber-300">
               <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
               <span>{missedDaysCount} Uncompleted Missed Days</span>
@@ -430,16 +513,89 @@ export default function ReadingPlanView({
                 Start Today
               </button>
             </div>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {showScheduleImport && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-xl space-y-4 rounded-2xl border border-amber-500/30 bg-slate-950 p-6 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setShowScheduleImport(false)}
+              className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-500 hover:bg-slate-800 hover:text-slate-200"
+              aria-label="Close schedule importer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div>
+              <h3 className="font-serif text-lg font-bold text-slate-100">Customize Reading Schedule</h3>
+              <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                Use columns <strong>Date</strong>, <strong>Passages</strong>, and optional <strong>Week</strong>/<strong>Year</strong>. Separate passages with semicolons.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/15 px-4 py-3 text-xs font-bold text-amber-300 hover:bg-amber-500/25">
+                <Upload className="h-4 w-4" />
+                Upload .xlsx
+                <input type="file" accept=".xlsx" onChange={handleScheduleFile} className="hidden" />
+              </label>
+              <button
+                type="button"
+                onClick={handleDownloadTemplate}
+                disabled={isSavingTemplate}
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-xs font-bold text-slate-300 hover:text-amber-300"
+              >
+                <Download className="h-4 w-4" />
+                {isSavingTemplate ? 'Opening Save Dialog…' : 'Download Template'}
+              </button>
+            </div>
+            {isCustomSchedule && (
+              <button
+                type="button"
+                onClick={onResetDefaultPlan}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs font-bold text-rose-300 hover:bg-rose-500/20"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset to Default 52-Week Schedule
+              </button>
+            )}
+
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="h-px flex-1 bg-slate-800" />
+              or paste rows
+              <span className="h-px flex-1 bg-slate-800" />
+            </div>
+
+            <textarea
+              rows={7}
+              value={pastedSchedule}
+              onChange={event => setPastedSchedule(event.target.value)}
+              placeholder={'Date,Year,Passages\n7/13,2026,"Genesis 1-2; Psalm 19; Mark 1"\n7/14,2026,"Genesis 3-5; Mark 2"'}
+              className="w-full rounded-xl border border-slate-800 bg-slate-900 p-3 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-600 focus:border-amber-500/50"
+            />
+            {scheduleError && <p className="text-xs text-rose-300">{scheduleError}</p>}
+            {scheduleMessage && <p className="break-words text-xs text-emerald-300">{scheduleMessage}</p>}
+            <button
+              type="button"
+              onClick={handlePastedSchedule}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-amber-400"
+            >
+              <ClipboardPaste className="h-4 w-4" />
+              Parse & Replace Schedule
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter Controls & Search */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           {[
             { id: 'today', label: `Today (${todayMonthDayStr})` },
-            { id: 'all', label: 'All 52 Weeks' },
+            { id: 'all', label: `All (${new Set(safePlan.map(item => item.week)).size} Weeks)` },
             { id: 'missed', label: `Missed (${missedDaysCount})` },
             { id: 'completed', label: 'Completed' }
           ].map(btn => (

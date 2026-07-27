@@ -8,8 +8,11 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.31] - Unreleased
 
 ### 🚀 Release Summary
-- Save ESV Bible Tracker feedback submission.
 - Ship ESV API reader in v1.0.31.
+- **In-App Feedback**: Added a compact floating feedback form with file attachments, whole-app or selected-area capture, dedicated feedback-branch storage, GitHub issue links, and CI-skipping feedback archive commits.
+- **Custom Schedule Recovery**: Added a clear reset action that restores the built-in 52-week schedule after importing a customized plan, with updated tutorial guidance.
+- **Smarter Changelog Bot**: Push automation now respects changelog entries already included in the incoming main commit instead of generating a redundant entry.
+- **Reliable Schedule Template Save**: Replaced the packaged-app download link with a native macOS Save dialog, visible success path, and surfaced errors.
 - **Consistent Distributed Reader**: Ships the latest Reader highlighting prompt, compact tutorial control, text-only Search button, and cleaner toolbar layout to downloaded builds.
 - **Official ESV API by Default**: Release builds now receive the configured ESV API token during CI so passage formatting, phrase search, and audio work without per-user setup.
 

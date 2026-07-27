@@ -24,9 +24,10 @@ export default function OnboardingModal({ isOpen, onClose }) {
           </p>
           <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 space-y-1.5">
             <div className="font-semibold text-amber-300">✨ Key App Features:</div>
-            <div>• <strong>52-Week Reading Plan:</strong> Chronological reading with Catch-Up Assistant</div>
+            <div>• <strong>Reading Schedules:</strong> Use the default 52-week plan or import your own schedule</div>
             <div>• <strong>Typewriter Memorization:</strong> 4 stages, reference typing & real-time stats</div>
             <div>• <strong>Treasury:</strong> Edit, tag, auto-fetch & organize memory verses</div>
+            <div>• <strong>Send Feedback:</strong> Use the floating bottom-right button to describe an issue and attach the whole app or a selected screenshot area</div>
             <div>• <strong>Developer Debug Console:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-mono text-[10px]">Ctrl+Shift+D</kbd> for live logs & diagnostic tools</div>
           </div>
         </div>
@@ -52,6 +53,9 @@ export default function OnboardingModal({ isOpen, onClose }) {
             </div>
             <div className="p-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-lg">
               <strong>3. Configurable Timezones:</strong> Clocks and daily reading schedules dynamically follow your <strong>Local Time</strong> or static timezones selected in Settings.
+            </div>
+            <div className="p-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-lg">
+              <strong>4. Custom Schedules:</strong> Use <strong>Customize Schedule</strong> to upload an .xlsx file, download the template, or paste rows directly. After importing, the same panel lets you reset to the default 52-week schedule.
             </div>
           </div>
         </div>
@@ -118,6 +122,8 @@ export default function OnboardingModal({ isOpen, onClose }) {
             <div>• <strong>Smart Verse Navigation:</strong> Dynamic buttons jump to previous or next unfinished verses</div>
             <div>• <strong>First-Letter Mode:</strong> Type a word's first letter to reveal it; capitalization, punctuation, and spaces are ignored</div>
             <div>• <strong>No Backtracking:</strong> Optionally prevent editing earlier answers for stricter recall practice</div>
+            <div>• <strong>Review Counting:</strong> A correct recall counts once. In no-backtracking mode, reaching the end also records one review without advancing the stage, so use Reset to try again</div>
+            <div>• <strong>Continue Reviewing:</strong> Choose the next saved verse, including mastered verses, or jump specifically to the next unmastered verse</div>
           </div>
         </div>
       )

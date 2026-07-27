@@ -5,6 +5,21 @@ const { execSync } = require('child_process');
 const rootDir = path.resolve(__dirname, '..');
 const changelogPath = path.join(rootDir, 'CHANGELOG.md');
 
+// A human-authored changelog edit in the incoming commit is authoritative.
+// Do not add a second, commit-message-derived entry for the same push.
+try {
+  const changedFiles = execSync('git diff-tree --no-commit-id --name-only -r HEAD', { encoding: 'utf8' })
+    .split(/\r?\n/)
+    .map(file => file.trim());
+  if (changedFiles.includes('CHANGELOG.md')) {
+    console.log('ℹ️ CHANGELOG.md was already updated in this commit. Skipping automated changelog update.');
+    process.exit(0);
+  }
+} catch (e) {
+  console.error('Failed to inspect files changed by the latest commit:', e.message);
+  process.exit(1);
+}
+
 // 1. Get the latest commit message
 let commitMsg = '';
 try {

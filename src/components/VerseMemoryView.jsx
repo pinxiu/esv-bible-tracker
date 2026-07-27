@@ -23,6 +23,13 @@ const findNextUnmasteredVerse = (versesList, currentId = null) => {
   return firstUnmastered || sorted[0] || null;
 };
 
+const findNextVerse = (versesList, currentId = null) => {
+  if (!versesList || versesList.length === 0) return null;
+  const sorted = sortVersesAlphabetically(versesList);
+  const currentIndex = sorted.findIndex(verse => verse.id === currentId);
+  return sorted[(currentIndex + 1 + sorted.length) % sorted.length] || null;
+};
+
 // Helper to find the first un-completed stage for an unmastered verse, or Stage 4 for a mastered verse
 const getFirstUncompletedStage = (verse) => {
   if (!verse) return 1;
@@ -68,6 +75,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
   // Stage Completion Popup Modal State
   const [showStageCompletionModal, setShowStageCompletionModal] = useState(false);
   const [completedStageNumber, setCompletedStageNumber] = useState(1);
+  const reviewRecordedRef = useRef(false);
 
   // Quick Reference Jump Typing State
   const [jumpQuery, setJumpQuery] = useState('');
@@ -187,6 +195,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
           setAccuracyScore(0);
           setHintExtraCount(0);
           setShowFullPassageHint(false);
+          reviewRecordedRef.current = false;
         }
       });
     }
@@ -206,6 +215,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
     setShowFullPassageHint(false);
     setShowStageCompletionModal(false);
     setMistakeIndices(new Set());
+    reviewRecordedRef.current = false;
   };
 
   const activeVerseItem = (memoryMode === 'verse-by-verse' && fetchedVerses.length > 1)
@@ -287,10 +297,14 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
 
     setAccuracyScore(validation.accuracy);
 
-    // Trigger completion modal if exact match OR if autoCompleteAtEnd toggle is enabled and typing reaches the end!
-    const reachedEnd = autoCompleteAtEnd && val.length >= activeScriptureText.length && activeScriptureText.length > 0;
+    // A correct recall passes normally. In no-backtracking mode, merely reaching
+    // the end finishes the review even when mistakes prevent stage mastery.
+    const reachedEnd = (autoCompleteAtEnd || noBacktrackMode)
+      && val.length >= activeScriptureText.length
+      && activeScriptureText.length > 0;
     const hasMistakes = mistakeIndices.size > 0 || madeFirstLetterMistake;
-    if ((validation.isExactMatch || reachedEnd) && (!noBacktrackMode || !hasMistakes) && (!firstLetterMode || !hasMistakes)) {
+    const passedRecall = validation.isExactMatch && !hasMistakes;
+    if (passedRecall) {
       setIsCompleted(true);
 
       if (memoryMode === 'verse-by-verse' && fetchedVerses.length > 1) {
@@ -302,7 +316,12 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
         const partialFraction = completedCount / totalCount;
 
         if (onUpdateProgress && selectedVerse) {
-          onUpdateProgress(selectedVerse.id, stage, partialFraction);
+          const finishedPassage = completedCount >= totalCount;
+          if (finishedPassage) reviewRecordedRef.current = true;
+          onUpdateProgress(selectedVerse.id, stage, partialFraction, {
+            awardMastery: true,
+            countReview: finishedPassage
+          });
         }
 
         // Only trigger stage completion popup modal when ALL sub-verses have been completed for this stage!
@@ -314,9 +333,15 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
         setCompletedStageNumber(stage);
         setShowStageCompletionModal(true);
         if (onUpdateProgress && selectedVerse) {
-          onUpdateProgress(selectedVerse.id, stage, 1);
+          reviewRecordedRef.current = true;
+          onUpdateProgress(selectedVerse.id, stage, 1, { awardMastery: true, countReview: true });
         }
       }
+    } else if (noBacktrackMode && reachedEnd && onUpdateProgress && selectedVerse && !reviewRecordedRef.current) {
+      // A no-backtracking attempt is a finished review when it reaches the end,
+      // even if it contains mistakes. Do not pass the stage or interrupt retrying.
+      reviewRecordedRef.current = true;
+      onUpdateProgress(selectedVerse.id, stage, 0, { awardMastery: false, countReview: true });
     }
   };
 
@@ -547,7 +572,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="p-8 max-w-7xl mx-auto space-y-6 pb-6">
       {/* Header */}
       <div className="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-30">
         <div>
@@ -750,8 +775,12 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
                         setIsCompleted(true);
                         setCompletedStageNumber(stage);
                         setShowStageCompletionModal(true);
-                        if (onUpdateProgress && selectedVerse) {
-                          onUpdateProgress(selectedVerse.id, stage);
+                        if (onUpdateProgress && selectedVerse && !reviewRecordedRef.current) {
+                          reviewRecordedRef.current = true;
+                          onUpdateProgress(selectedVerse.id, stage, 1, {
+                            awardMastery: true,
+                            countReview: true
+                          });
                         }
                       }}
                       className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] shadow-sm transition-all flex items-center space-x-1"
@@ -1119,6 +1148,22 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
             </p>
 
             <div className="pt-2 flex flex-col space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const nextTarget = findNextVerse(savedVerses, selectedVerse?.id);
+                  resetPracticeState();
+                  if (nextTarget && nextTarget.id !== selectedVerse?.id) {
+                    setSelectedVerseId(nextTarget.id);
+                    setJumpQuery(nextTarget.reference);
+                  }
+                }}
+                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-1.5"
+              >
+                <span>Review Next Verse</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
               {completedStageNumber < 4 ? (
                 <button
                   type="button"
@@ -1142,7 +1187,7 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
                       setJumpQuery(nextTarget.reference);
                     }
                   }}
-                  className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-1.5"
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all border border-slate-700 flex items-center justify-center space-x-1.5"
                 >
                   <span>Jump to Next Un-Mastered Verse</span>
                   <ChevronRight className="w-4 h-4" />
