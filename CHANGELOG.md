@@ -5,7 +5,13 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
-## [1.0.32] - Unreleased
+## [1.0.33] - Unreleased
+
+### 🚀 Release Summary
+- Upcoming features and refinements under development.
+
+
+## [1.0.32] - 2026-07-27
 
 ### 🚀 Release Summary
 - **In-App Feedback**: Added a compact floating feedback form with file attachments, whole-app or selected-area capture, dedicated feedback-branch storage, GitHub issue links, and CI-skipping feedback archive commits.
