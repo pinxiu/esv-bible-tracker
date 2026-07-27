@@ -128,9 +128,9 @@ export default function App() {
   // Settings State
   const [esvApiKey, setEsvApiKey] = useState(() => {
     try {
-      return localStorage.getItem('esv_api_key') || '';
+      return localStorage.getItem('esv_api_key') || import.meta.env.VITE_ESV_API_TOKEN || '';
     } catch (e) {
-      return '';
+      return import.meta.env.VITE_ESV_API_TOKEN || '';
     }
   });
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(() => {

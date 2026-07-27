@@ -41,3 +41,8 @@ test('debug console can reset every first-run prompt', () => {
   assert.match(debugModal, /esv_reader_highlight_prompt_seen/);
   assert.match(debugModal, /prompt\|dismissed/);
 });
+
+test('distributed builds can use the release-provided ESV API token', () => {
+  assert.match(app, /import\.meta\.env\.VITE_ESV_API_TOKEN/);
+  assert.match(app, /localStorage\.getItem\('esv_api_key'\).*VITE_ESV_API_TOKEN/);
+});

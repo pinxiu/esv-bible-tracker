@@ -62,3 +62,8 @@ test('release automation never tries to install a desktop app on a CI runner', (
   assert.match(releaseScript, /GITHUB_ACTIONS !== 'true'/);
   assert.match(releaseScript, /CI Environment: Skipping local app installation/);
 });
+
+test('release workflow provides the ESV token to every renderer build', () => {
+  const tokenBindings = releaseWorkflow.match(/VITE_ESV_API_TOKEN:\s*\$\{\{\s*secrets\.ESV_API_TOKEN\s*\}\}/g) || [];
+  assert.equal(tokenBindings.length, 3);
+});
