@@ -8,6 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.31] - Unreleased
 
 ### 🚀 Release Summary
+- Save ESV Bible Tracker feedback submission.
 - Ship ESV API reader in v1.0.31.
 - **Consistent Distributed Reader**: Ships the latest Reader highlighting prompt, compact tutorial control, text-only Search button, and cleaner toolbar layout to downloaded builds.
 - **Official ESV API by Default**: Release builds now receive the configured ESV API token during CI so passage formatting, phrase search, and audio work without per-user setup.
