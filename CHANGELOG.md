@@ -5,31 +5,29 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
-## [1.0.31] - Unreleased
+## [1.0.32] - Unreleased
 
 ### 🚀 Release Summary
-- Ship ESV API reader in v1.0.31.
 - **In-App Feedback**: Added a compact floating feedback form with file attachments, whole-app or selected-area capture, dedicated feedback-branch storage, GitHub issue links, and CI-skipping feedback archive commits.
-- **Custom Schedule Recovery**: Added a clear reset action that restores the built-in 52-week schedule after importing a customized plan, with updated tutorial guidance.
-- **Smarter Changelog Bot**: Push automation now respects changelog entries already included in the incoming main commit instead of generating a redundant entry.
-- **Reliable Schedule Template Save**: Replaced the packaged-app download link with a native macOS Save dialog, visible success path, and surfaced errors.
-- **Consistent Distributed Reader**: Ships the latest Reader highlighting prompt, compact tutorial control, text-only Search button, and cleaner toolbar layout to downloaded builds.
-- **Official ESV API by Default**: Release builds now receive the configured ESV API token during CI so passage formatting, phrase search, and audio work without per-user setup.
+- **Custom Reading Schedules**: Added `.xlsx` upload, parseable pasted CSV/tabular rows, a downloadable template with native macOS saving, and a reset to the built-in 52-week plan.
+- **Memory Review Control**: Added review-next-verse navigation and precise review counting for correct recall, no-backtracking completion, and explicit stage completion.
+- **Compact Layout & Packaging**: Standardized bottom spacing and floating controls, kept feedback outside release/source pulls, pruned unused release resources, and added broader unit/Electron E2E coverage.
+- **Release Automation**: Prevented redundant bot changelog entries and made scheduled/manual releases maintain dates and development-version placeholders consistently.
 
-## [1.0.30] - Unreleased
+## [1.0.31] - 2026-07-27
 
 ### 🚀 Release Summary
-- Refine reader prompts and tutorial controls.
-- Fix trusted signing in release workflow.
-- Fix reader navigation e2e selector.
-- **Official ESV Reader Integration**: Added authenticated ESV HTML, audio, and phrase search with automatic Bible Gateway and embedded-offline fallback.
-- **Reader Presentation Controls**: Added compact display settings, inline audio, clickable lettered footnotes, correct chapter/verse typography, whole-book chapter loading, and Scripture-only highlighting.
-- **Reader and Plan Interaction Polish**: Added first-verse spacing, outside-click dismissal for the Display menu, full-row passage completion toggles, and correct oldest-unread catch-up navigation.
-- **Selection and Settings Cleanup**: Prevented footnote-only highlights, removed the ESV API token section from Settings, and simplified labels around reminders, timezone, and updates.
-- **Replayable Tutorial**: Updated onboarding for the official ESV Reader and memory modes, and added a Settings action to view the tutorial again from step 1.
-- **Memory Typewriter Modes**: Added first-letter word completion, whole-word backtracking, forced capitalization/punctuation tolerance, and strict no-backtracking practice.
-- **Stable macOS Signing**: Restored stable macOS signing profile, added a fail-closed Keychain signing script, signed local installer workflow, strict bundle verification, updater recovery guidance, and signing regression tests.
+- **Official ESV API Enabled**: Bundled the configured ESV API token so official passage formatting, phrase search, and audio work in downloaded builds without per-user setup.
+- **Reader Guidance & Toolbar Polish**: Added the first-run selection-highlighting prompt, replayable tutorial control, text-only Search button, and cleaner Reader toolbar spacing.
 
+## [1.0.30] - 2026-07-26
+
+### 🚀 Release Summary
+- **Reader Sources & Fallbacks**: Added the ESV passage/search/audio integration points with automatic Bible Gateway and embedded-offline fallback. The published v1.0.30 package did not bundle an official ESV API token.
+- **Reader Presentation**: Added compact Display controls, inline audio, clickable lettered footnotes, correct chapter/verse typography, whole-book loading, and Scripture-only selection handling.
+- **Plan & Reader Interaction**: Added first-verse spacing, outside-click Display dismissal, full-row completion toggles, footnote-selection protection, and oldest-unread catch-up navigation.
+- **Memory Practice Modes**: Added first-letter completion, whole-word backtracking, capitalization/punctuation tolerance, and strict no-backtracking practice.
+- **Stable macOS Signing**: Shipped both architectures with the stable self-signed developer identity and updater verification/recovery tooling.
 
 ## [1.0.29] - 2026-07-26
 

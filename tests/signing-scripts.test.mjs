@@ -67,3 +67,12 @@ test('release workflow provides the ESV token to every renderer build', () => {
   const tokenBindings = releaseWorkflow.match(/VITE_ESV_API_TOKEN:\s*\$\{\{\s*secrets\.ESV_API_TOKEN\s*\}\}/g) || [];
   assert.equal(tokenBindings.length, 3);
 });
+
+test('manual releases bypass the daily gate and preserve changelog rollover', () => {
+  assert.match(releaseWorkflow, /GITHUB_EVENT_NAME.*workflow_dispatch/);
+  assert.match(releaseWorkflow, /Manual release requested; bypassing the daily no-change gate/);
+  assert.match(releaseScript, /Locked release date in CHANGELOG\.md/);
+  assert.match(releaseScript, /nextVersionHeader/);
+  assert.match(releaseScript, /already contains v\$\{nextVersion\}; skipping duplicate placeholder/);
+  assert.match(releaseScript, /git push origin HEAD:main/);
+});

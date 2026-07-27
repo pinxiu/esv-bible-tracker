@@ -322,8 +322,11 @@ async function runRelease() {
   if (fs.existsSync(changelogPath)) {
     const existingContent = fs.readFileSync(changelogPath, 'utf8');
     const newPlaceholderEntry = `\n## [${nextVersion}] - Unreleased\n\n### 🚀 Release Summary\n- Upcoming features and refinements under development.\n`;
+    const nextVersionHeader = new RegExp(`##\\s*\\[${nextVersion.replace(/\./g, '\\.')}\\]\\s*-`, 'i');
     const headerPos = existingContent.indexOf('---');
-    if (headerPos !== -1) {
+    if (nextVersionHeader.test(existingContent)) {
+      console.log(`ℹ️ CHANGELOG.md already contains v${nextVersion}; skipping duplicate placeholder.`);
+    } else if (headerPos !== -1) {
       const updatedChangelog = existingContent.slice(0, headerPos + 3) + '\n' + newPlaceholderEntry + existingContent.slice(headerPos + 3);
       fs.writeFileSync(changelogPath, updatedChangelog, 'utf8');
       console.log(`✅ Added placeholder entry in CHANGELOG.md for v${nextVersion}`);
@@ -333,15 +336,16 @@ async function runRelease() {
   // If running in GitHub Actions, automatically commit and push version bumps back to main
   if (process.env.GITHUB_ACTIONS === 'true') {
     console.log('\n🤖 CI Environment: Pushing codebase version bump back to GitHub main branch...');
-    try {
-      execSync('git config --global user.name "github-actions[bot]"', { stdio: 'inherit' });
-      execSync('git config --global user.email "github-actions[bot]@users.noreply.github.com"', { stdio: 'inherit' });
-      execSync('git add package.json CHANGELOG.md', { stdio: 'inherit' });
+    execSync('git config --global user.name "github-actions[bot]"', { stdio: 'inherit' });
+    execSync('git config --global user.email "github-actions[bot]@users.noreply.github.com"', { stdio: 'inherit' });
+    execSync('git add package.json CHANGELOG.md', { stdio: 'inherit' });
+    const hasPostReleaseChanges = execSync('git diff --cached --name-only', { encoding: 'utf8' }).trim();
+    if (hasPostReleaseChanges) {
       execSync(`git commit -m "chore: bump version to v${nextVersion} [skip ci]"`, { stdio: 'inherit' });
       execSync('git push origin HEAD:main', { stdio: 'inherit' });
       console.log('✅ Version bump pushed successfully to origin/main!');
-    } catch (e) {
-      console.error('⚠️ Failed to push version bump to origin/main:', e.message);
+    } else {
+      console.log('ℹ️ Post-release version and changelog were already current; nothing to push.');
     }
   } else {
     console.log(`\n👉 Run 'git commit -am "chore: bump version to v${nextVersion}" && git push' locally to sync origin.`);

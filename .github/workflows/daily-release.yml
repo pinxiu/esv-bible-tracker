@@ -23,7 +23,10 @@ jobs:
         run: |
           LATEST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
 
-          if [[ -z "$LATEST_TAG" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "Manual release requested; bypassing the daily no-change gate."
+          elif [[ -z "$LATEST_TAG" ]]; then
             echo "should_release=true" >> "$GITHUB_OUTPUT"
             echo "No prior release tag exists; continuing with the release."
           elif git diff --quiet "$LATEST_TAG"..HEAD -- . ':(exclude).github/workflows/**'; then
