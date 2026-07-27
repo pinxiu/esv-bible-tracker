@@ -8,6 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.30] - Unreleased
 
 ### 🚀 Release Summary
+- Refine reader prompts and tutorial controls.
 - Fix trusted signing in release workflow.
 - Fix reader navigation e2e selector.
 - **Official ESV Reader Integration**: Added authenticated ESV HTML, audio, and phrase search with automatic Bible Gateway and embedded-offline fallback.
