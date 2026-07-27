@@ -8,7 +8,10 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.33] - Unreleased
 
 ### 🚀 Release Summary
-- Upcoming features and refinements under development.
+- **Copyright & Personal-Use License**: Added clear in-app and repository
+  copyright notices plus a proprietary source-available license permitting
+  personal non-commercial use of official builds while prohibiting derivative,
+  redistributed, and monetized versions without written permission.
 
 
 ## [1.0.32] - 2026-07-27

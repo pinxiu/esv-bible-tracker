@@ -3,6 +3,9 @@
   "productName": "ESV Bible Tracker",
   "version": "1.0.33",
   "description": "macOS ESV Bible Reading Plan & Memory Verses Application",
+  "author": "Phoebe Kwok",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
@@ -51,6 +54,7 @@
   "build": {
     "appId": "com.bibleplan.esvtracker",
     "productName": "ESV Bible Tracker",
+    "copyright": "Copyright © 2026 Phoebe Kwok. All rights reserved.",
     "publish": [
       {
         "provider": "github",
@@ -77,6 +81,7 @@
       "dist/reading-schedule-template.xlsx",
       "electron/**/*",
       "package.json",
+      "LICENSE",
       "!feedback{,/**/*}",
       "!screenshots{,/**/*}",
       "!attachments{,/**/*}",

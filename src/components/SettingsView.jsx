@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Settings, Bell, RotateCcw, Check } from 'lucide-react';
 
 export default function SettingsView({ settings, onSaveSettings, onResetProgress, onShowTutorial, onCancel }) {
@@ -6,18 +6,9 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
   const [notificationTime, setNotificationTime] = useState(settings.notificationTime || '08:00');
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(settings.autoUpdateEnabled ?? true);
   const [savedStatus, setSavedStatus] = useState(false);
-  const [appVersion, setAppVersion] = useState('1.0.8');
   const [timezone, setTimezone] = useState(() => {
     return localStorage.getItem('esv_tracker_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
   });
-
-  useEffect(() => {
-    if (window.electronAPI?.getAppInfo) {
-      window.electronAPI.getAppInfo().then(info => {
-        if (info && info.version) setAppVersion(info.version);
-      }).catch(() => {});
-    }
-  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -189,9 +180,9 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
         </div>
       </form>
 
-      {/* Settings Modal Version Footer */}
-      <div className="text-center pt-8 border-t border-slate-900 text-slate-500 text-xs font-mono">
-        ESV Bible Tracker v{appVersion} • Under Active Timezone: {timezone}
+      {/* Copyright & License Footer */}
+      <div className="text-center pt-6 border-t border-slate-900 text-[11px] text-slate-500">
+        Copyright © 2026 Phoebe Kwok. All rights reserved.
       </div>
     </div>
   );

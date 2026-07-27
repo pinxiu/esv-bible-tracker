@@ -17,7 +17,7 @@ test('known historical no-change releases are explicitly marked as dummy release
   }
 });
 
-test('recent release history matches shipped packages and rolls forward to 1.0.32', () => {
+test('recent release history matches shipped packages and rolls forward to 1.0.33', () => {
   assert.match(releaseBlock('1.0.30'), /2026-07-26/);
   assert.match(releaseBlock('1.0.30'), /did not bundle an official ESV API token/);
   assert.doesNotMatch(releaseBlock('1.0.30'), /Replayable Tutorial|In-App Feedback|Custom Reading Schedules/);
@@ -27,8 +27,11 @@ test('recent release history matches shipped packages and rolls forward to 1.0.3
   assert.match(releaseBlock('1.0.31'), /first-run selection-highlighting prompt/);
   assert.doesNotMatch(releaseBlock('1.0.31'), /In-App Feedback|Custom Reading Schedules|Memory Review Control/);
 
-  assert.match(releaseBlock('1.0.32'), /Unreleased/);
+  assert.match(releaseBlock('1.0.32'), /2026-07-27/);
   assert.match(releaseBlock('1.0.32'), /In-App Feedback/);
   assert.match(releaseBlock('1.0.32'), /Custom Reading Schedules/);
   assert.match(releaseBlock('1.0.32'), /Memory Review Control/);
+
+  assert.match(releaseBlock('1.0.33'), /Unreleased/);
+  assert.match(releaseBlock('1.0.33'), /Copyright & Personal-Use License/);
 });

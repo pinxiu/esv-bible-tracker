@@ -4,6 +4,9 @@ ESV Bible Tracker is a premium, distraction-free macOS desktop companion built t
 
 👉 **Latest Release Downloads**: [GitHub Releases](https://github.com/pinxiu/esv-bible-tracker/releases)
 
+🆕 **Recent Features & Changes**: See the [Changelog](CHANGELOG.md) for the
+latest released features, fixes, and upcoming updates.
+
 ---
 
 ## 🚀 Tester Setup (One-time macOS Activation)
@@ -59,3 +62,19 @@ npm run build:local
 
 ### Self-Signed Certificate Setup
 To build signed releases, please refer to the detailed instructions inside **[DEVELOPER_SIGNING.md](DEVELOPER_SIGNING.md)**.
+
+---
+
+## Copyright & License
+
+Copyright © 2026 Phoebe Kwok. All rights reserved.
+
+Official compiled releases may be downloaded and used for personal,
+educational, devotional, and other non-commercial end use. The source is
+available for review and reference, but permission is not granted to build,
+modify, redistribute, rebrand, sell, monetize, or create another application
+from it.
+
+This is proprietary source-available software, not open-source software. See
+the complete [ESV Bible Tracker Personal Use License](LICENSE). ESV text and
+other third-party materials remain subject to their respective owners’ terms.
