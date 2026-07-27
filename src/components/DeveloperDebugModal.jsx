@@ -331,6 +331,30 @@ export default function DeveloperDebugModal({ isOpen, onClose, onForceShowPermis
                     <div className="grid grid-cols-2 gap-1.5">
                       <button
                         onClick={() => {
+                          const explicitPromptKeys = [
+                            'esv_onboarding_dismissed',
+                            'esv_reader_highlight_prompt_seen',
+                            'lastNotificationPromptTime',
+                            'nextNotificationPromptTime',
+                            'blockNotificationPrompt',
+                            'esv_notifications_enabled'
+                          ];
+                          const discoveredPromptKeys = Array.from(
+                            { length: localStorage.length },
+                            (_, index) => localStorage.key(index)
+                          ).filter(key => key && /(prompt|dismissed)/i.test(key));
+                          [...new Set([...explicitPromptKeys, ...discoveredPromptKeys])]
+                            .forEach(key => localStorage.removeItem(key));
+                          debugLogger.addLog('system', 'Reset tutorial, Reader highlight tip, and all prompt history.');
+                          alert('All tutorials and prompts were reset. Reopen the relevant view or reload the app to see them again.');
+                        }}
+                        className="col-span-2 py-1.5 px-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-[10px] font-semibold transition-all cursor-pointer text-center"
+                      >
+                        ❔ Reset All Tutorials & Prompts
+                      </button>
+
+                      <button
+                        onClick={() => {
                           localStorage.removeItem('lastNotificationPromptTime');
                           localStorage.removeItem('blockNotificationPrompt');
                           localStorage.removeItem('esv_notifications_enabled');

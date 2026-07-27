@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchPassage, fetchEsvAudio, searchEsv, normalizePassageRef } from '../services/bibleApi';
-import { ExternalLink, BookmarkPlus, Type, MessageSquarePlus, Check, Zap, BrainCircuit, Highlighter, Search, X, ArrowUp, SlidersHorizontal, Volume2, WifiOff } from 'lucide-react';
+import { ExternalLink, BookmarkPlus, Type, MessageSquarePlus, Check, BrainCircuit, Highlighter, Search, X, ArrowUp, SlidersHorizontal, Volume2, WifiOff } from 'lucide-react';
 
 export default function PassageViewer({
   currentPassage,
@@ -40,6 +40,13 @@ export default function PassageViewer({
   const [searchResults, setSearchResults] = useState([]);
   const [searchError, setSearchError] = useState('');
   const [showDisplayMenu, setShowDisplayMenu] = useState(false);
+  const [showHighlightPrompt, setShowHighlightPrompt] = useState(() => {
+    try {
+      return localStorage.getItem('esv_reader_highlight_prompt_seen') !== 'true';
+    } catch {
+      return true;
+    }
+  });
   const [displayOptions, setDisplayOptions] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('esv_reader_display_options'));
@@ -262,6 +269,13 @@ export default function PassageViewer({
     setDisplayOptions(current => ({ ...current, [key]: !current[key] }));
   };
 
+  const dismissHighlightPrompt = () => {
+    try {
+      localStorage.setItem('esv_reader_highlight_prompt_seen', 'true');
+    } catch {}
+    setShowHighlightPrompt(false);
+  };
+
   const handleLoadAudio = async () => {
     setAudioError('');
     setAudioLoading(true);
@@ -283,9 +297,9 @@ export default function PassageViewer({
       className="p-8 max-w-5xl mx-auto space-y-6 relative h-full overflow-y-auto pb-24"
     >
       {/* TOP PASSAGE NAVIGATOR SEARCH BAR */}
-      <div className="glass-panel relative z-40 overflow-visible p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div className="glass-panel relative z-40 overflow-visible p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6">
         {/* Full-width Search Form */}
-        <form onSubmit={handleSearchPassage} className="flex items-center space-x-2 flex-1 w-full">
+        <form onSubmit={handleSearchPassage} className="flex items-center gap-2 w-full sm:w-1/2 sm:flex-none">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
@@ -301,28 +315,12 @@ export default function PassageViewer({
             title="Search by Bible reference, abbreviated book name, whole book, or words contained in Scripture."
             className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 flex items-center space-x-1.5 shadow-lg shadow-amber-500/20 transition-all"
           >
-            <Zap className="w-3.5 h-3.5" />
             <span>Search</span>
           </button>
         </form>
 
         {/* Font Size & Bank Source Controls */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* Quick Highlight Full Passage Button */}
-          <button
-            onClick={() => {
-              const textToHighlight = passageContentRef.current?.innerText?.trim() || passageData?.text || '';
-              if (!textToHighlight) return;
-              setSelectedText(textToHighlight);
-              setPopoverPos({ top: 180, left: 300 });
-            }}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold transition-all"
-            title="Highlight & Save Verse"
-          >
-            <Highlighter className="w-3.5 h-3.5 text-amber-400" />
-            <span>Highlight Verse</span>
-          </button>
-
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           {/* Font Size Selector */}
           <div className="flex items-center space-x-1 p-1 bg-slate-900/80 rounded-xl border border-slate-800 text-xs">
             <Type className="w-3.5 h-3.5 text-slate-400 ml-1.5 mr-0.5" />
@@ -379,6 +377,41 @@ export default function PassageViewer({
           </button>
         </div>
       </div>
+
+      {showHighlightPrompt && (
+        <div
+          role="dialog"
+          aria-label="Reader highlighting tip"
+          className="fixed top-24 right-6 z-[115] w-[min(20rem,calc(100vw-3rem))] rounded-2xl border border-amber-500/30 bg-slate-950/95 p-4 shadow-2xl backdrop-blur"
+        >
+          <button
+            type="button"
+            onClick={dismissHighlightPrompt}
+            className="absolute right-2.5 top-2.5 rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-200"
+            aria-label="Dismiss highlighting tip"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+          <div className="flex items-start gap-3 pr-5">
+            <div className="rounded-lg bg-amber-500/15 p-2 text-amber-300">
+              <Highlighter className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-100">Highlight while you read</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                Select Scripture text to choose a color, add a note, or save it to your memory deck.
+              </p>
+              <button
+                type="button"
+                onClick={dismissHighlightPrompt}
+                className="mt-2 text-[11px] font-bold text-amber-300 hover:text-amber-200"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showOfflineNotice && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">

@@ -72,6 +72,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
             <div className="text-emerald-300 font-semibold">🔍 Reader Highlights:</div>
             <div>• <strong>Books & Ranges:</strong> Load whole books or ranges such as <em>2 Tim</em> and <em>Gen 16-18</em></div>
             <div>• <strong>Listen While Reading:</strong> Use the audio button beside the title without leaving the formatted passage</div>
+            <div>• <strong>Highlight & Save:</strong> Select Scripture text in the Reader, then choose a color, add an optional note, or save it to your memory deck</div>
             <div>• <strong>Display Menu:</strong> Show or hide verse numbers, headings, and footnotes</div>
             <div>• <strong>Automatic Offline Fallback:</strong> The embedded Bible opens automatically when online sources are unavailable</div>
           </div>

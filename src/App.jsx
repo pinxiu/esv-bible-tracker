@@ -504,6 +504,7 @@ export default function App() {
         localStorage.removeItem('esv_saved_verses');
         localStorage.removeItem('esv_reader_scroll_map');
         localStorage.removeItem('esv_onboarding_dismissed');
+        localStorage.removeItem('esv_reader_highlight_prompt_seen');
         localStorage.removeItem('esv_notifications_enabled');
         localStorage.removeItem('lastNotificationPromptTime');
         localStorage.removeItem('blockNotificationPrompt');
