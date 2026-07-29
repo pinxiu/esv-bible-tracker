@@ -18,9 +18,11 @@ import { canonicalizeReference } from './utils/textNormalizer';
 import { applyMemoryReview } from './utils/memoryProgress';
 import { findOldestMissedUnreadPassage, getPassagesForDay } from './utils/readingPlan.mjs';
 import { esvDb } from './services/esvDatabase';
+import { INTERNET_REQUIRED_TITLE, useOnlineStatus } from './hooks/useOnlineStatus';
 import { Sparkles, CheckCircle2, ArrowUp, Bug, MessageSquare } from 'lucide-react';
 
 export default function App() {
+  const isOnline = useOnlineStatus();
   const [activeTab, setActiveTabState] = useState('plan');
   const [previousTab, setPreviousTab] = useState('plan');
 
@@ -523,6 +525,7 @@ export default function App() {
         completedDays={completedDays}
         totalDays={totalDays}
         onOpenSettings={() => setActiveTab('settings')}
+        isOnline={isOnline}
         theme={theme}
         onToggleTheme={handleToggleTheme}
       />
@@ -536,6 +539,7 @@ export default function App() {
             onToggleDay={handleToggleDay}
             onOpenPassage={handleOpenPassage}
             onOpenCommentary={(ref) => setCommentaryPassage(ref)}
+            isOnline={isOnline}
             todayDateStr={todayDateStr}
             missedDaysCount={missedDaysCount}
             onCatchUpOldest={handleCatchUpOldest}
@@ -569,6 +573,7 @@ export default function App() {
             onSelectPassage={(ref) => setCurrentPassage(canonicalizeReference(ref))}
             onOpenCommentary={(ref) => setCommentaryPassage(ref)}
             onSaveVerse={handleSaveVerse}
+            isOnline={isOnline}
             savedScrollPos={readerScrollMap[currentPassage]}
             onUpdateScrollPos={handleUpdateScrollPos}
           />
@@ -636,8 +641,9 @@ export default function App() {
       <button
         type="button"
         onClick={() => setShowFeedbackModal(true)}
-        className="group fixed bottom-5 right-6 z-40 flex h-11 max-w-11 items-center overflow-hidden rounded-2xl border border-amber-500/40 bg-slate-900 px-3 text-amber-300 shadow-2xl transition-all duration-200 hover:max-w-40 hover:border-amber-400 hover:bg-slate-800"
-        title="Send feedback"
+        disabled={!isOnline}
+        className="group fixed bottom-5 right-6 z-40 flex h-11 max-w-11 items-center overflow-hidden rounded-2xl border border-amber-500/40 bg-slate-900 px-3 text-amber-300 shadow-2xl transition-all duration-200 hover:max-w-40 hover:border-amber-400 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:max-w-11"
+        title={isOnline ? 'Send feedback' : INTERNET_REQUIRED_TITLE}
         aria-label="Send feedback"
       >
         <MessageSquare className="h-5 w-5 shrink-0" />
@@ -649,6 +655,7 @@ export default function App() {
         <CommentaryModal
           passageRef={commentaryPassage}
           onClose={() => setCommentaryPassage(null)}
+          isOnline={isOnline}
         />
       )}
 
@@ -662,6 +669,7 @@ export default function App() {
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
         activePage={activeTab}
+        isOnline={isOnline}
       />
 
       {/* Update Ready Restart Prompt Modal */}
@@ -689,7 +697,9 @@ export default function App() {
                     if (result && !result.success) setUpdateInstallError(result.reason || 'The update could not be installed.');
                   }
                 }}
-                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/25 transition-all"
+                disabled={Boolean(updateInstallError) && !isOnline}
+                title={updateInstallError && !isOnline ? INTERNET_REQUIRED_TITLE : undefined}
+                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/25 transition-all disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {updateInstallError ? 'Download Latest Release' : 'Restart & Update Now'}
               </button>

@@ -4,6 +4,7 @@ import readXlsxFile from 'read-excel-file/browser';
 import { isDatePast, isDateToday, getTodayBeijingMonthDay, getTodayBeijingMD, getTodayBeijingDate, getUserTimezone } from '../utils/dateUtils';
 import { parseDelimitedSchedule, parseScheduleRows } from '../utils/readingSchedule';
 import todayVerseBg from '../assets/today_verse_bg.jpg';
+import { INTERNET_REQUIRED_TITLE } from '../hooks/useOnlineStatus';
 
 const DAILY_VERSES = [
   {
@@ -270,6 +271,7 @@ export default function ReadingPlanView({
   onToggleDay,
   onOpenPassage,
   onOpenCommentary,
+  isOnline = true,
   todayDateStr,
   missedDaysCount = 0,
   onCatchUpOldest,
@@ -750,8 +752,9 @@ export default function ReadingPlanView({
                                     event.stopPropagation();
                                     onOpenCommentary(passage);
                                   }}
-                                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all"
-                                  title={`Commentaries`}
+                                  disabled={!isOnline}
+                                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                                  title={isOnline ? 'Commentaries' : INTERNET_REQUIRED_TITLE}
                                 >
                                   <ExternalLink className="w-3 h-3 text-sky-400" />
                                 </button>
@@ -1025,8 +1028,9 @@ export default function ReadingPlanView({
                                 event.stopPropagation();
                                 onOpenCommentary(passage);
                               }}
-                              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all"
-                              title={`Open commentaries for ${passage}`}
+                              disabled={!isOnline}
+                              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                              title={isOnline ? `Open commentaries for ${passage}` : INTERNET_REQUIRED_TITLE}
                             >
                               <ExternalLink className="w-3 h-3 text-sky-400" />
                             </button>

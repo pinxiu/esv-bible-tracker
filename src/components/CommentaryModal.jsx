@@ -1,8 +1,9 @@
 import React from 'react';
 import { getCommentaryLinks } from '../data/commentaryUrls';
 import { ExternalLink, BookOpen, X, Sparkles } from 'lucide-react';
+import { INTERNET_REQUIRED_TITLE } from '../hooks/useOnlineStatus';
 
-export default function CommentaryModal({ onClose, passageRef }) {
+export default function CommentaryModal({ onClose, passageRef, isOnline = true }) {
   if (!passageRef) return null;
 
   const links = getCommentaryLinks(passageRef);
@@ -45,8 +46,10 @@ export default function CommentaryModal({ onClose, passageRef }) {
             <a
               key={idx}
               href={link.url}
-              onClick={(e) => handleOpenExternal(e, link.url)}
-              className={`block p-4 rounded-xl bg-gradient-to-r ${link.color} border border-slate-800 hover:border-amber-500/40 hover:scale-[1.01] transition-all duration-200 group cursor-pointer`}
+              onClick={(e) => isOnline ? handleOpenExternal(e, link.url) : e.preventDefault()}
+              aria-disabled={!isOnline}
+              title={isOnline ? `Open ${link.name}` : INTERNET_REQUIRED_TITLE}
+              className={`block p-4 rounded-xl bg-gradient-to-r ${link.color} border border-slate-800 hover:border-amber-500/40 hover:scale-[1.01] transition-all duration-200 group cursor-pointer ${!isOnline ? 'cursor-not-allowed opacity-40 hover:scale-100' : ''}`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-serif font-bold text-sm text-slate-100 group-hover:text-amber-300 transition-colors">

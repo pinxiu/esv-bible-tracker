@@ -3,6 +3,7 @@ import { Clock, Settings, Sun, Moon, Download, RefreshCw, Sparkles, CheckCircle2
 import logoIcon from '../assets/icon.png';
 import { getUserTimezone } from '../utils/dateUtils';
 import { debugLogger } from './DeveloperDebugModal';
+import { INTERNET_REQUIRED_TITLE } from '../hooks/useOnlineStatus';
 
 export default function Header({
   activeTab,
@@ -12,7 +13,8 @@ export default function Header({
   totalDays = 0,
   onOpenSettings,
   theme = 'dark',
-  onToggleTheme
+  onToggleTheme,
+  isOnline = true
 }) {
   const [activeTimeStr, setActiveTimeStr] = useState('');
   const [activeTimeWithSec, setActiveTimeWithSec] = useState('');
@@ -174,6 +176,8 @@ export default function Header({
     }
   };
 
+  const updateActionNeedsInternet = updateState.status !== 'downloaded';
+
   return (
     <header className="relative h-16 titlebar-drag border-b border-slate-800/80 glass-panel px-6 flex items-center justify-between select-none z-20 w-full cursor-grab active:cursor-grabbing">
       {/* Title & App Brand (Draggable space with inset traffic lights) */}
@@ -185,8 +189,9 @@ export default function Header({
               <span>ESV Bible Tracker</span>
               <button
                 onClick={handleVersionClick}
-                className="align-super text-[9px] font-sans font-semibold text-amber-400 hover:text-amber-300 transition-all hover:underline cursor-pointer ml-1 select-none whitespace-nowrap shrink-0"
-                title="Click to check or manage updates"
+                disabled={!isOnline && updateActionNeedsInternet}
+                className="align-super text-[9px] font-sans font-semibold text-amber-400 hover:text-amber-300 transition-all hover:underline cursor-pointer ml-1 select-none whitespace-nowrap shrink-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+                title={!isOnline && updateActionNeedsInternet ? INTERNET_REQUIRED_TITLE : 'Click to check or manage updates'}
               >
                 <sup>{getVersionText()}</sup>
               </button>

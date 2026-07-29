@@ -14,7 +14,8 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
   redistributed, and monetized versions without written permission.
 - **Server-Side Secret Protection**: Moved ESV and feedback credentials out of
   downloadable builds into a rate-limited API gateway, leaving only its public
-  URL in the app while retaining embedded offline passage fallback.
+  URL in the app while retaining embedded offline passage fallback. Network-only
+  controls now disable while offline and explain the requirement on hover.
 
 
 ## [1.0.32] - 2026-07-27

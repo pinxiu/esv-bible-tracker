@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Camera, Loader2, MessageSquare, Paperclip, Send, Trash2, X } from 'lucide-react';
 import { submitAppFeedback } from '../services/appApi';
+import { INTERNET_REQUIRED_TITLE } from '../hooks/useOnlineStatus';
 
 const readFileAsDataUrl = file => new Promise((resolve, reject) => {
   const reader = new FileReader();
@@ -9,7 +10,7 @@ const readFileAsDataUrl = file => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-export default function FeedbackModal({ isOpen, onClose, activePage }) {
+export default function FeedbackModal({ isOpen, onClose, activePage, isOnline = true }) {
   const fileInputRef = useRef(null);
   const captureImageRef = useRef(null);
   const [message, setMessage] = useState('');
@@ -217,7 +218,7 @@ export default function FeedbackModal({ isOpen, onClose, activePage }) {
           </div>
         )}
         {status && <p className={`break-words text-xs ${status.startsWith('Feedback uploaded') ? 'text-emerald-300' : 'text-rose-300'}`}>{status}</p>}
-        <button type="button" onClick={submit} disabled={!message.trim() || isSubmitting} className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-amber-400 disabled:opacity-50">
+        <button type="button" onClick={submit} disabled={!message.trim() || isSubmitting || !isOnline} title={!isOnline ? INTERNET_REQUIRED_TITLE : undefined} className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50">
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           {isSubmitting ? 'Uploading…' : 'Send Feedback'}
         </button>
