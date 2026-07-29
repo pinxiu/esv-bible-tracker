@@ -21,6 +21,7 @@ export default function FeedbackModal({ isOpen, onClose, activePage, isOnline = 
   const [captureDataUrl, setCaptureDataUrl] = useState('');
   const [selection, setSelection] = useState(null);
   const [dragStart, setDragStart] = useState(null);
+  const hasValidSelection = Boolean(selection && selection.width >= 8 && selection.height >= 8);
 
   useEffect(() => {
     if (isOpen) {
@@ -184,7 +185,14 @@ export default function FeedbackModal({ isOpen, onClose, activePage, isOnline = 
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => attachCapture(true)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 hover:text-amber-300">Use Whole App</button>
-              <button type="button" onClick={() => attachCapture(false)} className="rounded-xl bg-amber-500 px-3 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400">Attach Selected Area</button>
+              <button
+                type="button"
+                onClick={() => attachCapture(false)}
+                disabled={!hasValidSelection}
+                className="rounded-xl bg-amber-500 px-3 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Attach Selected Area
+              </button>
             </div>
           </div>
         ) : (

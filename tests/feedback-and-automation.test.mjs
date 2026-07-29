@@ -30,6 +30,8 @@ test('feedback UI captures files and stores them through the R2-backed gateway',
   assert.match(feedback, /Capture App/);
   assert.match(feedback, /Use Whole App/);
   assert.match(feedback, /Attach Selected Area/);
+  assert.match(feedback, /const hasValidSelection = Boolean\(selection && selection\.width >= 8 && selection\.height >= 8\)/);
+  assert.match(feedback, /disabled=\{!hasValidSelection\}/);
   assert.match(feedback, /setIsCapturing\(true\)/);
   assert.match(feedback, /if \(!isOpen \|\| isCapturing\) return null/);
   assert.match(feedback, /if \(isOpen\) \{\s*setStatus\(''\)/);
@@ -61,7 +63,8 @@ test('release packaging prunes feedback, source maps, and unused Electron langua
 });
 
 test('feedback and return-to-top controls do not overlap and views share compact bottom spacing', () => {
-  assert.match(app, /fixed bottom-5 right-6/);
+  assert.match(app, /className="internet-tooltip group fixed bottom-5 right-6/);
+  assert.doesNotMatch(app, /className="internet-tooltip fixed bottom-5 right-6 z-40"\s+data-internet-tooltip/);
   assert.match(app, /fixed bottom-20 right-6/);
   assert.match(passageViewer, /fixed bottom-20 right-6/);
   assert.match(passageViewer, /overflow-y-auto pb-6/);
