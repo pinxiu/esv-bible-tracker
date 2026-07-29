@@ -128,13 +128,6 @@ export default function App() {
   const [commentaryPassage, setCommentaryPassage] = useState(null);
 
   // Settings State
-  const [esvApiKey, setEsvApiKey] = useState(() => {
-    try {
-      return localStorage.getItem('esv_api_key') || import.meta.env.VITE_ESV_API_TOKEN || '';
-    } catch (e) {
-      return import.meta.env.VITE_ESV_API_TOKEN || '';
-    }
-  });
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(() => {
     try {
       const local = localStorage.getItem('esv_auto_update_enabled');
@@ -576,7 +569,6 @@ export default function App() {
             onSelectPassage={(ref) => setCurrentPassage(canonicalizeReference(ref))}
             onOpenCommentary={(ref) => setCommentaryPassage(ref)}
             onSaveVerse={handleSaveVerse}
-            esvApiKey={esvApiKey}
             savedScrollPos={readerScrollMap[currentPassage]}
             onUpdateScrollPos={handleUpdateScrollPos}
           />
@@ -603,14 +595,11 @@ export default function App() {
         {activeTab === 'settings' && (
           <SettingsView
             settings={{
-              esvApiKey,
               notifyUnread: notificationsEnabled,
               autoUpdateEnabled
             }}
             onSaveSettings={(newSettings) => {
-              setEsvApiKey(newSettings.esvApiKey);
               try {
-                localStorage.setItem('esv_api_key', newSettings.esvApiKey);
                 localStorage.setItem('esv_notifications_enabled', String(newSettings.notifyUnread));
                 localStorage.setItem('esv_auto_update_enabled', String(newSettings.autoUpdateEnabled));
               } catch (e) {}

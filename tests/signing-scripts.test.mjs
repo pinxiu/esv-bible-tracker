@@ -63,9 +63,10 @@ test('release automation never tries to install a desktop app on a CI runner', (
   assert.match(releaseScript, /CI Environment: Skipping local app installation/);
 });
 
-test('release workflow provides the ESV token to every renderer build', () => {
-  const tokenBindings = releaseWorkflow.match(/VITE_ESV_API_TOKEN:\s*\$\{\{\s*secrets\.ESV_API_TOKEN\s*\}\}/g) || [];
-  assert.equal(tokenBindings.length, 3);
+test('release workflow provides only the public gateway URL to renderer builds', () => {
+  const urlBindings = releaseWorkflow.match(/VITE_APP_API_BASE_URL:\s*\$\{\{\s*vars\.APP_API_BASE_URL\s*\}\}/g) || [];
+  assert.equal(urlBindings.length, 3);
+  assert.doesNotMatch(releaseWorkflow, /VITE_ESV_API_TOKEN|secrets\.ESV_API_TOKEN/);
 });
 
 test('manual releases bypass the daily gate and preserve changelog rollover', () => {

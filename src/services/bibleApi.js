@@ -1,30 +1,21 @@
 import { esvDb } from './esvDatabase';
 import { cleanScriptureText, canonicalizeReference } from '../utils/textNormalizer';
+import { fetchFromAppApi, hasAppApi } from './appApi';
 
 // Cache for fetched passages
 const passageCache = new Map();
 
-function getEsvHeaders(esvApiKey) {
-  return { Authorization: `Token ${esvApiKey.trim()}` };
-}
-
-export async function searchEsv(query, esvApiKey, pageSize = 20) {
-  if (!esvApiKey?.trim()) throw new Error('Add your ESV API token in Settings to search Scripture.');
-  const response = await fetch(
-    `https://api.esv.org/v3/passage/search/?q=${encodeURIComponent(query.trim())}&page-size=${pageSize}`,
-    { headers: getEsvHeaders(esvApiKey) }
+export async function searchEsv(query, pageSize = 20) {
+  const response = await fetchFromAppApi(
+    `/v1/esv/search?q=${encodeURIComponent(query.trim())}&page-size=${Math.min(20, pageSize)}`
   );
-  if (!response.ok) throw new Error(`ESV search failed (${response.status}).`);
   return response.json();
 }
 
-export async function fetchEsvAudio(passageRef, esvApiKey) {
-  if (!esvApiKey?.trim()) throw new Error('Add your ESV API token in Settings to play audio.');
-  const response = await fetch(
-    `https://api.esv.org/v3/passage/audio/?q=${encodeURIComponent(normalizePassageRef(passageRef))}`,
-    { headers: getEsvHeaders(esvApiKey) }
+export async function fetchEsvAudio(passageRef) {
+  const response = await fetchFromAppApi(
+    `/v1/esv/audio?q=${encodeURIComponent(normalizePassageRef(passageRef))}`
   );
-  if (!response.ok) throw new Error(`ESV audio failed (${response.status}).`);
   return URL.createObjectURL(await response.blob());
 }
 
@@ -104,18 +95,16 @@ function expandWholeBookReference(reference) {
   return Array.from({ length: lastChapter }, (_, index) => `${match[1]} ${index + 1}`);
 }
 
-async function fetchOfficialEsvHtml(reference, esvApiKey) {
+async function fetchOfficialEsvHtml(reference) {
   const references = expandWholeBookReference(reference);
   const passages = [];
   let canonicalReference = reference;
   let footnoteOffset = 0;
 
   for (const chapterReference of references) {
-    const response = await fetch(
-      `https://api.esv.org/v3/passage/html/?q=${encodeURIComponent(chapterReference)}&include-footnotes=true&include-footnote-body=true&include-headings=true&include-audio-link=false`,
-      { headers: getEsvHeaders(esvApiKey) }
+    const response = await fetchFromAppApi(
+      `/v1/esv/html?q=${encodeURIComponent(chapterReference)}`
     );
-    if (!response.ok) throw new Error(`ESV passage failed (${response.status}).`);
     const data = await response.json();
     if (!data.passages?.length) throw new Error(`No ESV passage found for ${chapterReference}.`);
     for (const passageHtml of data.passages) {
@@ -293,7 +282,7 @@ function cleanBibleGatewayHtml(htmlContent, passageRef) {
 /**
  * Fetches Bible passage text. Defaults to Bible Gateway ESV (online) unless forceUseEmbedded is true.
  */
-export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded = false) {
+export async function fetchPassage(passageRef, forceUseEmbedded = false) {
   const cleanRef = normalizePassageRef(passageRef);
   const cacheKey = `${cleanRef}_${forceUseEmbedded ? 'embedded' : 'gateway'}`;
 
@@ -319,13 +308,14 @@ export async function fetchPassage(passageRef, esvApiKey = '', forceUseEmbedded 
     }
   }
 
-  // 2. Official ESV API (if user entered custom token in Settings)
-  if (esvApiKey && esvApiKey.length > 5) {
+  // 2. Official ESV API through the app's secure server-side gateway.
+  // The publisher token is never included in the desktop application.
+  if (hasAppApi()) {
     try {
       if (window.debugLogger) {
         window.debugLogger.addLog('info', `Sending network request to Official ESV API: ${cleanRef}`);
       }
-      const data = await fetchOfficialEsvHtml(cleanRef, esvApiKey);
+      const data = await fetchOfficialEsvHtml(cleanRef);
       if (data.html) {
           const result = {
             reference: data.reference || cleanRef,

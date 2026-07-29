@@ -7,7 +7,6 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_SETTINGS = {
-  esvApiKey: '',
   notifyUnread: true,
   notificationTime: '08:00',
   ignoreCaps: true,

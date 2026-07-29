@@ -7,7 +7,6 @@ export default function PassageViewer({
   onSelectPassage,
   onOpenCommentary,
   onSaveVerse,
-  esvApiKey,
   savedScrollPos,
   onUpdateScrollPos
 }) {
@@ -127,7 +126,7 @@ export default function PassageViewer({
       setAudioUrl('');
       setAudioError('');
       setLoading(true);
-      fetchPassage(currentPassage, esvApiKey, effectiveUseEmbeddedBank).then(data => {
+      fetchPassage(currentPassage, effectiveUseEmbeddedBank).then(data => {
         if (isMounted) {
           setPassageData(data);
           setLoading(false);
@@ -148,7 +147,7 @@ export default function PassageViewer({
       });
     }
     return () => { isMounted = false; };
-  }, [currentPassage, esvApiKey, effectiveUseEmbeddedBank]);
+  }, [currentPassage, effectiveUseEmbeddedBank]);
 
   // Handle scroll persistence per passage & floating return-to-top button
   const handleScroll = () => {
@@ -256,7 +255,7 @@ export default function PassageViewer({
     setLoading(true);
     setSearchError('');
     try {
-      const data = await searchEsv(query, esvApiKey);
+      const data = await searchEsv(query);
       setSearchResults(data.results || []);
     } catch (error) {
       setSearchError(error.message);
@@ -280,7 +279,7 @@ export default function PassageViewer({
     setAudioError('');
     setAudioLoading(true);
     try {
-      const nextUrl = await fetchEsvAudio(currentPassage, esvApiKey);
+      const nextUrl = await fetchEsvAudio(currentPassage);
       if (audioUrl) URL.revokeObjectURL(audioUrl);
       setAudioUrl(nextUrl);
     } catch (error) {
@@ -575,7 +574,7 @@ export default function PassageViewer({
                 onClick={() => {
                   if (!audioUrl && !audioLoading) handleLoadAudio();
                 }}
-                disabled={!passageData.esvAvailable || !esvApiKey || effectiveUseEmbeddedBank}
+                disabled={!passageData.esvAvailable || effectiveUseEmbeddedBank}
                 title={passageData.esvAvailable ? 'Listen while continuing to read the passage.' : 'Audio is unavailable for this fallback source.'}
                 className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 hover:text-amber-300 hover:border-amber-500/40 disabled:opacity-35 disabled:cursor-not-allowed shrink-0"
                 aria-label="Listen to passage"

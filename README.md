@@ -63,6 +63,12 @@ npm run build:local
 ### Self-Signed Certificate Setup
 To build signed releases, please refer to the detailed instructions inside **[DEVELOPER_SIGNING.md](DEVELOPER_SIGNING.md)**.
 
+### Secure Online Services
+
+Official ESV search, formatting, audio, and in-app feedback use a server-side
+gateway so reusable tokens are never included in the downloadable app. See
+[Secret Handling](SECURITY.md) and the [gateway deployment guide](backend/README.md).
+
 ---
 
 ## Copyright & License

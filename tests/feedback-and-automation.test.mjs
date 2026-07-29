@@ -7,6 +7,8 @@ const header = await readFile(new URL('../src/components/Header.jsx', import.met
 const feedback = await readFile(new URL('../src/components/FeedbackModal.jsx', import.meta.url), 'utf8');
 const main = await readFile(new URL('../electron/main.cjs', import.meta.url), 'utf8');
 const preload = await readFile(new URL('../electron/preload.js', import.meta.url), 'utf8');
+const appApi = await readFile(new URL('../src/services/appApi.js', import.meta.url), 'utf8');
+const worker = await readFile(new URL('../backend/src/worker.js', import.meta.url), 'utf8');
 const changelogBot = await readFile(new URL('../scripts/update-changelog.js', import.meta.url), 'utf8');
 const readingPlan = await readFile(new URL('../src/components/ReadingPlanView.jsx', import.meta.url), 'utf8');
 const tutorial = await readFile(new URL('../src/components/OnboardingModal.jsx', import.meta.url), 'utf8');
@@ -31,14 +33,15 @@ test('feedback UI captures files and uploads retained repository copies', () => 
   assert.match(feedback, /setIsCapturing\(true\)/);
   assert.match(feedback, /if \(!isOpen \|\| isCapturing\) return null/);
   assert.match(feedback, /if \(isOpen\) \{\s*setStatus\(''\)/);
-  assert.match(preload, /submitFeedback.*submit-feedback/);
-  assert.match(main, /feedback\/attachments/);
-  assert.match(main, /feedback\/submissions/);
-  assert.match(main, /pinxiu\/esv-bible-tracker/);
-  assert.match(main, /FEEDBACK_BRANCH = 'app-feedback'/);
-  assert.match(main, /branch: FEEDBACK_BRANCH/);
-  assert.match(main, /Upload ESV Bible Tracker feedback attachment \[skip ci\]/);
-  assert.match(main, /Save ESV Bible Tracker feedback submission \[skip ci\]/);
+  assert.match(feedback, /submitAppFeedback/);
+  assert.match(appApi, /\/v1\/feedback/);
+  assert.doesNotMatch(preload, /submitFeedback|submit-feedback/);
+  assert.doesNotMatch(main, /GITHUB_TOKEN|GH_TOKEN|runGh|submit-feedback/);
+  assert.match(worker, /feedback\/attachments/);
+  assert.match(worker, /feedback\/submissions/);
+  assert.match(worker, /GITHUB_FEEDBACK_TOKEN/);
+  assert.match(worker, /Upload ESV Bible Tracker feedback attachment \[skip ci\]/);
+  assert.match(worker, /Save ESV Bible Tracker feedback submission \[skip ci\]/);
   assert.match(gitignore, /\/feedback\//);
 });
 

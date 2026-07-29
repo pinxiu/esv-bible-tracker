@@ -12,6 +12,9 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
   copyright notices plus a proprietary source-available license permitting
   personal non-commercial use of official builds while prohibiting derivative,
   redistributed, and monetized versions without written permission.
+- **Server-Side Secret Protection**: Moved ESV and feedback credentials out of
+  downloadable builds into a rate-limited API gateway, leaving only its public
+  URL in the app while retaining embedded offline passage fallback.
 
 
 ## [1.0.32] - 2026-07-27

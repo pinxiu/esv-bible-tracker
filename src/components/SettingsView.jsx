@@ -15,7 +15,6 @@ export default function SettingsView({ settings, onSaveSettings, onResetProgress
     localStorage.setItem('esv_tracker_timezone', timezone);
     onSaveSettings({
       ...settings,
-      esvApiKey: settings.esvApiKey || '',
       notifyUnread,
       notificationTime,
       timezone,

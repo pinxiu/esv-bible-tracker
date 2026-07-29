@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Camera, Loader2, MessageSquare, Paperclip, Send, Trash2, X } from 'lucide-react';
+import { submitAppFeedback } from '../services/appApi';
 
 const readFileAsDataUrl = file => new Promise((resolve, reject) => {
   const reader = new FileReader();
@@ -126,7 +127,7 @@ export default function FeedbackModal({ isOpen, onClose, activePage }) {
     const title = `ESV Bible Tracker Feedback: ${message.trim().slice(0, 60)}`;
     const body = `### Feedback\n\n${message.trim()}\n\n---\n*Submitted from ESV Bible Tracker*\n*Page: ${activePage}*`;
     try {
-      const result = await window.electronAPI?.submitFeedback?.(title, body, attachments);
+      const result = await submitAppFeedback(title, body, attachments);
       if (!result?.success) throw new Error(result?.error || 'Feedback upload is unavailable.');
       setMessage('');
       setAttachments([]);

@@ -5,7 +5,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAppInfo: () => ipcRenderer.invoke('get-app-info'),
   saveReadingScheduleTemplate: () => ipcRenderer.invoke('save-reading-schedule-template'),
   captureApp: () => ipcRenderer.invoke('capture-app'),
-  submitFeedback: (title, body, attachments) => ipcRenderer.invoke('submit-feedback', { title, body, attachments }),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   startDownloadUpdate: () => ipcRenderer.invoke('start-download-update'),
   quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
