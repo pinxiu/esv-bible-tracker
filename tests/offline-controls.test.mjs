@@ -31,6 +31,8 @@ test('network-only app, update, commentary, and feedback controls disable offlin
 });
 
 test('offline tooltips appear immediately without the native browser delay', () => {
+  assert.match(styles, /\.internet-tooltip:not\(\.fixed\)\s*\{\s*position: relative/);
+  assert.doesNotMatch(styles, /\.internet-tooltip\s*\{\s*position: relative/);
   assert.match(styles, /\.internet-tooltip\[data-internet-tooltip\]::after/);
   assert.match(styles, /content: attr\(data-internet-tooltip\)/);
   assert.match(styles, /transition: opacity 60ms ease-out/);

@@ -174,11 +174,18 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
   });
 
   test('Feedback modal captures the whole app or a selected section and reopens cleanly', async () => {
-    await window.getByRole('button', { name: 'Send feedback' }).click();
+    await window.setViewportSize({ width: 1200, height: 800 });
+    const feedbackButton = window.getByRole('button', { name: 'Send feedback' });
+    const feedbackButtonBox = await feedbackButton.boundingBox();
+    expect(feedbackButtonBox.x).toBeGreaterThan(1100);
+    expect(feedbackButtonBox.y).toBeGreaterThan(700);
+    await feedbackButton.click();
     await expect(window.getByRole('heading', { name: 'Send Feedback' })).toBeVisible();
     await window.getByRole('button', { name: 'Capture App' }).click();
     const capturePreview = window.getByAltText('Captured app preview');
     await expect(capturePreview).toBeVisible();
+    const selectedAreaButton = window.getByRole('button', { name: 'Attach Selected Area' });
+    await expect(selectedAreaButton).toBeDisabled();
     await window.getByRole('button', { name: 'Use Whole App' }).click();
     await expect(window.getByText(/ESV-Bible-Tracker-\d+\.png/)).toBeVisible();
 
@@ -189,7 +196,8 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await window.mouse.down();
     await window.mouse.move(previewBox.x + 180, previewBox.y + 130);
     await window.mouse.up();
-    await window.getByRole('button', { name: 'Attach Selected Area' }).click();
+    await expect(selectedAreaButton).toBeEnabled();
+    await selectedAreaButton.click();
     await expect(window.getByText(/ESV-Bible-Tracker-Section-\d+\.png/)).toBeVisible();
 
     await window.getByRole('button', { name: 'Close feedback' }).click();

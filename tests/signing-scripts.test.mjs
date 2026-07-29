@@ -77,3 +77,9 @@ test('manual releases bypass the daily gate and preserve changelog rollover', ()
   assert.match(releaseScript, /already contains v\$\{nextVersion\}; skipping duplicate placeholder/);
   assert.match(releaseScript, /git push origin HEAD:main/);
 });
+
+test('release workflow uses the encrypted administrator token for protected main updates', () => {
+  assert.match(releaseWorkflow, /actions\/checkout@v4[\s\S]*token:\s*\$\{\{\s*secrets\.RELEASE_GITHUB_TOKEN\s*\}\}/);
+  assert.match(releaseWorkflow, /GH_TOKEN:\s*\$\{\{\s*secrets\.RELEASE_GITHUB_TOKEN\s*\}\}/);
+  assert.doesNotMatch(releaseWorkflow, /GH_TOKEN:\s*\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}/);
+});

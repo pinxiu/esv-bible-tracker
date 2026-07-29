@@ -4,7 +4,7 @@
 
 /* Immediate tooltip for disabled online-only controls. Native title tooltips
    have a noticeable browser delay, so this appears on the first hover frame. */
-.internet-tooltip {
+.internet-tooltip:not(.fixed) {
   position: relative;
 }
 
