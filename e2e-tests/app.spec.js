@@ -177,6 +177,41 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     expect(await window.evaluate(() => localStorage.getItem('esv_custom_schedule_active'))).toBeNull();
   });
 
+  test('Feedback stays fixed and shows its immediate offline hint', async () => {
+    await window.setViewportSize({ width: 1200, height: 800 });
+    await window.evaluate(() => window.dispatchEvent(new Event('offline')));
+
+    const feedbackButton = window.getByRole('button', { name: /Send feedback.*Requires an internet connection/ });
+    await expect(feedbackButton).toBeDisabled();
+
+    const feedbackHoverTarget = window.locator('.feedback-internet-tooltip.fixed.bottom-5.right-6');
+    const feedbackButtonBox = await feedbackButton.boundingBox();
+    expect(feedbackButtonBox.x).toBeGreaterThan(1100);
+    expect(feedbackButtonBox.y).toBeGreaterThan(700);
+
+    await feedbackHoverTarget.hover();
+    const hintStyle = await feedbackHoverTarget.evaluate(element => {
+      const style = getComputedStyle(element, '::after');
+      return {
+        content: style.content,
+        opacity: style.opacity,
+        left: style.left,
+        right: style.right,
+        transitionDuration: style.transitionDuration,
+        visibility: style.visibility
+      };
+    });
+    expect(hintStyle.content).toContain('Requires an internet connection');
+    expect(Number(hintStyle.opacity)).toBeGreaterThan(0);
+    expect(Number.parseFloat(hintStyle.left)).toBeLessThan(0);
+    expect(hintStyle.right).toBe('0px');
+    expect(hintStyle.visibility).toBe('visible');
+    expect(hintStyle.transitionDuration).toContain('0.06s');
+    await expect.poll(() => feedbackHoverTarget.evaluate(
+      element => getComputedStyle(element, '::after').opacity
+    )).toBe('1');
+  });
+
   test('Feedback modal captures the whole app or a selected section and reopens cleanly', async () => {
     await window.setViewportSize({ width: 1200, height: 800 });
     const feedbackButton = window.getByRole('button', { name: 'Send feedback' });

@@ -63,8 +63,8 @@ test('release packaging prunes feedback, source maps, and unused Electron langua
 });
 
 test('feedback and return-to-top controls do not overlap and views share compact bottom spacing', () => {
-  assert.match(app, /className="internet-tooltip group fixed bottom-5 right-6/);
-  assert.doesNotMatch(app, /className="internet-tooltip fixed bottom-5 right-6 z-40"\s+data-internet-tooltip/);
+  assert.match(app, /className="internet-tooltip feedback-internet-tooltip fixed bottom-5 right-6 z-40"\s+data-internet-tooltip/);
+  assert.match(app, /className="group flex h-11 max-w-11/);
   assert.match(app, /fixed bottom-20 right-6/);
   assert.match(passageViewer, /fixed bottom-20 right-6/);
   assert.match(passageViewer, /overflow-y-auto pb-6/);

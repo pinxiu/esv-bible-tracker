@@ -638,18 +638,22 @@ export default function App() {
         </button>
       )}
 
-      <button
-        type="button"
-        onClick={() => setShowFeedbackModal(true)}
-        disabled={!isOnline}
-        className="internet-tooltip group fixed bottom-5 right-6 z-40 flex h-11 max-w-11 items-center overflow-hidden rounded-2xl border border-amber-500/40 bg-slate-900 px-3 text-amber-300 shadow-2xl transition-all duration-200 hover:max-w-40 hover:border-amber-400 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:max-w-11"
+      <div
+        className="internet-tooltip feedback-internet-tooltip fixed bottom-5 right-6 z-40"
         data-internet-tooltip={!isOnline ? INTERNET_REQUIRED_TITLE : undefined}
-        title={isOnline ? 'Send feedback' : undefined}
-        aria-label={isOnline ? 'Send feedback' : `Send feedback. ${INTERNET_REQUIRED_TITLE}`}
       >
-        <MessageSquare className="h-5 w-5 shrink-0" />
-        <span className="ml-2 whitespace-nowrap text-xs font-bold opacity-0 transition-opacity duration-150 group-hover:opacity-100">Send Feedback</span>
-      </button>
+        <button
+          type="button"
+          onClick={() => setShowFeedbackModal(true)}
+          disabled={!isOnline}
+          className="group flex h-11 max-w-11 items-center overflow-hidden rounded-2xl border border-amber-500/40 bg-slate-900 px-3 text-amber-300 shadow-2xl transition-all duration-200 hover:max-w-40 hover:border-amber-400 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:max-w-11"
+          title={isOnline ? 'Send feedback' : undefined}
+          aria-label={isOnline ? 'Send feedback' : `Send feedback. ${INTERNET_REQUIRED_TITLE}`}
+        >
+          <MessageSquare className="h-5 w-5 shrink-0" />
+          <span className="ml-2 whitespace-nowrap text-xs font-bold opacity-0 transition-opacity duration-150 group-hover:opacity-100">Send Feedback</span>
+        </button>
+      </div>
 
       {/* Commentary Modal Overlay */}
       {commentaryPassage && (

@@ -21,6 +21,7 @@ test('shared connectivity state follows browser online and offline events', () =
 
 test('network-only app, update, commentary, and feedback controls disable offline', () => {
   assert.match(app, /disabled=\{!isOnline\}/);
+  assert.match(app, /className="internet-tooltip feedback-internet-tooltip fixed bottom-5 right-6 z-40"[\s\S]*disabled=\{!isOnline\}/);
   assert.match(app, /data-internet-tooltip=\{!isOnline \? INTERNET_REQUIRED_TITLE/);
   assert.match(app, /disabled=\{Boolean\(updateInstallError\) && !isOnline\}/);
   assert.match(header, /disabled=\{!isOnline && updateActionNeedsInternet\}/);
@@ -34,6 +35,7 @@ test('offline tooltips appear immediately without the native browser delay', () 
   assert.match(styles, /\.internet-tooltip:not\(\.fixed\)\s*\{\s*position: relative/);
   assert.doesNotMatch(styles, /\.internet-tooltip\s*\{\s*position: relative/);
   assert.match(styles, /\.internet-tooltip\[data-internet-tooltip\]::after/);
+  assert.match(styles, /\.feedback-internet-tooltip\[data-internet-tooltip\]::after\s*\{[\s\S]*right: 0;[\s\S]*left: auto;/);
   assert.match(styles, /content: attr\(data-internet-tooltip\)/);
   assert.match(styles, /transition: opacity 60ms ease-out/);
   assert.doesNotMatch(styles, /transition-delay/);

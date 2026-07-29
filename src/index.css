@@ -42,6 +42,20 @@
   transform: translateX(-50%) translateY(0);
 }
 
+/* The feedback control sits against the right window edge, so its hint must
+   expand leftward to remain fully visible. */
+.feedback-internet-tooltip[data-internet-tooltip]::after {
+  right: 0;
+  left: auto;
+  transform: translateY(0.2rem);
+}
+
+.feedback-internet-tooltip[data-internet-tooltip]:hover::after,
+.feedback-internet-tooltip[data-internet-tooltip]:focus-visible::after,
+.feedback-internet-tooltip[data-internet-tooltip]:focus-within::after {
+  transform: translateY(0);
+}
+
 @layer base {
   body {
     background-color: #060911;

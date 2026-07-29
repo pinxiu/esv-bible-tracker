@@ -20,8 +20,9 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
   messages.
 - **Feedback Layout & Capture Reliability**: Restored the compact bottom-right
   floating feedback button without reserving a content row, disabled selected
-  area attachment until a valid crop exists, and expanded Electron regression
-  coverage for placement and capture behavior.
+  area attachment until a valid crop exists, and added an immediate, edge-safe
+  offline hint that expands leftward without leaving the window. Expanded
+  Electron regression coverage protects placement, capture, and offline behavior.
 - **Protected Release Automation**: Added an encrypted administrator credential
   for the tested post-release version bump so GitHub Actions can update protected
   `main` directly while human changes continue to require owner-approved pull
