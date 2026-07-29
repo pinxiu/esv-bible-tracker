@@ -1,4 +1,7 @@
-const configuredApiBaseUrl = (import.meta.env.VITE_APP_API_BASE_URL || '').trim().replace(/\/+$/, '');
+const DEFAULT_API_BASE_URL = 'https://esv-bible-tracker-api.kwokp.workers.dev';
+const configuredApiBaseUrl = (
+  import.meta.env.VITE_APP_API_BASE_URL || DEFAULT_API_BASE_URL
+).trim().replace(/\/+$/, '');
 
 export function hasAppApi() {
   return configuredApiBaseUrl.length > 0;

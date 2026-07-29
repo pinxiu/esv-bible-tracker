@@ -4,6 +4,8 @@ The desktop app must never receive an ESV API key, GitHub token, signing key, or
 other reusable credential. This Cloudflare Worker performs the small set of
 allowed upstream operations on the app's behalf.
 
+Deployed gateway: `https://esv-bible-tracker-api.kwokp.workers.dev`
+
 ## Secrets
 
 Configure these as encrypted Worker secrets:
@@ -23,8 +25,9 @@ npx wrangler deploy
 ```
 
 For local development, copy `.dev.vars.example` to `.dev.vars`. That file is
-ignored by Git. Set the deployed URL as the repository Actions variable
-`APP_API_BASE_URL`; the release build receives only that public URL.
+ignored by Git. The production gateway URL is the app's safe public default.
+Set the repository Actions variable `APP_API_BASE_URL` only when overriding it;
+the release build never receives a credential.
 
 ## Abuse controls
 

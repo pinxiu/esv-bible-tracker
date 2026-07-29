@@ -12,6 +12,7 @@ const security = await readFile(new URL('../SECURITY.md', import.meta.url), 'utf
 test('desktop source contains only a public gateway URL, not reusable service tokens', () => {
   const desktopSource = `${app}\n${appApi}\n${bibleApi}\n${workflow}`;
   assert.match(appApi, /VITE_APP_API_BASE_URL/);
+  assert.match(appApi, /https:\/\/esv-bible-tracker-api\.kwokp\.workers\.dev/);
   assert.doesNotMatch(desktopSource, /VITE_ESV_API_TOKEN|Authorization:\s*`Token|GITHUB_FEEDBACK_TOKEN/);
   assert.doesNotMatch(app, /esv_api_key|esvApiKey/);
   assert.match(security, /Vite variables are compiled into client JavaScript and are public/);
