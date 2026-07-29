@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const changelog = await readFile(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
+const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
 
 function releaseBlock(version) {
   const escapedVersion = version.replaceAll('.', '\\.');
@@ -17,7 +19,7 @@ test('known historical no-change releases are explicitly marked as dummy release
   }
 });
 
-test('recent release history matches shipped packages and rolls forward to 1.0.33', () => {
+test('recent release history matches shipped packages and rolls forward to 1.0.34', () => {
   assert.match(releaseBlock('1.0.30'), /2026-07-26/);
   assert.match(releaseBlock('1.0.30'), /did not bundle an official ESV API token/);
   assert.doesNotMatch(releaseBlock('1.0.30'), /Replayable Tutorial|In-App Feedback|Custom Reading Schedules/);
@@ -32,6 +34,16 @@ test('recent release history matches shipped packages and rolls forward to 1.0.3
   assert.match(releaseBlock('1.0.32'), /Custom Reading Schedules/);
   assert.match(releaseBlock('1.0.32'), /Memory Review Control/);
 
-  assert.match(releaseBlock('1.0.33'), /Unreleased/);
+  assert.match(releaseBlock('1.0.33'), /2026-07-29/);
   assert.match(releaseBlock('1.0.33'), /Copyright & Personal-Use License/);
+  assert.match(releaseBlock('1.0.33'), /Repository Governance/);
+  assert.doesNotMatch(releaseBlock('1.0.33'), /Server-Side Secret Protection|Cloud Feedback Storage/);
+
+  assert.match(releaseBlock('1.0.34'), /Unreleased/);
+  assert.match(releaseBlock('1.0.34'), /Server-Side Secret Protection/);
+  assert.match(releaseBlock('1.0.34'), /Cloud Feedback Storage/);
+  assert.match(releaseBlock('1.0.34'), /Protected Release Automation/);
+  assert.equal(packageJson.version, '1.0.34');
+  assert.equal(packageLock.version, '1.0.34');
+  assert.equal(packageLock.packages[''].version, '1.0.34');
 });

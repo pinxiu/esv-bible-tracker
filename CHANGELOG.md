@@ -5,17 +5,38 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
-## [1.0.33] - Unreleased
+## [1.0.34] - Unreleased
+
+### 🚀 Release Summary
+- **Server-Side Secret Protection**: Moved ESV and feedback credentials out of
+  downloadable builds into a rate-limited Cloudflare Worker, leaving only the
+  public gateway URL in the app while retaining embedded offline passage
+  fallback.
+- **Cloud Feedback Storage**: Migrated feedback submissions and attachments
+  from the obsolete repository branch to private Cloudflare R2 storage. GitHub
+  access is now used only to create the corresponding feedback issue.
+- **Offline-Aware Controls**: Disabled network-only search, audio, commentary,
+  feedback, and update actions when offline, with immediate explanatory hover
+  messages.
+- **Feedback Layout & Capture Reliability**: Restored the compact bottom-right
+  floating feedback button without reserving a content row, disabled selected
+  area attachment until a valid crop exists, and expanded Electron regression
+  coverage for placement and capture behavior.
+- **Protected Release Automation**: Added an encrypted administrator credential
+  for the tested post-release version bump so GitHub Actions can update protected
+  `main` directly while human changes continue to require owner-approved pull
+  requests.
+
+
+## [1.0.33] - 2026-07-29
 
 ### 🚀 Release Summary
 - **Copyright & Personal-Use License**: Added clear in-app and repository
   copyright notices plus a proprietary source-available license permitting
   personal non-commercial use of official builds while prohibiting derivative,
   redistributed, and monetized versions without written permission.
-- **Server-Side Secret Protection**: Moved ESV and feedback credentials out of
-  downloadable builds into a rate-limited API gateway, leaving only its public
-  URL in the app while retaining embedded offline passage fallback. Network-only
-  controls now disable while offline and explain the requirement on hover.
+- **Repository Governance**: Added Phoebe Kwok as CODEOWNER so pull requests
+  require owner approval before protected changes can merge.
 
 
 ## [1.0.32] - 2026-07-27
