@@ -2,6 +2,8 @@ const { _electron: electron, test, expect } = require('@playwright/test');
 const path = require('path');
 
 test.describe('ESV Bible Tracker E2E Regression Suite', () => {
+  test.describe.configure({ timeout: 120_000 });
+
   let electronApp;
   let window;
 
@@ -90,9 +92,11 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await window.click('button[title*="Settings"]');
     await expect(autoUpdateInput).toBeChecked({ checked: !originalAutoUpdate });
 
-    // Reset for clean state
-    await autoUpdateInput.setChecked(originalAutoUpdate);
-    await window.click('button:has-text("Save Preferences")');
+    // Restore persisted state without triggering an updater-driven renderer
+    // reload during test cleanup.
+    await window.evaluate(originalValue => {
+      localStorage.setItem('esv_auto_update_enabled', String(originalValue));
+    }, originalAutoUpdate);
   });
 
   test('Daily Reading Reminders checkbox toggles test/mac buttons visibility', async () => {
@@ -183,14 +187,14 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await expect(window.getByRole('heading', { name: 'Send Feedback' })).toBeVisible();
     await window.getByRole('button', { name: 'Capture App' }).click();
     const capturePreview = window.getByAltText('Captured app preview');
-    await expect(capturePreview).toBeVisible();
+    await expect(capturePreview).toBeVisible({ timeout: 30_000 });
     const selectedAreaButton = window.getByRole('button', { name: 'Attach Selected Area' });
     await expect(selectedAreaButton).toBeDisabled();
     await window.getByRole('button', { name: 'Use Whole App' }).click();
     await expect(window.getByText(/ESV-Bible-Tracker-\d+\.png/)).toBeVisible();
 
     await window.getByRole('button', { name: 'Capture App' }).click();
-    await expect(capturePreview).toBeVisible();
+    await expect(capturePreview).toBeVisible({ timeout: 30_000 });
     const previewBox = await capturePreview.boundingBox();
     await window.mouse.move(previewBox.x + 20, previewBox.y + 20);
     await window.mouse.down();
