@@ -753,8 +753,9 @@ export default function ReadingPlanView({
                                     onOpenCommentary(passage);
                                   }}
                                   disabled={!isOnline}
-                                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                                  title={isOnline ? 'Commentaries' : INTERNET_REQUIRED_TITLE}
+                                  data-internet-tooltip={!isOnline ? INTERNET_REQUIRED_TITLE : undefined}
+                                  className="internet-tooltip p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                                  title={isOnline ? 'Commentaries' : undefined}
                                 >
                                   <ExternalLink className="w-3 h-3 text-sky-400" />
                                 </button>
@@ -1029,8 +1030,9 @@ export default function ReadingPlanView({
                                 onOpenCommentary(passage);
                               }}
                               disabled={!isOnline}
-                              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                              title={isOnline ? `Open commentaries for ${passage}` : INTERNET_REQUIRED_TITLE}
+                              data-internet-tooltip={!isOnline ? INTERNET_REQUIRED_TITLE : undefined}
+                              className="internet-tooltip p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-sky-300 border border-slate-700 text-[11px] transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                              title={isOnline ? `Open commentaries for ${passage}` : undefined}
                             >
                               <ExternalLink className="w-3 h-3 text-sky-400" />
                             </button>

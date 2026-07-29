@@ -302,8 +302,9 @@ export default function PassageViewer({
           <button
             type="submit"
             disabled={!isOnline && searchRequiresInternet}
-            title={!isOnline && searchRequiresInternet ? INTERNET_REQUIRED_TITLE : 'Search by Bible reference, abbreviated book name, whole book, or words contained in Scripture.'}
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 flex items-center space-x-1.5 shadow-lg shadow-amber-500/20 transition-all disabled:cursor-not-allowed disabled:opacity-40"
+            data-internet-tooltip={!isOnline && searchRequiresInternet ? INTERNET_REQUIRED_TITLE : undefined}
+            title={!isOnline && searchRequiresInternet ? undefined : 'Search by Bible reference, abbreviated book name, whole book, or words contained in Scripture.'}
+            className="internet-tooltip px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 flex items-center space-x-1.5 shadow-lg shadow-amber-500/20 transition-all disabled:cursor-not-allowed disabled:opacity-40"
           >
             <span>Search</span>
           </button>
@@ -361,8 +362,9 @@ export default function PassageViewer({
           <button
             onClick={() => onOpenCommentary(currentPassage)}
             disabled={!isOnline}
-            title={isOnline ? 'Open online commentaries' : INTERNET_REQUIRED_TITLE}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition-all hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
+            data-internet-tooltip={!isOnline ? INTERNET_REQUIRED_TITLE : undefined}
+            title={isOnline ? 'Open online commentaries' : undefined}
+            className="internet-tooltip flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition-all hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
             <span>Commentaries</span>
@@ -568,8 +570,9 @@ export default function PassageViewer({
                   if (!audioUrl && !audioLoading) handleLoadAudio();
                 }}
                 disabled={!passageData.esvAvailable || effectiveUseEmbeddedBank}
-                title={!isOnline ? INTERNET_REQUIRED_TITLE : (passageData.esvAvailable ? 'Listen while continuing to read the passage.' : 'Audio is unavailable for this fallback source.')}
-                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 hover:text-amber-300 hover:border-amber-500/40 disabled:opacity-35 disabled:cursor-not-allowed shrink-0"
+                data-internet-tooltip={!isOnline ? INTERNET_REQUIRED_TITLE : undefined}
+                title={!isOnline ? undefined : (passageData.esvAvailable ? 'Listen while continuing to read the passage.' : 'Audio is unavailable for this fallback source.')}
+                className="internet-tooltip p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 hover:text-amber-300 hover:border-amber-500/40 disabled:opacity-35 disabled:cursor-not-allowed shrink-0"
                 aria-label="Listen to passage"
               >
                 <Volume2 className="w-6 h-6" />

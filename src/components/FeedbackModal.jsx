@@ -218,7 +218,7 @@ export default function FeedbackModal({ isOpen, onClose, activePage, isOnline = 
           </div>
         )}
         {status && <p className={`break-words text-xs ${status.startsWith('Feedback uploaded') ? 'text-emerald-300' : 'text-rose-300'}`}>{status}</p>}
-        <button type="button" onClick={submit} disabled={!message.trim() || isSubmitting || !isOnline} title={!isOnline ? INTERNET_REQUIRED_TITLE : undefined} className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="button" onClick={submit} disabled={!message.trim() || isSubmitting || !isOnline} data-internet-tooltip={!isOnline ? INTERNET_REQUIRED_TITLE : undefined} className="internet-tooltip flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50">
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           {isSubmitting ? 'Uploading…' : 'Send Feedback'}
         </button>

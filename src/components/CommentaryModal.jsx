@@ -48,8 +48,9 @@ export default function CommentaryModal({ onClose, passageRef, isOnline = true }
               href={link.url}
               onClick={(e) => isOnline ? handleOpenExternal(e, link.url) : e.preventDefault()}
               aria-disabled={!isOnline}
-              title={isOnline ? `Open ${link.name}` : INTERNET_REQUIRED_TITLE}
-              className={`block p-4 rounded-xl bg-gradient-to-r ${link.color} border border-slate-800 hover:border-amber-500/40 hover:scale-[1.01] transition-all duration-200 group cursor-pointer ${!isOnline ? 'cursor-not-allowed opacity-40 hover:scale-100' : ''}`}
+              data-internet-tooltip={!isOnline ? INTERNET_REQUIRED_TITLE : undefined}
+              title={isOnline ? `Open ${link.name}` : undefined}
+              className={`internet-tooltip block p-4 rounded-xl bg-gradient-to-r ${link.color} border border-slate-800 hover:border-amber-500/40 hover:scale-[1.01] transition-all duration-200 group cursor-pointer ${!isOnline ? 'cursor-not-allowed opacity-40 hover:scale-100' : ''}`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-serif font-bold text-sm text-slate-100 group-hover:text-amber-300 transition-colors">

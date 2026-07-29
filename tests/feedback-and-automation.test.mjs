@@ -20,7 +20,7 @@ const gitignore = await readFile(new URL('../.gitignore', import.meta.url), 'utf
 
 test('feedback UI captures files and uploads retained repository copies', () => {
   assert.match(app, /<FeedbackModal/);
-  assert.match(app, /aria-label="Send feedback"/);
+  assert.match(app, /aria-label=\{isOnline \? 'Send feedback'/);
   assert.match(app, /group-hover:opacity-100/);
   assert.match(app, /fixed bottom-5 right-6/);
   assert.match(app, /fixed bottom-20 right-6/);

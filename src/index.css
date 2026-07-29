@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Immediate tooltip for disabled online-only controls. Native title tooltips
+   have a noticeable browser delay, so this appears on the first hover frame. */
+.internet-tooltip {
+  position: relative;
+}
+
+.internet-tooltip[data-internet-tooltip]::after {
+  content: attr(data-internet-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.5rem);
+  z-index: 300;
+  width: max-content;
+  max-width: 15rem;
+  transform: translateX(-50%) translateY(0.2rem);
+  border: 1px solid rgb(71 85 105);
+  border-radius: 0.5rem;
+  background: rgb(2 6 23 / 0.98);
+  padding: 0.35rem 0.55rem;
+  color: rgb(226 232 240);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  white-space: normal;
+  box-shadow: 0 10px 25px rgb(0 0 0 / 0.35);
+  transition: opacity 60ms ease-out, transform 60ms ease-out, visibility 0s;
+}
+
+.internet-tooltip[data-internet-tooltip]:hover::after,
+.internet-tooltip[data-internet-tooltip]:focus-visible::after,
+.internet-tooltip[data-internet-tooltip]:focus-within::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
 @layer base {
   body {
     background-color: #060911;

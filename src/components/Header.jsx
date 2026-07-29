@@ -190,8 +190,9 @@ export default function Header({
               <button
                 onClick={handleVersionClick}
                 disabled={!isOnline && updateActionNeedsInternet}
-                className="align-super text-[9px] font-sans font-semibold text-amber-400 hover:text-amber-300 transition-all hover:underline cursor-pointer ml-1 select-none whitespace-nowrap shrink-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
-                title={!isOnline && updateActionNeedsInternet ? INTERNET_REQUIRED_TITLE : 'Click to check or manage updates'}
+                data-internet-tooltip={!isOnline && updateActionNeedsInternet ? INTERNET_REQUIRED_TITLE : undefined}
+                className="internet-tooltip align-super text-[9px] font-sans font-semibold text-amber-400 hover:text-amber-300 transition-all hover:underline cursor-pointer ml-1 select-none whitespace-nowrap shrink-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+                title={!isOnline && updateActionNeedsInternet ? undefined : 'Click to check or manage updates'}
               >
                 <sup>{getVersionText()}</sup>
               </button>
