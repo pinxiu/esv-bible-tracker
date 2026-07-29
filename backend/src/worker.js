@@ -57,51 +57,40 @@ async function githubRequest(path, env, options = {}) {
   });
 }
 
-async function ensureFeedbackBranch(env, repository, branch) {
-  const branchResponse = await githubRequest(`/repos/${repository}/git/ref/heads/${branch}`, env);
-  if (branchResponse.ok) return;
-  if (branchResponse.status !== 404) throw new Error('Could not inspect feedback storage.');
-
-  const mainResponse = await githubRequest(`/repos/${repository}/git/ref/heads/main`, env);
-  if (!mainResponse.ok) throw new Error('Could not read the main branch.');
-  const main = await mainResponse.json();
-  const createResponse = await githubRequest(`/repos/${repository}/git/refs`, env, {
-    method: 'POST',
-    body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: main.object.sha })
-  });
-  if (!createResponse.ok && createResponse.status !== 422) {
-    throw new Error('Could not create feedback storage.');
-  }
-}
-
-function utf8ToBase64(value) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = '';
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-  return btoa(binary);
-}
-
-async function uploadGithubFile(env, repository, branch, path, content, message, contentIsBase64 = false) {
-  const response = await githubRequest(`/repos/${repository}/contents/${path}`, env, {
-    method: 'PUT',
-    body: JSON.stringify({
-      message,
-      content: contentIsBase64 ? content : utf8ToBase64(content),
-      branch
-    })
-  });
-  if (!response.ok) throw new Error(`Could not save feedback file (${response.status}).`);
-}
-
 function sanitizeFilename(value, fallback) {
   const result = String(value || fallback).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100);
   return result || fallback;
 }
 
+function base64ToBytes(value) {
+  const binary = atob(value);
+  return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+
+function feedbackFileUrl(requestUrl, objectKey) {
+  const url = new URL(requestUrl);
+  return `${url.origin}/v1/feedback/files/${objectKey}`;
+}
+
+async function readFeedbackFile(url, env) {
+  if (!env.FEEDBACK_BUCKET) return json({ error: 'Feedback storage is not configured.' }, 503);
+  const prefix = '/v1/feedback/files/';
+  const key = decodeURIComponent(url.pathname.slice(prefix.length));
+  if (!key || key.includes('..')) return json({ error: 'Invalid feedback file.' }, 400);
+  const object = await env.FEEDBACK_BUCKET.get(key);
+  if (!object) return json({ error: 'Feedback file not found.' }, 404);
+
+  const headers = new Headers(corsHeaders);
+  object.writeHttpMetadata(headers);
+  headers.set('ETag', object.httpEtag);
+  headers.set('Cache-Control', 'private, no-store');
+  return new Response(object.body, { headers });
+}
+
 async function submitFeedback(request, env) {
-  if (!env.GITHUB_FEEDBACK_TOKEN) return json({ error: 'Feedback service is not configured.' }, 503);
+  if (!env.GITHUB_FEEDBACK_TOKEN || !env.FEEDBACK_BUCKET) {
+    return json({ error: 'Feedback service is not configured.' }, 503);
+  }
   const contentLength = Number(request.headers.get('Content-Length') || 0);
   if (contentLength > MAX_FEEDBACK_BYTES) return json({ error: 'Feedback upload is too large.' }, 413);
 
@@ -116,43 +105,34 @@ async function submitFeedback(request, env) {
   }
 
   const repository = env.GITHUB_REPOSITORY || 'pinxiu/esv-bible-tracker';
-  const branch = env.FEEDBACK_BRANCH || 'app-feedback';
-  await ensureFeedbackBranch(env, repository, branch);
-
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const submissionId = crypto.randomUUID();
   let finalBody = body;
   for (let index = 0; index < attachments.length; index += 1) {
     const attachment = attachments[index];
     const match = String(attachment?.data || '').match(/^data:([^;]+);base64,([A-Za-z0-9+/=]+)$/);
     if (!match) continue;
     const name = sanitizeFilename(attachment.name, `attachment-${index + 1}`);
-    const repoPath = `feedback/attachments/${stamp}-${index + 1}-${name}`;
-    await uploadGithubFile(
-      env,
-      repository,
-      branch,
-      repoPath,
-      match[2],
-      'Upload ESV Bible Tracker feedback attachment [skip ci]',
-      true
-    );
-    const rawUrl = `https://raw.githubusercontent.com/${repository}/${branch}/${repoPath}`;
+    const objectKey = `attachments/${submissionId}/${index + 1}-${name}`;
+    await env.FEEDBACK_BUCKET.put(objectKey, base64ToBytes(match[2]), {
+      httpMetadata: {
+        contentType: match[1],
+        contentDisposition: attachment.isImage ? 'inline' : `attachment; filename="${name}"`
+      },
+      customMetadata: { originalName: name, submissionId }
+    });
+    const storedUrl = feedbackFileUrl(request.url, objectKey);
     finalBody += attachment.isImage
-      ? `\n\n![${name}](${rawUrl})`
-      : `\n\n[${name}](${rawUrl})`;
+      ? `\n\n![${name}](${storedUrl})`
+      : `\n\n[${name}](${storedUrl})`;
   }
 
-  const submissionPath = `feedback/submissions/${stamp}.md`;
-  await uploadGithubFile(
-    env,
-    repository,
-    branch,
-    submissionPath,
-    `# ${title}\n\n${finalBody}\n`,
-    'Save ESV Bible Tracker feedback submission [skip ci]'
-  );
+  const submissionPath = `submissions/${submissionId}.md`;
+  await env.FEEDBACK_BUCKET.put(submissionPath, `# ${title}\n\n${finalBody}\n`, {
+    httpMetadata: { contentType: 'text/markdown; charset=utf-8' },
+    customMetadata: { submissionId, title }
+  });
 
-  const issueBody = `${finalBody}\n\n---\n[Repository feedback copy](https://github.com/${repository}/blob/${branch}/${submissionPath})`;
+  const issueBody = `${finalBody}\n\n---\n[Stored feedback submission](${feedbackFileUrl(request.url, submissionPath)})`;
   const issueResponse = await githubRequest(`/repos/${repository}/issues`, env, {
     method: 'POST',
     body: JSON.stringify({ title, body: issueBody })
@@ -171,7 +151,16 @@ export default {
       if (!(await rateLimit(request, env, route))) return json({ error: 'Too many requests. Please try again shortly.' }, 429);
 
       if (request.method === 'GET' && url.pathname === '/health') {
-        return json({ ok: true, esv: Boolean(env.ESV_API_TOKEN), feedback: Boolean(env.GITHUB_FEEDBACK_TOKEN) });
+        return json({
+          ok: true,
+          esv: Boolean(env.ESV_API_TOKEN),
+          feedback: Boolean(env.GITHUB_FEEDBACK_TOKEN && env.FEEDBACK_BUCKET),
+          feedbackStorage: env.FEEDBACK_BUCKET ? 'r2' : 'unavailable'
+        });
+      }
+
+      if (request.method === 'GET' && url.pathname.startsWith('/v1/feedback/files/')) {
+        return readFeedbackFile(url, env);
       }
 
       if (request.method === 'GET' && url.pathname === '/v1/esv/search') {

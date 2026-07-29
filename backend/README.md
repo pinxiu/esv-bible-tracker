@@ -14,8 +14,11 @@ Configure these as encrypted Worker secrets:
 - `GITHUB_FEEDBACK_TOKEN`
 
 The GitHub token should be fine-grained, limited to
-`pinxiu/esv-bible-tracker`, with only **Contents: Read and write** and
-**Issues: Read and write**. Do not reuse a personal full-repository token.
+`pinxiu/esv-bible-tracker`, with only **Issues: Read and write**. Feedback
+submissions and attachments live in the private
+`esv-bible-tracker-feedback` Cloudflare R2 bucket; the Worker exposes their
+randomized links to the corresponding issue. No GitHub Contents permission is
+used.
 
 ```bash
 cd backend

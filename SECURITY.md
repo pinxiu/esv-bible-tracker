@@ -6,7 +6,9 @@ application. Vite variables are compiled into client JavaScript and are public.
 
 The desktop app contains only `VITE_APP_API_BASE_URL`, which is a public
 configuration value. ESV and GitHub feedback credentials are encrypted secrets
-on the server-side gateway in [`backend/`](backend/).
+on the server-side gateway in [`backend/`](backend/). Feedback files are stored
+in a private Cloudflare R2 bucket, while the GitHub credential has only the
+Issues permission needed to create the corresponding issue.
 
 Release-only credentials—GitHub Actions tokens, the macOS signing `.p12` and its
 password, and SMTP credentials—remain GitHub Actions secrets and are used only

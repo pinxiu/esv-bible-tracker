@@ -18,7 +18,7 @@ const savedVersesView = await readFile(new URL('../src/components/SavedVersesVie
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const gitignore = await readFile(new URL('../.gitignore', import.meta.url), 'utf8');
 
-test('feedback UI captures files and uploads retained repository copies', () => {
+test('feedback UI captures files and stores them through the R2-backed gateway', () => {
   assert.match(app, /<FeedbackModal/);
   assert.match(app, /aria-label=\{isOnline \? 'Send feedback'/);
   assert.match(app, /group-hover:opacity-100/);
@@ -37,11 +37,12 @@ test('feedback UI captures files and uploads retained repository copies', () => 
   assert.match(appApi, /\/v1\/feedback/);
   assert.doesNotMatch(preload, /submitFeedback|submit-feedback/);
   assert.doesNotMatch(main, /GITHUB_TOKEN|GH_TOKEN|runGh|submit-feedback/);
-  assert.match(worker, /feedback\/attachments/);
-  assert.match(worker, /feedback\/submissions/);
+  assert.match(worker, /FEEDBACK_BUCKET\.put/);
+  assert.match(worker, /attachments\/\$\{submissionId\}/);
+  assert.match(worker, /submissions\/\$\{submissionId\}\.md/);
   assert.match(worker, /GITHUB_FEEDBACK_TOKEN/);
-  assert.match(worker, /Upload ESV Bible Tracker feedback attachment \[skip ci\]/);
-  assert.match(worker, /Save ESV Bible Tracker feedback submission \[skip ci\]/);
+  assert.match(worker, /Stored feedback submission/);
+  assert.doesNotMatch(worker, /\/contents\/|git\/ref|FEEDBACK_BRANCH|raw\.githubusercontent/);
   assert.match(gitignore, /\/feedback\//);
 });
 

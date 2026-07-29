@@ -4,7 +4,10 @@ compatibility_date = "2026-07-29"
 
 [vars]
 GITHUB_REPOSITORY = "pinxiu/esv-bible-tracker"
-FEEDBACK_BRANCH = "app-feedback"
+
+[[r2_buckets]]
+binding = "FEEDBACK_BUCKET"
+bucket_name = "esv-bible-tracker-feedback"
 
 [[ratelimits]]
 name = "API_RATE_LIMITER"

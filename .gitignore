@@ -11,6 +11,7 @@ node_modules/
 dist/
 dist-electron/
 out/
+backend/.wrangler/
 
 # macOS / OS files
 .DS_Store
@@ -20,7 +21,7 @@ out/
 test-results/
 playwright-report/
 
-# User-submitted feedback lives only on the dedicated app-feedback branch.
+# User-submitted feedback must never be stored in the working tree.
 /feedback/
 /screenshots/
 /attachments/
