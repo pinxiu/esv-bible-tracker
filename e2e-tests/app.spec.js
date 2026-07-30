@@ -167,6 +167,7 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await window.getByRole('button', { name: 'Parse & Replace Schedule' }).click();
     await expect(window.getByRole('button', { name: /All \(1 Weeks\)/ })).toBeVisible();
     expect(await window.evaluate(() => localStorage.getItem('esv_custom_schedule_active'))).toBe('true');
+    await expect(window.getByRole('heading', { name: 'Customize Reading Schedule' })).not.toBeVisible();
 
     await window.getByRole('button', { name: 'Customize Schedule' }).click();
     const resetButton = window.getByRole('button', { name: 'Reset to Default 52-Week Schedule' });

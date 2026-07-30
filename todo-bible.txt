@@ -1,0 +1,11 @@
+in gateway mode of esv reader, i saw text such as "Isaac' s" -- there shouldn't be space between Isaac' and s . fix all places like that
+
+on update, when clicking restart and update, nothing happened and saw: ERROR
+19:07:09
+Auto-updater reported check error
+Code signature at URL file:///Users/atkwok/Library/Caches/com.bibleplan.esvtracker.ShipIt/update.JIlRqjg/ESV%20Bible%20Tracker.app/ did not pass validation: code failed to satisfy specified code requirement(s)
+
+make the clickable [a] etc in esv reader smaller font size
+
+Feature request: option to remove verse number; no heading  reader node; no footer (should be one dropdown menu to allow checking how many of these options and so that the collapsed menu doens't take up too much space)
+memory: First letter typewriter mode i.e. can toggle on this option such that typing the first character correctly would automatically show the whole word; but if it's wrong, then show the correct word but in red (add a little explaination about this mode). can toggle another mode which is not allow backtrack / edit and if not 100% then just no pass this stage. 
