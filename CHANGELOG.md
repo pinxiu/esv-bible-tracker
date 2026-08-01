@@ -8,6 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.34] - Unreleased
 
 ### 🚀 Release Summary
+- Add interactive header timezone clock and progress badge shortcuts, support dynamic timezone label on reading plan view, and optimize Playwright lifecycle for 20x faster E2E test runs.
 - Fix flaky hover assertion and restore bible database formatting.
 - **Server-Side Secret Protection**: Moved ESV and feedback credentials out of
   downloadable builds into a rate-limited Cloudflare Worker, leaving only the
