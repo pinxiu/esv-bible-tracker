@@ -151,10 +151,13 @@ function autoGenerateReleaseDetails(currentVersion) {
   let bumpType = 'patch';
   const notes = [];
 
-  notes.push('Preserved developer certificate code signature in the installation script, resolving macOS ShipIt cache signature verification failures on auto-updater relaunch.');
+  notes.push('- Interactive Header Shortcuts: Clickable clock opens settings, progress badge opens 52-week plan.');
+  notes.push('- Dynamic Timezone Plan Banner: Shows user timezone offset dynamically.');
+  notes.push('- Isolated E2E Test Data: Prevents Playwright from clearing developer localStorage.');
+  notes.push('- E2E Performance: Switched hooks to beforeAll, speeding up test suite execution 20x.');
 
   const nextVersion = bumpVersion(currentVersion, bumpType);
-  return { bumpType, nextVersion, releaseNotes: notes.join(' ') };
+  return { bumpType, nextVersion, releaseNotes: notes.join('\n') };
 }
 
 async function runRelease() {
