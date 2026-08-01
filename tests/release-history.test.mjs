@@ -44,8 +44,13 @@ test('recent release history matches shipped packages and rolls forward to 1.0.3
   assert.match(releaseBlock('1.0.34'), /Cloud Feedback Storage/);
   assert.match(releaseBlock('1.0.34'), /Protected Release Automation/);
 
-  assert.match(releaseBlock('1.0.35'), /Unreleased/);
-  assert.equal(packageJson.version, '1.0.35');
-  assert.equal(packageLock.version, '1.0.35');
-  assert.equal(packageLock.packages[''].version, '1.0.35');
+  assert.match(releaseBlock('1.0.35'), /2026-08-01/);
+  assert.match(releaseBlock('1.0.35'), /Interactive Header Shortcuts/);
+  assert.match(releaseBlock('1.0.35'), /Dynamic Timezone Plan Banner/);
+  assert.match(releaseBlock('1.0.35'), /Isolated E2E Test Data Sandbox/);
+
+  assert.match(releaseBlock('1.0.36'), /Unreleased/);
+  assert.equal(packageJson.version, '1.0.36');
+  assert.equal(packageLock.version, '1.0.36');
+  assert.equal(packageLock.packages[''].version, '1.0.36');
 });
