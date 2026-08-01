@@ -7,7 +7,7 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
   let electronApp;
   let window;
 
-  test.beforeEach(async () => {
+  test.beforeAll(async () => {
     // Launch Electron app in production mode pointing to the local dir
     electronApp = await electron.launch({
       args: [path.join(__dirname, '../')],
@@ -20,22 +20,28 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     // Get the first window
     window = await electronApp.firstWindow();
     await window.waitForLoadState('domcontentloaded');
-
-    // Seed localStorage and reload window to completely bypass onboarding and permission modals
-    await window.evaluate(() => {
-      localStorage.setItem('esv_onboarding_dismissed', 'true');
-      localStorage.setItem('blockNotificationPrompt', 'true');
-      localStorage.removeItem('esv_custom_schedule_active');
-      localStorage.removeItem('esv_bible_plan');
-    });
-    await window.reload();
-    await window.waitForLoadState('domcontentloaded');
   });
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     if (electronApp) {
       await electronApp.close();
     }
+  });
+
+  test.beforeEach(async () => {
+    // Ensure the browser is online at the start of each test
+    try {
+      await window.context().setOffline(false);
+    } catch (e) {}
+
+    // Seed localStorage and reload window to completely bypass onboarding and permission modals
+    await window.evaluate(() => {
+      localStorage.clear();
+      localStorage.setItem('esv_onboarding_dismissed', 'true');
+      localStorage.setItem('blockNotificationPrompt', 'true');
+    });
+    await window.reload();
+    await window.waitForLoadState('domcontentloaded');
   });
 
   test('App launches and displays the default view correctly', async () => {
@@ -43,7 +49,7 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     expect(title).toBe('ESV Bible Reading Plan & Memory Tracker');
     
     // Verify default view is the Today-First Reading Plan (subheading "Today is ...")
-    await expect(window.locator('text=Beijing Time Zone')).toBeVisible();
+    await expect(window.locator('text=Time Zone')).toBeVisible();
   });
 
   test('Tab navigation functions smoothly', async () => {
@@ -75,7 +81,7 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await window.click('button:has-text("Cancel")');
     
     // Verify it closed settings and returned to default tab (verified by Today subheader)
-    await expect(window.locator('text=Beijing Time Zone')).toBeVisible();
+    await expect(window.locator('text=Time Zone')).toBeVisible();
 
     // Re-open settings and verify the change was NOT saved
     await window.click('button[title*="Settings"]');
@@ -86,7 +92,7 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await window.click('button:has-text("Save Preferences")');
     
     // Verify it closed settings and returned to default tab
-    await expect(window.locator('text=Beijing Time Zone')).toBeVisible();
+    await expect(window.locator('text=Time Zone')).toBeVisible();
 
     // Re-open settings and verify it WAS saved
     await window.click('button[title*="Settings"]');
@@ -245,5 +251,36 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     await expect(window.getByRole('heading', { name: 'Send Feedback' })).not.toBeVisible();
     await window.getByRole('button', { name: 'Send feedback' }).click();
     await expect(window.getByText(/Feedback uploaded successfully/)).not.toBeVisible();
+  });
+
+  test('Clicking timezone clock opens settings, clicking progress badge opens plan 52-week view', async () => {
+    // Dismiss tutorial if visible
+    const tutorialClose = window.getByRole('button', { name: 'Close Tutorial' });
+    if (await tutorialClose.isVisible()) {
+      await tutorialClose.click();
+    }
+
+    // 1. Timezone clock click opens settings
+    const clockBox = window.locator('.header-timezone-box');
+    await clockBox.click();
+    await expect(window.getByText('Reading, Timezone & Updates')).toBeVisible();
+
+    // Close settings (cancel)
+    await window.getByRole('button', { name: 'Cancel' }).click();
+    await expect(window.getByText('Reading, Timezone & Updates')).not.toBeVisible();
+
+    // 2. Progress badge click opens plan 52-week view
+    // Switch to another tab first
+    await window.getByRole('button', { name: 'Reader' }).click();
+    await expect(window.getByRole('heading', { name: 'Scripture Reading Plan' })).not.toBeVisible();
+
+    // Click progress badge (Plan: X% box)
+    const progressBadge = window.locator('div[title="Open 52-week view of plan"]');
+    await progressBadge.click();
+
+    // Assert that we are back on the Plan tab and the "All" filter (52-week view) is selected
+    await expect(window.getByRole('heading', { name: 'Scripture Reading Plan' })).toBeVisible();
+    const allFilterButton = window.getByRole('button', { name: /All \(\d+ Weeks\)/ });
+    await expect(allFilterButton).toHaveClass(/bg-amber-500/);
   });
 });

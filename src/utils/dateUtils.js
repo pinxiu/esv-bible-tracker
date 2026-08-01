@@ -98,3 +98,30 @@ export function formatDateDisplay(dateStr) {
   if (isNaN(m) || m < 1 || m > 12) return dateStr;
   return `${months[m - 1]} ${d}`;
 }
+
+export function getActiveTimezoneDisplay() {
+  const tz = getUserTimezone();
+  let offset = '';
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      timeZoneName: 'longOffset'
+    });
+    const parts = formatter.formatToParts(new Date());
+    const part = parts.find(p => p.type === 'timeZoneName');
+    if (part) {
+      offset = part.value; // e.g. "GMT+8" or "GMT-4"
+      offset = offset.replace('GMT', 'UTC');
+    }
+  } catch (e) {
+    offset = 'UTC+8';
+  }
+  
+  let name = 'Beijing';
+  try {
+    const parts = tz.split('/');
+    name = parts[parts.length - 1].replace(/_/g, ' ');
+  } catch (e) {}
+
+  return `${name} Time Zone (${offset || 'UTC+8'})`;
+}

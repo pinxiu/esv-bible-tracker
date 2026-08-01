@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Circle, BookOpen, ExternalLink, Calendar, Filter, Sparkles, Check, AlertCircle, BookCheck, Trophy, BrainCircuit, Play, ArrowRight, Upload, Download, ClipboardPaste, RefreshCw, X } from 'lucide-react';
 import readXlsxFile from 'read-excel-file/browser';
-import { isDatePast, isDateToday, getTodayBeijingMonthDay, getTodayBeijingMD, getTodayBeijingDate, getUserTimezone } from '../utils/dateUtils';
+import { isDatePast, isDateToday, getTodayBeijingMonthDay, getTodayBeijingMD, getTodayBeijingDate, getUserTimezone, getActiveTimezoneDisplay } from '../utils/dateUtils';
 import { parseDelimitedSchedule, parseScheduleRows } from '../utils/readingSchedule';
 import todayVerseBg from '../assets/today_verse_bg.jpg';
 import { INTERNET_REQUIRED_TITLE } from '../hooks/useOnlineStatus';
@@ -279,9 +279,13 @@ export default function ReadingPlanView({
   setActiveTab,
   onReplacePlan,
   isCustomSchedule = false,
-  onResetDefaultPlan
+  onResetDefaultPlan,
+  filter: filterProp,
+  onFilterChange
 }) {
-  const [filter, setFilter] = useState('today'); // 'today', 'all', 'missed', 'completed'
+  const [localFilter, setLocalFilter] = useState('today'); // 'today', 'all', 'missed', 'completed'
+  const filter = filterProp !== undefined ? filterProp : localFilter;
+  const setFilter = onFilterChange !== undefined ? onFilterChange : setLocalFilter;
   const [searchQuery, setSearchQuery] = useState('');
   const [showTrophyModal, setShowTrophyModal] = useState(false);
   const [showScheduleImport, setShowScheduleImport] = useState(false);
@@ -476,7 +480,7 @@ export default function ReadingPlanView({
         <div>
           <div className="flex items-center space-x-2 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1">
             <Calendar className="w-4 h-4" />
-            <span>Beijing Time Zone (UTC+8) • Today is {todayMonthDayStr} ({todayBeijingMD})</span>
+            <span>{getActiveTimezoneDisplay()} • Today is {todayMonthDayStr} ({todayBeijingMD})</span>
           </div>
           <h2 className="text-2xl font-serif font-bold text-slate-100">Scripture Reading Plan</h2>
           <p className="text-sm text-slate-400 font-sans mt-1">

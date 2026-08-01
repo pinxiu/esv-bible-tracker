@@ -12,6 +12,7 @@ export default function Header({
   completedDays = 0,
   totalDays = 0,
   onOpenSettings,
+  onOpenPlanAll,
   theme = 'dark',
   onToggleTheme,
   isOnline = true
@@ -227,7 +228,11 @@ export default function Header({
       {/* Right: Active Timezone Clock & Settings */}
       <div className="flex items-center space-x-3 titlebar-no-drag">
         {/* Active Timezone Clock */}
-        <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 header-timezone-box">
+        <div
+          onClick={onOpenSettings}
+          className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 header-timezone-box cursor-pointer hover:bg-slate-800/80 transition-all select-none"
+          title="Configure active timezone in Settings"
+        >
           <Clock className="w-3.5 h-3.5 text-amber-400" />
           <span className="font-mono text-amber-200 font-semibold hide-under-1125">{activeTimeWithSec || 'Time'}</span>
           <span className="font-mono text-amber-200 font-semibold show-under-1125">{activeTimeNoSec || 'Time'}</span>
@@ -237,7 +242,11 @@ export default function Header({
         </div>
 
         {/* Progress Badge */}
-        <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+        <div
+          onClick={onOpenPlanAll}
+          className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs cursor-pointer hover:bg-slate-800/80 transition-all select-none"
+          title="Open 52-week view of plan"
+        >
           <span className="text-slate-400">Plan:</span>
           <span className="font-bold text-amber-400">{progressPercent}%</span>
         </div>

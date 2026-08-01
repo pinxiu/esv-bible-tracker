@@ -25,6 +25,7 @@ export default function App() {
   const isOnline = useOnlineStatus();
   const [activeTab, setActiveTabState] = useState('plan');
   const [previousTab, setPreviousTab] = useState('plan');
+  const [planFilter, setPlanFilter] = useState('today');
 
   const setActiveTab = (tab) => {
     if (activeTab !== 'settings') {
@@ -525,6 +526,10 @@ export default function App() {
         completedDays={completedDays}
         totalDays={totalDays}
         onOpenSettings={() => setActiveTab('settings')}
+        onOpenPlanAll={() => {
+          setActiveTab('plan');
+          setPlanFilter('all');
+        }}
         isOnline={isOnline}
         theme={theme}
         onToggleTheme={handleToggleTheme}
@@ -545,6 +550,8 @@ export default function App() {
             onCatchUpOldest={handleCatchUpOldest}
             onCatchUpToday={handleCatchUpToday}
             setActiveTab={setActiveTab}
+            filter={planFilter}
+            onFilterChange={setPlanFilter}
             onReplacePlan={(nextPlan) => {
               setPlanData(nextPlan);
               setCurrentPassage(getNextUnreadPassage(nextPlan));
