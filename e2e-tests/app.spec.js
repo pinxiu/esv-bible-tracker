@@ -180,7 +180,7 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
 
   test('Feedback stays fixed and shows its immediate offline hint', async () => {
     await window.setViewportSize({ width: 1200, height: 800 });
-    await window.evaluate(() => window.dispatchEvent(new Event('offline')));
+    await window.context().setOffline(true);
 
     const feedbackButton = window.getByRole('button', { name: /Send feedback.*Requires an internet connection/ });
     await expect(feedbackButton).toBeDisabled();

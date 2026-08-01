@@ -32,10 +32,7 @@ export function cleanScriptureText(text) {
   // Fix missing spaces after punctuation
   clean = fixPunctuationSpacing(clean);
 
-  // Strip standalone leading numbers (e.g. chapter numbers "4 " or verse numbers "1 ")
-  clean = clean.replace(/^\d+\s+/, "");
-  // Strip standalone numbers inside text
-  clean = clean.replace(/\s+\d+\s+/g, " ");
+
 
   // Collapse multiple spaces
   clean = clean.replace(/\s+/g, " ").trim();
