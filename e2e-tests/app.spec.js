@@ -191,6 +191,11 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
     expect(feedbackButtonBox.y).toBeGreaterThan(700);
 
     await feedbackHoverTarget.hover();
+
+    await expect.poll(() => feedbackHoverTarget.evaluate(
+      element => getComputedStyle(element, '::after').opacity
+    )).toBe('1');
+
     const hintStyle = await feedbackHoverTarget.evaluate(element => {
       const style = getComputedStyle(element, '::after');
       return {
@@ -203,14 +208,10 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
       };
     });
     expect(hintStyle.content).toContain('Requires an internet connection');
-    expect(Number(hintStyle.opacity)).toBeGreaterThan(0);
     expect(Number.parseFloat(hintStyle.left)).toBeLessThan(0);
     expect(hintStyle.right).toBe('0px');
     expect(hintStyle.visibility).toBe('visible');
     expect(hintStyle.transitionDuration).toContain('0.06s');
-    await expect.poll(() => feedbackHoverTarget.evaluate(
-      element => getComputedStyle(element, '::after').opacity
-    )).toBe('1');
   });
 
   test('Feedback modal captures the whole app or a selected section and reopens cleanly', async () => {
