@@ -25,3 +25,6 @@ playwright-report/
 /feedback/
 /screenshots/
 /attachments/
+
+# Isolated testing directories
+e2e-tests/test-user-data/

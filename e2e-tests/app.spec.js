@@ -10,7 +10,10 @@ test.describe('ESV Bible Tracker E2E Regression Suite', () => {
   test.beforeAll(async () => {
     // Launch Electron app in production mode pointing to the local dir
     electronApp = await electron.launch({
-      args: [path.join(__dirname, '../')],
+      args: [
+        path.join(__dirname, '../'),
+        `--user-data-dir=${path.join(__dirname, 'test-user-data')}`
+      ],
       env: {
         ...process.env,
         NODE_ENV: 'production'
