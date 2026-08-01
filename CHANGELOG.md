@@ -5,7 +5,13 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
-## [1.0.35] - Unreleased
+## [1.0.36] - Unreleased
+
+### 🚀 Release Summary
+- Upcoming features and refinements under development.
+
+
+## [1.0.35] - 2026-08-01
 
 ### 🚀 Release Summary
 - Upcoming features and refinements under development.
