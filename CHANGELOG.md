@@ -8,6 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.34] - Unreleased
 
 ### 🚀 Release Summary
+- Fix flaky hover assertion and restore bible database formatting.
 - **Server-Side Secret Protection**: Moved ESV and feedback credentials out of
   downloadable builds into a rate-limited Cloudflare Worker, leaving only the
   public gateway URL in the app while retaining embedded offline passage
