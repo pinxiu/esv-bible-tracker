@@ -5,7 +5,13 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 
 ---
 
-## [1.0.34] - Unreleased
+## [1.0.35] - Unreleased
+
+### 🚀 Release Summary
+- Upcoming features and refinements under development.
+
+
+## [1.0.34] - 2026-08-01
 
 ### 🚀 Release Summary
 - Add interactive header timezone clock and progress badge shortcuts, support dynamic timezone label on reading plan view, and optimize Playwright lifecycle for 20x faster E2E test runs.

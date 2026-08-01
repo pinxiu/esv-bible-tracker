@@ -143,11 +143,20 @@ console.log(`✅ Appended bullet point: "${newBullet}" to CHANGELOG.md`);
 if (process.env.GITHUB_ACTIONS === 'true') {
   console.log('🤖 CI Environment: Pushing CHANGELOG update to GitHub...');
   try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+    const repoOwner = pkg.build?.publish?.[0]?.owner || 'pinxiu';
+    const repoName = pkg.build?.publish?.[0]?.repo || 'esv-bible-tracker';
+    const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || process.env.RELEASE_GITHUB_TOKEN;
+
     execSync('git config --global user.name "github-actions[bot]"', { stdio: 'inherit' });
     execSync('git config --global user.email "github-actions[bot]@users.noreply.github.com"', { stdio: 'inherit' });
     execSync('git add CHANGELOG.md', { stdio: 'inherit' });
     execSync('git commit -m "docs: update CHANGELOG.md [skip ci]"', { stdio: 'inherit' });
-    execSync('git push origin HEAD:main', { stdio: 'inherit' });
+
+    const remoteUrl = token
+      ? `https://x-access-token:${token}@github.com/${repoOwner}/${repoName}.git`
+      : 'origin';
+    execSync(`git push "${remoteUrl}" HEAD:main`, { stdio: 'inherit' });
     console.log('✅ CHANGELOG update pushed successfully to origin/main!');
   } catch (e) {
     console.error('⚠️ Failed to push CHANGELOG update to origin/main:', e.message);

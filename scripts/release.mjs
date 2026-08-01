@@ -342,7 +342,10 @@ async function runRelease() {
     const hasPostReleaseChanges = execSync('git diff --cached --name-only', { encoding: 'utf8' }).trim();
     if (hasPostReleaseChanges) {
       execSync(`git commit -m "chore: bump version to v${nextVersion} [skip ci]"`, { stdio: 'inherit' });
-      execSync('git push origin HEAD:main', { stdio: 'inherit' });
+      const remoteUrl = token
+        ? `https://x-access-token:${token}@github.com/${repoOwner}/${repoName}.git`
+        : 'origin';
+      execSync(`git push "${remoteUrl}" HEAD:main`, { stdio: 'inherit' });
       console.log('✅ Version bump pushed successfully to origin/main!');
     } else {
       console.log('ℹ️ Post-release version and changelog were already current; nothing to push.');

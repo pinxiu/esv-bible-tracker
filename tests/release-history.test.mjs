@@ -39,11 +39,13 @@ test('recent release history matches shipped packages and rolls forward to 1.0.3
   assert.match(releaseBlock('1.0.33'), /Repository Governance/);
   assert.doesNotMatch(releaseBlock('1.0.33'), /Server-Side Secret Protection|Cloud Feedback Storage/);
 
-  assert.match(releaseBlock('1.0.34'), /Unreleased/);
+  assert.match(releaseBlock('1.0.34'), /2026-08-01/);
   assert.match(releaseBlock('1.0.34'), /Server-Side Secret Protection/);
   assert.match(releaseBlock('1.0.34'), /Cloud Feedback Storage/);
   assert.match(releaseBlock('1.0.34'), /Protected Release Automation/);
-  assert.equal(packageJson.version, '1.0.34');
-  assert.equal(packageLock.version, '1.0.34');
-  assert.equal(packageLock.packages[''].version, '1.0.34');
+
+  assert.match(releaseBlock('1.0.35'), /Unreleased/);
+  assert.equal(packageJson.version, '1.0.35');
+  assert.equal(packageLock.version, '1.0.35');
+  assert.equal(packageLock.packages[''].version, '1.0.35');
 });

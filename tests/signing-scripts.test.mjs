@@ -76,7 +76,7 @@ test('manual releases bypass the daily gate and preserve changelog rollover', ()
   assert.match(releaseScript, /Locked release date in CHANGELOG\.md/);
   assert.match(releaseScript, /nextVersionHeader/);
   assert.match(releaseScript, /already contains v\$\{nextVersion\}; skipping duplicate placeholder/);
-  assert.match(releaseScript, /git push origin HEAD:main/);
+  assert.match(releaseScript, /git push "\$\{remoteUrl\}" HEAD:main/);
 });
 
 test('release workflow uses the encrypted administrator token for protected main updates', () => {
