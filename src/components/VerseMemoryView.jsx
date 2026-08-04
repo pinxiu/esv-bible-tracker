@@ -1148,59 +1148,97 @@ export default function VerseMemoryView({ initialVerse, savedVerses = [], onUpda
             </p>
 
             <div className="pt-2 flex flex-col space-y-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const nextTarget = findNextVerse(savedVerses, selectedVerse?.id);
-                  resetPracticeState();
-                  if (nextTarget && nextTarget.id !== selectedVerse?.id) {
-                    setSelectedVerseId(nextTarget.id);
-                    setJumpQuery(nextTarget.reference);
-                  }
-                }}
-                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-1.5"
-              >
-                <span>Review Next Verse</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
               {completedStageNumber < 4 ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStage(completedStageNumber + 1);
-                    resetPracticeState();
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-1.5"
-                >
-                  <span>Advance to Stage {completedStageNumber + 1}</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextTarget = findNextUnmasteredVerse(savedVerses, selectedVerse?.id);
-                    resetPracticeState();
-                    if (nextTarget && nextTarget.id !== selectedVerse?.id) {
-                      setSelectedVerseId(nextTarget.id);
-                      setJumpQuery(nextTarget.reference);
-                    }
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all border border-slate-700 flex items-center justify-center space-x-1.5"
-                >
-                  <span>Jump to Next Un-Mastered Verse</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              )}
+                <>
+                  {/* 1. Next Stage */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStage(completedStageNumber + 1);
+                      resetPracticeState();
+                      setShowStageCompletionModal(false);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-1.5"
+                  >
+                    <span>Advance to Stage {completedStageNumber + 1}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => setShowStageCompletionModal(false)}
-                className="w-full py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all"
-              >
-                {completedStageNumber === 4 ? "Stay on Current Verse" : `Stay on Stage ${completedStageNumber}`}
-              </button>
+                  {/* 2. Stay in Same Place */}
+                  <button
+                    type="button"
+                    onClick={() => setShowStageCompletionModal(false)}
+                    className="w-full py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all"
+                  >
+                    Stay on Stage {completedStageNumber}
+                  </button>
+
+                  {/* 3. Next Verse */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextTarget = findNextVerse(savedVerses, selectedVerse?.id);
+                      resetPracticeState();
+                      if (nextTarget && nextTarget.id !== selectedVerse?.id) {
+                        setSelectedVerseId(nextTarget.id);
+                        setJumpQuery(nextTarget.reference);
+                      }
+                      setShowStageCompletionModal(false);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all border border-slate-700 flex items-center justify-center space-x-1.5"
+                  >
+                    <span>Review Next Verse</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* Blind Mode & Mastered: Next Verse, Same Place (No Next Stage) */}
+                  {/* 1. Next Verse */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextTarget = findNextVerse(savedVerses, selectedVerse?.id);
+                      resetPracticeState();
+                      if (nextTarget && nextTarget.id !== selectedVerse?.id) {
+                        setSelectedVerseId(nextTarget.id);
+                        setJumpQuery(nextTarget.reference);
+                      }
+                      setShowStageCompletionModal(false);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-1.5"
+                  >
+                    <span>Review Next Verse</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextTarget = findNextUnmasteredVerse(savedVerses, selectedVerse?.id);
+                      resetPracticeState();
+                      if (nextTarget && nextTarget.id !== selectedVerse?.id) {
+                        setSelectedVerseId(nextTarget.id);
+                        setJumpQuery(nextTarget.reference);
+                      }
+                      setShowStageCompletionModal(false);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all border border-slate-700 flex items-center justify-center space-x-1.5"
+                  >
+                    <span>Jump to Next Un-Mastered Verse</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  {/* 2. Same Place */}
+                  <button
+                    type="button"
+                    onClick={() => setShowStageCompletionModal(false)}
+                    className="w-full py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all"
+                  >
+                    Stay on Current Verse
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -55,3 +55,11 @@ test('memory UI exposes both next-verse review paths and no-backtracking complet
   assert.doesNotMatch(memoryView, /if \(!passedRecall\) return/);
   assert.doesNotMatch(memoryView, /Review Finished/);
 });
+
+test('stage completion modal renders button controls in correct order based on stage type', () => {
+  // Normally (completedStageNumber < 4) ordering: Next Stage -> Stay on Stage -> Review Next Verse
+  assert.match(memoryView, /Advance to Stage[\s\S]*Stay on Stage[\s\S]*Review Next Verse/);
+  
+  // Blind mode & Mastered (completedStageNumber === 4) ordering: Review Next Verse -> Jump to Next Un-Mastered Verse -> Stay on Current Verse
+  assert.match(memoryView, /Review Next Verse[\s\S]*Jump to Next Un-Mastered Verse[\s\S]*Stay on Current Verse/);
+});
