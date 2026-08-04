@@ -8,7 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PA
 ## [1.0.36] - Unreleased
 
 ### 🚀 Release Summary
-- Upcoming features and refinements under development.
+- Update Psalm 8:2 wording in embedded ESV data to say babies instead of babes.
 
 
 ## [1.0.35] - 2026-08-01
