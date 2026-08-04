@@ -32,9 +32,9 @@ jobs:
           elif [[ -z "$LATEST_TAG" ]]; then
             echo "should_release=true" >> "$GITHUB_OUTPUT"
             echo "No prior release tag exists; continuing with the release."
-          elif git diff --quiet "$LATEST_TAG"..HEAD -- . ':(exclude).github/workflows/**'; then
+          elif git diff --quiet "$LATEST_TAG"..HEAD -- . ':(exclude).github/**' ':(exclude)scripts/**' ':(exclude)tests/**' ':(exclude)e2e-tests/**' ':(exclude)CHANGELOG.md' ':(exclude)package.json' ':(exclude)package-lock.json' ':(exclude)README.md' ':(exclude).gitignore'; then
             echo "should_release=false" >> "$GITHUB_OUTPUT"
-            echo "No changes outside GitHub workflow files since $LATEST_TAG; skipping today's release."
+            echo "No changes in application code since $LATEST_TAG; skipping today's release."
           else
             echo "should_release=true" >> "$GITHUB_OUTPUT"
             echo "Releasable changes found since $LATEST_TAG."
