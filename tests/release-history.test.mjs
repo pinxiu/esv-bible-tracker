@@ -49,8 +49,12 @@ test('recent release history matches shipped packages and rolls forward to 1.0.3
   assert.match(releaseBlock('1.0.35'), /Dynamic Timezone Plan Banner/);
   assert.match(releaseBlock('1.0.35'), /Isolated E2E Test Data Sandbox/);
 
-  assert.match(releaseBlock('1.0.36'), /Unreleased/);
-  assert.equal(packageJson.version, '1.0.36');
-  assert.equal(packageLock.version, '1.0.36');
-  assert.equal(packageLock.packages[''].version, '1.0.36');
+  assert.match(releaseBlock('1.0.36'), /2026-08-04/);
+  assert.match(releaseBlock('1.0.36'), /reorder verse memory review completion buttons/);
+  assert.match(releaseBlock('1.0.36'), /Psalm 8:2 wording/);
+
+  assert.match(releaseBlock('1.0.37'), /Unreleased/);
+  assert.equal(packageJson.version, '1.0.37');
+  assert.equal(packageLock.version, '1.0.37');
+  assert.equal(packageLock.packages[''].version, '1.0.37');
 });
